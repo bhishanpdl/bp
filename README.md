@@ -22,11 +22,11 @@ We can run the `bp` Jupyter notebooks live over the web at [Binder](http://mybin
 
 **Rendered Preview**  
 
-We can view rendered preview of jupyter notebooks rendered by nbviewer here:
+|  Notebook | Rendered   | Description  |  Author |
+|---|---|---|---|
+| demo.ipynb  | [ipynb](https://github.com/bhishanpdl/bp/blob/master/docs/notebooks/demo.ipynb), [rendered](https://nbviewer.jupyter.org/github/bhishanpdl/bp/blob/master/docs/notebooks/demo.ipynb)  |   | [Bhishan Poudel](https://bhishanpdl.github.io/)  |
 
-**Raw notebooks**
-We can also view the raw notebooks rendered by github here:
-- 
+
 # Contributors
 
 * [Bhishan Poudel](https://bhishanpdl.github.io/) (Ph.D Physics, Ohio University)
