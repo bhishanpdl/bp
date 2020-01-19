@@ -1,0 +1,9 @@
+README.md
+setup.py
+bp/__init__.py
+bp/ds_json.py
+bp.egg-info/PKG-INFO
+bp.egg-info/SOURCES.txt
+bp.egg-info/dependency_links.txt
+bp.egg-info/requires.txt
+bp.egg-info/top_level.txt
