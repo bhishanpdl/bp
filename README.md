@@ -1,4 +1,5 @@
 # bp
+[![Build Status](https://travis-ci.org/bhishanpdl/bp.svg?branch=master)](https://travis-ci.org/bhishanpdl/bp)[![Documentation Status](https://readthedocs.org/projects/bp/badge/?version=latest)](https://bp.readthedocs.io/en/latest/?badge=latest)
 
 `bp` is my personal library with some pieces of codes for plotting
  and various other statistical tools.
