@@ -4,6 +4,9 @@
 # then run unittest
 
 python -m unittest test_bp.py
+
+# aliter
+nosetests
 ```
 
 # Best Practices
