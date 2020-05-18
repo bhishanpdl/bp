@@ -58,5 +58,5 @@ pip install -e .  # -e means editable version and dot is the path
 ```
 
 # License
-This is my personal library intended by use only for me.
-It not a public library.
+This is my personal library intended to be used by only me.
+Its not a public library.
