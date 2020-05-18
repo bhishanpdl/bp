@@ -5,7 +5,9 @@
  and various other statistical tools.
 
 # API References
-[Read the Docs](http://bhishan.readthedocs.io/)
+For the usage of the module, visit API tutorials at ReadTheDocs or Github Pages.
+- [Read the Docs](http://bhishan.readthedocs.io/)
+- [GitHub Pages](https://bhishanpdl.github.io/bp/)
 
 # Motivation
 This repository exists for two reasons.
