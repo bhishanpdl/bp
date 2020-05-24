@@ -1,3 +1,8 @@
+# Notes
+Make sure are all files inside `tests/` ends with `_test.py`.
+I have used pre-commit hook with config `name-tests-test` so it needs test files ending
+with required format.
+
 # To run unit tests
 ```bash
 # go to the conda environment where the moduel bp is installed,
