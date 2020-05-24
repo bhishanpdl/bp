@@ -1,7 +1,14 @@
 # Notes
-Make sure are all files inside `tests/` ends with `_test.py`.
-I have used pre-commit hook with config `name-tests-test` so it needs test files ending
-with required format.
+- Make sure are all files inside `tests/` ends with `_test.py`.
+  I have used pre-commit hook with config `name-tests-test`
+  so it needs test files ending with required format.
+- To run pre-commit
+  + first install module [pre-commit](https://pre-commit.com/) `pip install pre-commit`
+  + create a .pre-commit-config.yaml file in root of repo
+  + create .git/hooks/pre-commit executable file `pre-commit install`
+  + run pre-commit `pre-commit run --all-files`
+
+
 
 # To run unit tests
 ```bash
