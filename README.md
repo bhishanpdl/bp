@@ -1,9 +1,7 @@
 # bp
 [![Build Status](https://travis-ci.org/bhishanpdl/bp.svg?branch=master)](https://travis-ci.org/bhishanpdl/bp)[![Documentation Status](https://readthedocs.org/projects/bp/badge/?version=latest)](https://bp.readthedocs.io/en/latest/?badge=latest)
 
-`bp` is my personal library with some pieces of codes for plotting
- and various other statistical tools.
-
+`bp` is my personal library for day to day use scripts such as data cleaning, machine learning, data visualization and so on.
 # API References
 For the usage of the module, visit API tutorials at ReadTheDocs or Github Pages.
 - [API Usage of bp @ Read the Docs](http://bhishan.readthedocs.io/)
@@ -12,9 +10,8 @@ For the usage of the module, visit API tutorials at ReadTheDocs or Github Pages.
 # Motivation
 This repository exists for two reasons.
 
-1. To make a library to use daily used scripts and to respect the principle of
-   Don't Repeat Yourself (DRY) in the world of data science and software engineering.
-2. To help me learn best practices in software industry.
+1. Build a code base for personal use so that I don't have to write the same code snippet twice.
+2. Learn the best practices in software industry.
 
 # Examples
 
