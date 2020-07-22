@@ -1,0 +1,126 @@
+<div class="alert alert-block alert-info">
+	<div align="center">
+		<h3> Model Summary Description </h3>
+	</div>
+
+	<h5> <span style="color:green">1. R-squared (Coefficient of Determination) </span> </h5>
+
+	<a href="https://www.wikiwand.com/en/Coefficient_of_determination">Coefficient_of_determination</a><br>
+
+		- R-squared = 1 - (SS_res / SS_tot)<br>
+			SS_res = sum (y_i - f_i)**2  = sum(e_i **2)<br>
+			SS_tot = sum (y_i - y_bar)**2<br>
+		- If R2 = 0.49, then, 49% of the variability of the dependent
+			variable has been accounted for, <br>
+			and the remaining 51% of the
+			variability is still unaccounted for.<br>
+
+	<h5> <span style="color:green">2. Adjusted R2 (R bar squared) </span></h5>
+	<a href="https://www.wikiwand.com/en/Coefficient_of_determination">Coefficient_of_determination</a><br>
+		- R_bar_squared = 1 - (1-R2) * (n-1) / (n-p-1)<br>
+		- The adjusted R2 can be negative.<br>
+		- It will always be less than or equal to that of R2.<br>
+		- Adjusted R2 can be interpreted as an unbiased<br>
+			(or less biased) estimator of the population R2.<br>
+		- R2 is a positively biased estimate of the population value.<br>
+			When p increases, R2 increases, but R_bar_squared may not increase.<br>
+
+	<h5> <span style="color:green">3. F-statistic </span> </h5>
+	<a href="https://www.wikiwand.com/en/F-test">F-statistic</a><br>
+		-  the one-way ANOVA F-test statistic is<br>
+
+		<div class="alert alert-warning">
+			&emsp;&emsp; explained variance<br>
+		F=&nbsp;  --------------------<br>
+		&emsp;&emsp; unexplained variance<br>
+
+		</div>
+
+		- When there are only two groups for the one-way ANOVA F-test,
+			F = t**2, where t is the Student's t statistic.<br>
+		- For two models 1 and 2,
+				<div class="alert alert-warning">
+				    &emsp;&emsp; (RSS1 - RSS2) / (p2-p1)<br>
+				F=&nbsp; --------------------<br>
+				&emsp;&emsp; (RSS2) / (n-p2)<br>
+				</div>
+
+	<h5> <span style="color:green">4. AIC </span></h5>
+	<a href="https://www.wikiwand.com/en/Akaike_information_criterion">Akaike Information Criterion</a><br>
+		- Akaike Information Criterion. <br>
+		- AIC = 2k - 2 ln L  where k is the number of model parameters,
+			L is log likelihood.<br>
+		- Adjusts the log-likelihood based on the number of observations
+			and the complexity of the model.<br>
+		- Penalizes the model selection metrics when more independent
+			variables are added.<br>
+
+	<h5> <span style="color:green">5. BIC </span> </h5>
+	<a href="https://www.wikiwand.com/en/Bayesian_information_criterion">Bayesian Information Criterion</a><br>
+		- Bayesian Information Criterion.<br>
+		- BIC = ln(n) * k - 2 ln L  where k is the number of model parameters,
+			L is log likelihood.<br>
+		- Similar to the AIC, but has a higher penalty for models with more parameters.<br>
+		- Penalizes the model selection metrics when more independent variables are added.<br>
+		-  BIC is only valid for sample size n much larger than
+			the number k of parameters in the model.<br>
+
+	<h5> <span style="color:green">6. P > |t| </span></h5>
+	<a href="https://www.wikiwand.com/en/P-value">P-value</a><br>
+		- p-value means probability value.<br>
+		- p-value means that the null-hypothesis model parameter = 0 is true.<br>
+		- If it is less than the confidence level, often 0.05,
+			it indicates that there is a statistically significant
+			relationship between the predictor and the response.<br>
+
+	<h5> <span style="color:green">7. Skewness  </span> </h5>
+	<a href="https://www.wikiwand.com/en/Skewness">Skewness</a><br>
+		- A measure of the symmetry of the data about the mean.<br>
+		- Normally-distributed errors should be symmetrically distributed about the mean.<br>
+		- The normal distribution has 0 skew.<br>
+
+	<h5> <span style="color:green">8. Kurtosis </span></h5>
+	<a href="https://www.wikiwand.com/en/Kurtosis">Kurtosis</a><br>
+		- A measure of the shape of the distribution.<br>
+		- The normal distribution has a Kurtosis of 3.<br>
+		- If kurtosis is greater than 3, curve is tall and peaked.<br>
+
+	<h5> <span style="color:green">9. Omnibus D Angostino’s test </span> </h5>
+	<a href="https://www.wikiwand.com/en/D%27Agostino%27s_K-squared_test">Omnibus D Angostino’s test</a><br>
+		- It provides a combined statistical test for the presence of skewness and kurtosis.<br>
+		- This is a goodness-of-fit measure of departure from normality,
+			that is the test aims to establish whether or not the given sample
+			comes from a normally distributed population.<br>
+		- The test is based on transformations of the sample kurtosis and skewness,
+			and has power only against the alternatives that the
+			distribution is skewed and/or kurtic.<br>
+
+	<h5> <span style="color:green">10. Jarque-Bera </span></h5>
+	<a href="https://www.wikiwand.com/en/Jarque%E2%80%93Bera_test">Jarque-Bera Test</a><br>
+		- A different test of the skewness and kurtosis.<br>
+		- In statistics, the Jarque–Bera test is a goodness-of-fit test of
+			whether sample data have the skewness and kurtosis
+			matching a normal distribution.<br>
+		- The test statistic is always nonnegative.<br>
+		- If it is far from zero, it signals the data do not have a normal distribution.<br>
+
+	<h5> <span style="color:green">11. Durbin-Watson </span> </h5>
+	<a href="https://www.wikiwand.com/en/Durbin%E2%80%93Watson_statistic">Durbin-Watson Stastistic</a><br>
+		- In statistics, the Durbin–Watson statistic is a test statistic
+			used to detect the presence of autocorrelation at lag 1 in the residuals.<br>
+		- Often important in time-series analysis.<br>
+		- A similar assessment can be also carried out with the
+			Breusch–Godfrey test and the Ljung–Box test.<br>
+
+	<h5> <span style="color:green">12. Cond. No </span></h5>
+	<a href="https://www.wikiwand.com/en/Condition_number">Condition Number</a><br>
+		- The condition number of a function measures how much the output value
+			of the function can change for a small change in the input argument.<br>
+		- This is used to measure how sensitive a function is to changes
+			or errors in the input.<br>
+		- In linear regression the condition number of the moment matrix
+			can be used as a diagnostic for multicollinearity.<br>
+		- A problem with a low condition number is said to be well-conditioned.<br>
+		- A problem with a high condition number is said to be ill-conditioned.<br>
+
+	</div>

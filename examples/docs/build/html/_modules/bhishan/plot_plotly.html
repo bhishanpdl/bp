@@ -1,0 +1,1120 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>bhishan.plot_plotly &#8212; Bhishan 1 documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Bhishan 1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for bhishan.plot_plotly</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+
+<span class="kn">import</span> <span class="nn">plotly</span>
+<span class="kn">import</span> <span class="nn">plotly.offline</span> <span class="k">as</span> <span class="nn">py</span>
+<span class="kn">import</span> <span class="nn">plotly.graph_objs</span> <span class="k">as</span> <span class="nn">go</span>
+<span class="kn">import</span> <span class="nn">plotly.figure_factory</span> <span class="k">as</span> <span class="nn">ff</span>
+<span class="kn">from</span> <span class="nn">plotly.tools</span> <span class="kn">import</span> <span class="n">make_subplots</span>
+<span class="kn">import</span> <span class="nn">plotly.tools</span> <span class="k">as</span> <span class="nn">tls</span>
+<span class="kn">from</span> <span class="nn">plotly.offline</span> <span class="kn">import</span> <span class="n">plot</span><span class="p">,</span> <span class="n">iplot</span>
+
+<span class="c1"># I need these functions</span>
+<span class="c1"># from plot_colors import get_distinct_colors</span>
+<span class="c1"># from plot_colors import rgb2hex</span>
+<span class="c1"># from plot_colors import hex_to_rgb</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Plotly Functions:</span>
+<span class="sd">1.  plotly_corr_heatmap</span>
+<span class="sd">2.  plotly_countplot</span>
+<span class="sd">3.  plotly_distplot</span>
+<span class="sd">4.  plotly_boxplot</span>
+<span class="sd">5.  plotly_boxplot_allpoints_with_outliers</span>
+<span class="sd">6.  plotly_boxplot_categorical_column</span>
+<span class="sd">7.  plotly_scattergl_plot</span>
+<span class="sd">8.  plotly_scattergl_plot_colorcol</span>
+<span class="sd">9.  plotly_scattergl_plot_subplots</span>
+<span class="sd">10. plotly_bubbleplot</span>
+<span class="sd">11. get_mapbox_access_token</span>
+<span class="sd">12. plotly_mapbox</span>
+<span class="sd">13.</span>
+<span class="sd">14.</span>
+<span class="sd">15.</span>
+
+<span class="sd">&quot;&quot;&quot;</span><span class="p">;</span>
+
+
+<div class="viewcode-block" id="plotly_corr_heatmap"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.plotly_corr_heatmap">[docs]</a><span class="k">def</span> <span class="nf">plotly_corr_heatmap</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">target</span><span class="p">,</span><span class="n">topN</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;pearson&#39;</span><span class="p">,</span>
+                        <span class="n">colorscale</span><span class="o">=</span><span class="s1">&#39;Reds&#39;</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span><span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
+                        <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Correlation heatmap plot using plotly.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    target: str</span>
+<span class="sd">        Target variable name.</span>
+<span class="sd">    topN: int</span>
+<span class="sd">        Top n correlated variables to show in heatmap.</span>
+<span class="sd">    method: str</span>
+<span class="sd">        Method of correlation. Default is &#39;pearson&#39;</span>
+<span class="sd">    colorscale: str</span>
+<span class="sd">        Color scale of heatmap. Default is &#39;Reds&#39;</span>
+<span class="sd">    width: int</span>
+<span class="sd">        Width of heatmap.</span>
+<span class="sd">    height: int</span>
+<span class="sd">        Height of heatmap.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the rendered html in notebook.</span>
+<span class="sd">    auto_open: bool</span>
+<span class="sd">        Whether or not to automatically open the ouput html file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df_corr</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+    <span class="n">cols10</span> <span class="o">=</span> <span class="n">df_corr</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="n">topN</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">index</span>
+
+    <span class="n">df_corr</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cols10</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">df_corr</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tril</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="n">annotation_text</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span><span class="s1">&#39;</span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">z</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">create_annotated_heatmap</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">showscale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">colorscale</span><span class="o">=</span><span class="n">colorscale</span><span class="p">,</span>
+                <span class="n">annotation_text</span><span class="o">=</span><span class="n">annotation_text</span><span class="p">,</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">df_corr</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">df_corr</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                <span class="p">)</span>
+    <span class="n">fig</span><span class="p">[</span><span class="s1">&#39;layout&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="n">auto_open</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="plotly_countplot"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.plotly_countplot">[docs]</a><span class="k">def</span> <span class="nf">plotly_countplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">col</span><span class="p">,</span><span class="n">topN</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Value counts plot using plotly and pandas.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    col: str</span>
+<span class="sd">        The variable name.</span>
+<span class="sd">    topN: int</span>
+<span class="sd">        Top n correlated variables to show in heatmap.</span>
+<span class="sd">    color: str</span>
+<span class="sd">        Color of count plot.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the rendered html in notebook.</span>
+<span class="sd">    auto_open: bool</span>
+<span class="sd">        Whether or not to automatically open the ouput html file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">color</span><span class="p">:</span>
+        <span class="n">color</span><span class="o">=</span><span class="s1">&#39;rgb(158,202,225)&#39;</span>
+
+    <span class="n">df1</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">topN</span><span class="p">:</span>
+        <span class="n">topN</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df1</span><span class="p">)</span>
+    <span class="n">df1</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">topN</span><span class="p">)</span>
+
+    <span class="n">trace0</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Bar</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">df1</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">df1</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                <span class="n">text</span><span class="o">=</span><span class="n">df1</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                <span class="n">textposition</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+                <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                    <span class="n">line</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                        <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                        <span class="n">width</span><span class="o">=</span><span class="mf">1.5</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="n">opacity</span><span class="o">=</span><span class="mf">1.0</span>
+            <span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">trace0</span><span class="p">]</span>
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Count plot of &#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">,</span>
+                <span class="n">xaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">col</span><span class="p">,</span><span class="n">tickvals</span><span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+                <span class="n">yaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Count&#39;</span><span class="p">))</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="n">auto_open</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="plotly_histogram"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.plotly_histogram">[docs]</a><span class="k">def</span> <span class="nf">plotly_histogram</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">col</span><span class="p">,</span><span class="n">nbins</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Histogram plot of given column of pandas dataframe using plotly.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -------------</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        Pandas dataframe</span>
+<span class="sd">    col : str</span>
+<span class="sd">        Name of column</span>
+<span class="sd">    nbins : int</span>
+<span class="sd">        Number of bins to use in histogram.</span>
+<span class="sd">    size : int</span>
+<span class="sd">        Step size of x-axis bins.</span>
+<span class="sd">    color : str</span>
+<span class="sd">        Color of the plot. Valid matplotlib color name.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">color</span><span class="p">:</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;rgb(102, 0, 102)&#39;</span>
+    <span class="n">trace0</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Histogram</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span><span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">nbins</span><span class="p">:</span>
+        <span class="n">trace0</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Histogram</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                            <span class="n">nbinsx</span><span class="o">=</span><span class="n">nbins</span><span class="p">,</span>
+                            <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">size</span><span class="p">:</span>
+        <span class="n">trace0</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Histogram</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                    <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">),</span>
+                    <span class="n">xbins</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">),</span><span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span>
+                    <span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">trace0</span><span class="p">]</span>
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Histogram of &#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">,</span>
+                    <span class="n">xaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">col</span><span class="o">.</span><span class="n">title</span><span class="p">()),</span>
+                    <span class="n">yaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Bin Counts&#39;</span><span class="p">))</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="n">auto_open</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="plotly_distplot"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.plotly_distplot">[docs]</a><span class="k">def</span> <span class="nf">plotly_distplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Distribution plot using plotly.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    cols: list</span>
+<span class="sd">        List of columns.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the rendered html in notebook.</span>
+<span class="sd">    auto_open: bool</span>
+<span class="sd">        Whether or not to automatically open the ouput html file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cols_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">cols</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">cols</span>
+    <span class="n">df1</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cols_list</span><span class="p">]</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">create_distplot</span><span class="p">([</span><span class="n">df1</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols_list</span><span class="p">],</span>
+                            <span class="n">cols_list</span><span class="p">,</span>
+                            <span class="n">bin_size</span><span class="o">=.</span><span class="mi">25</span><span class="p">,</span>
+                            <span class="n">show_rug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">curve_type</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">)</span>
+    <span class="n">head</span> <span class="o">=</span> <span class="s1">&#39;Distribution Plot of &#39;</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">head</span> <span class="o">+</span> <span class="n">cols</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span><span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">head</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
+    <span class="n">fig</span><span class="p">[</span><span class="s1">&#39;layout&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="n">auto_open</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="plotly_boxplot"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.plotly_boxplot">[docs]</a><span class="k">def</span> <span class="nf">plotly_boxplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">cols</span><span class="p">,</span><span class="n">ylim_lst</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Box plot using plotly.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    cols: list</span>
+<span class="sd">        List of columns.</span>
+<span class="sd">    ylim_lst: list</span>
+<span class="sd">        List for yaxis limit.</span>
+<span class="sd">    color: str</span>
+<span class="sd">        Name of color for the boxplot.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the rendered html in notebook.</span>
+<span class="sd">    auto_open: bool</span>
+<span class="sd">        Whether or not to automatically open the ouput html file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cols_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">cols</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">cols</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">go</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">],</span>
+                <span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">col</span><span class="p">),</span>
+                <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">),</span>
+                <span class="n">hoverinfo</span><span class="o">=</span><span class="s2">&quot;name+y&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cols_list</span><span class="p">)</span> <span class="p">]</span>
+
+    <span class="n">head</span> <span class="o">=</span> <span class="s1">&#39;Box Plot of &#39;</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">head</span> <span class="o">+</span> <span class="n">cols</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span><span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">head</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span><span class="p">,</span> <span class="n">yaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="n">ylim_lst</span><span class="p">))</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span><span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="n">auto_open</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="plotly_boxplot_allpoints_with_outliers"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.plotly_boxplot_allpoints_with_outliers">[docs]</a><span class="k">def</span> <span class="nf">plotly_boxplot_allpoints_with_outliers</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">col</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Box plot with all points and outliers using plotly.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    col: str</span>
+<span class="sd">        Name of column.</span>
+<span class="sd">    color: str</span>
+<span class="sd">        Name of color for the boxplot.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the rendered html in notebook.</span>
+<span class="sd">    auto_open: bool</span>
+<span class="sd">        Whether or not to automatically open the ouput html file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">color</span><span class="p">:</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;rgb(7,40,89)&#39;</span>
+    <span class="n">trace0</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">],</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Box Plot with All Points&quot;</span><span class="p">,</span>
+        <span class="n">jitter</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>
+        <span class="n">pointpos</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.8</span><span class="p">,</span>
+        <span class="n">boxpoints</span> <span class="o">=</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span>
+        <span class="n">marker</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="p">),</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="p">)</span>
+        <span class="p">)</span>
+
+
+    <span class="n">trace1</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">],</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Box Plot with Suspected Outliers&quot;</span><span class="p">,</span>
+                    <span class="n">boxpoints</span> <span class="o">=</span> <span class="s1">&#39;suspectedoutliers&#39;</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">trace0</span><span class="p">,</span><span class="n">trace1</span><span class="p">]</span>
+
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Box Plot with Suspected Outliers for &quot;</span> <span class="o">+</span> <span class="n">col</span>
+    <span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span><span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="n">auto_open</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="plotly_boxplot_categorical_column"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.plotly_boxplot_categorical_column">[docs]</a><span class="k">def</span> <span class="nf">plotly_boxplot_categorical_column</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">xcol</span><span class="p">,</span><span class="n">ycol</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Boxplot of categorical columns.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    xcol: str</span>
+<span class="sd">        Name of x column.</span>
+<span class="sd">    ycol: str</span>
+<span class="sd">        Name of y column.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the rendered html in notebook.</span>
+<span class="sd">    auto_open: bool</span>
+<span class="sd">        Whether or not to automatically open the ouput html file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span><span class="p">[</span><span class="n">xcol</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">xcol</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">traces</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">unq</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="n">xcol</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">unq</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;nan&#39;</span><span class="p">:</span>
+            <span class="n">traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plotly</span><span class="o">.</span><span class="n">graph_objs</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">xcol</span><span class="p">]),</span> <span class="n">ycol</span><span class="p">],</span>
+                                                <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">unq</span><span class="p">)</span>
+                                                <span class="p">)</span>
+                        <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plotly</span><span class="o">.</span><span class="n">graph_objs</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">xcol</span><span class="p">]</span> <span class="o">==</span> <span class="n">unq</span><span class="p">,</span> <span class="n">ycol</span><span class="p">],</span>
+                                                <span class="n">name</span> <span class="o">=</span> <span class="n">unq</span>
+                                                <span class="p">)</span>
+                        <span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">traces</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="n">auto_open</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="plotly_scattergl_plot"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.plotly_scattergl_plot">[docs]</a><span class="k">def</span> <span class="nf">plotly_scattergl_plot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">xcol</span><span class="p">,</span><span class="n">ycol</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">colorscale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">logx</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">logy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">bestfit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Scatterplot for large data using webgl.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    xcol: str</span>
+<span class="sd">        Name of x column.</span>
+<span class="sd">    ycol: str</span>
+<span class="sd">        Name of y column.</span>
+<span class="sd">    color: str</span>
+<span class="sd">        Name of color for scatterplot.</span>
+<span class="sd">    color_scale: str</span>
+<span class="sd">        Colorscale to choose.</span>
+<span class="sd">    logx: bool</span>
+<span class="sd">        Whether or not use log scale in x axis.</span>
+<span class="sd">    logy: bool</span>
+<span class="sd">        Whether or not use log scale in y axis.</span>
+<span class="sd">    best_fit: bool</span>
+<span class="sd">        Whether or not to show best fit line.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the rendered html in notebook.</span>
+<span class="sd">    auto_open: bool</span>
+<span class="sd">        Whether or not to automatically open the ouput html file.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">colorcol</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">color</span><span class="p">]</span> <span class="k">if</span> <span class="n">color</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span> <span class="k">else</span> <span class="n">color</span>
+    <span class="n">showscale</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">color</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">else</span> <span class="kc">False</span>
+
+    <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Log(</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">())</span> <span class="k">if</span> <span class="n">logx</span> <span class="k">else</span> <span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+    <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Log(</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ycol</span><span class="o">.</span><span class="n">title</span><span class="p">())</span> <span class="k">if</span> <span class="n">logy</span> <span class="k">else</span> <span class="n">ycol</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+
+    <span class="c1"># x and y</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">xcol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">if</span> <span class="n">logx</span> <span class="k">else</span> <span class="n">df</span><span class="p">[</span><span class="n">xcol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">ycol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">if</span> <span class="n">logy</span> <span class="k">else</span> <span class="n">df</span><span class="p">[</span><span class="n">ycol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+
+    <span class="c1"># get data from scatterplot</span>
+    <span class="n">trace</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scattergl</span><span class="p">(</span>
+        <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+        <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">xcol</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
+        <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">opacity</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">colorcol</span><span class="p">,</span>
+                    <span class="n">showscale</span><span class="o">=</span><span class="n">showscale</span><span class="p">,</span>
+                    <span class="n">colorscale</span><span class="o">=</span><span class="n">colorscale</span><span class="p">,</span>
+                    <span class="n">colorbar</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Grade&#39;</span><span class="p">),),</span>
+
+    <span class="p">)</span>
+
+    <span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="n">trace</span><span class="p">]</span>
+
+    <span class="c1"># data + bestfit when there is bestfit</span>
+    <span class="k">if</span> <span class="n">bestfit</span><span class="p">:</span>
+        <span class="n">m</span><span class="p">,</span><span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">bestfit_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">m</span> <span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
+
+        <span class="n">bestfit</span><span class="o">=</span><span class="n">go</span><span class="o">.</span><span class="n">Scattergl</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">bestfit_y</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Line of best fit&#39;</span><span class="p">,</span>
+            <span class="n">line</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">data</span><span class="o">=</span> <span class="n">data</span> <span class="o">+</span> <span class="p">[</span><span class="n">bestfit</span><span class="p">]</span>
+
+    <span class="c1"># layout</span>
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> vs. </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xcol</span><span class="p">,</span> <span class="n">ycol</span><span class="p">),</span>
+        <span class="n">xaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">xlabel</span><span class="p">),</span>
+        <span class="n">yaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">ylabel</span><span class="p">),</span>
+        <span class="n">hovermode</span><span class="o">=</span><span class="s1">&#39;closest&#39;</span><span class="p">,</span>
+        <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="n">auto_open</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+<span class="c1">#===================================================================</span>
+<div class="viewcode-block" id="plotly_scattergl_plot_colorcol"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.plotly_scattergl_plot_colorcol">[docs]</a><span class="k">def</span> <span class="nf">plotly_scattergl_plot_colorcol</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">xcol</span><span class="p">,</span><span class="n">ycol</span><span class="p">,</span><span class="n">colorcol</span><span class="p">,</span>
+                                    <span class="n">logx</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">logy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Scatterplot using color column.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    xcol: str</span>
+<span class="sd">        Name of x column.</span>
+<span class="sd">    ycol: str</span>
+<span class="sd">        Name of y column.</span>
+<span class="sd">    colorcol: str</span>
+<span class="sd">        Name of column which have color names.</span>
+<span class="sd">    logx: bool</span>
+<span class="sd">        Whether or not use log scale in x axis.</span>
+<span class="sd">    logy: bool</span>
+<span class="sd">        Whether or not use log scale in y axis.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the rendered html in notebook.</span>
+<span class="sd">    auto_open: bool</span>
+<span class="sd">        Whether or not to automatically open the ouput html file.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Log(</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">())</span> <span class="k">if</span> <span class="n">logx</span> <span class="k">else</span> <span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+    <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Log(</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ycol</span><span class="o">.</span><span class="n">title</span><span class="p">())</span> <span class="k">if</span> <span class="n">logy</span> <span class="k">else</span> <span class="n">ycol</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+
+    <span class="n">colorcol_lst</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">colorcol</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+
+    <span class="n">data</span><span class="o">=</span><span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">colorcol_lst</span><span class="p">:</span>
+        <span class="n">df_color</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">colorcol</span><span class="p">]</span><span class="o">==</span><span class="n">c</span><span class="p">]</span>
+
+        <span class="c1"># x and y</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">df_color</span><span class="p">[</span><span class="n">xcol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">if</span> <span class="n">logx</span> <span class="k">else</span> <span class="n">df_color</span><span class="p">[</span><span class="n">xcol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">df_color</span><span class="p">[</span><span class="n">ycol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">if</span> <span class="n">logy</span> <span class="k">else</span> <span class="n">df_color</span><span class="p">[</span><span class="n">ycol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">go</span><span class="o">.</span><span class="n">Scattergl</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
+                <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">opacity</span><span class="o">=</span><span class="mf">0.75</span><span class="p">),</span>
+                <span class="n">name</span><span class="o">=</span> <span class="n">colorcol</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39; : &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)))</span>
+
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> vs. </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span> <span class="n">ycol</span><span class="o">.</span><span class="n">title</span><span class="p">()),</span>
+        <span class="n">xaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">xlabel</span><span class="p">),</span>
+        <span class="n">yaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">ylabel</span><span class="p">),</span>
+        <span class="n">hovermode</span><span class="o">=</span><span class="s1">&#39;closest&#39;</span><span class="p">,</span>
+        <span class="n">showlegend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="n">auto_open</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+
+<span class="c1">#============================================================================</span>
+<div class="viewcode-block" id="plotly_scattergl_plot_subplots"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.plotly_scattergl_plot_subplots">[docs]</a><span class="k">def</span> <span class="nf">plotly_scattergl_plot_subplots</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">xcol</span><span class="p">,</span><span class="n">ycol</span><span class="p">,</span><span class="n">subplot_cols</span><span class="p">,</span>
+                                    <span class="n">logx</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">logy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot x vs y scatterplots for all the subplot columns one below another.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    xcol: str</span>
+<span class="sd">        Name of x column.</span>
+<span class="sd">    ycol: str</span>
+<span class="sd">        Name of y column.</span>
+<span class="sd">    subplot_cols: list</span>
+<span class="sd">        List of sub plot columns.</span>
+<span class="sd">    logx: bool</span>
+<span class="sd">        Whether or not use log scale in x axis.</span>
+<span class="sd">    logy: bool</span>
+<span class="sd">        Whether or not use log scale in y axis.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the rendered html in notebook.</span>
+<span class="sd">    auto_open: bool</span>
+<span class="sd">        Whether or not to automatically open the ouput html file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">subplots</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">subplot_cols</span><span class="p">]</span>
+
+    <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Log(</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">())</span> <span class="k">if</span> <span class="n">logx</span> <span class="k">else</span> <span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+    <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Log(</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ycol</span><span class="o">.</span><span class="n">title</span><span class="p">())</span> <span class="k">if</span> <span class="n">logy</span> <span class="k">else</span> <span class="n">ycol</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+
+    <span class="n">fig</span><span class="o">=</span><span class="n">make_subplots</span><span class="p">(</span><span class="n">rows</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">subplot_titles</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Breakup by: &#39;</span><span class="o">+</span> <span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">subplots</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subplots</span><span class="p">)):</span>
+        <span class="n">col_name</span><span class="o">=</span><span class="n">subplots</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">col</span><span class="o">=</span><span class="n">subplot_cols</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">col_values</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">col_values</span><span class="p">:</span>
+
+            <span class="n">df_subset</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">==</span><span class="n">value</span><span class="p">]</span>
+
+            <span class="c1"># x and y</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">df_subset</span><span class="p">[</span><span class="n">xcol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">if</span> <span class="n">logx</span> <span class="k">else</span> <span class="n">df_subset</span><span class="p">[</span><span class="n">xcol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">df_subset</span><span class="p">[</span><span class="n">ycol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">if</span> <span class="n">logy</span> <span class="k">else</span> <span class="n">df_subset</span><span class="p">[</span><span class="n">ycol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+            <span class="n">trace</span><span class="o">=</span><span class="n">go</span><span class="o">.</span><span class="n">Scattergl</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
+                <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">opacity</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,),</span>
+                <span class="n">name</span><span class="o">=</span> <span class="n">col_name</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">),</span>
+                <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">append_trace</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">[</span><span class="s1">&#39;layout&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="n">height</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> vs. </span><span class="si">{}</span><span class="s1"> - subplots&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span> <span class="n">ycol</span><span class="o">.</span><span class="n">title</span><span class="p">()),</span>
+        <span class="n">hovermode</span><span class="o">=</span><span class="s1">&#39;closest&#39;</span><span class="p">)</span>
+
+    <span class="n">xaxes</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">fig</span><span class="p">[</span><span class="s1">&#39;layout&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;xaxis&#39;</span><span class="p">)</span> <span class="p">]</span>
+    <span class="n">yaxes</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">fig</span><span class="p">[</span><span class="s1">&#39;layout&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;yaxis&#39;</span><span class="p">)</span> <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xaxes</span><span class="p">)):</span>
+        <span class="n">fig</span><span class="p">[</span><span class="s1">&#39;layout&#39;</span><span class="p">][</span><span class="n">xaxes</span><span class="p">[</span><span class="n">i</span><span class="p">]][</span><span class="s1">&#39;title&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xlabel</span>
+        <span class="n">fig</span><span class="p">[</span><span class="s1">&#39;layout&#39;</span><span class="p">][</span><span class="n">yaxes</span><span class="p">[</span><span class="n">i</span><span class="p">]][</span><span class="s1">&#39;title&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ylabel</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="n">auto_open</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+<span class="c1">#==============================================================================</span>
+<div class="viewcode-block" id="plotly_bubbleplot"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.plotly_bubbleplot">[docs]</a><span class="k">def</span> <span class="nf">plotly_bubbleplot</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">xcol</span><span class="p">,</span> <span class="n">ycol1</span><span class="p">,</span> <span class="n">ycol2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">size_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">size_factor</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Bubble plot of two y-axis columns according to size of size column.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    xcol: str</span>
+<span class="sd">        Name of x column.</span>
+<span class="sd">    ycol1: str</span>
+<span class="sd">        Name of y column1.</span>
+<span class="sd">    ycol2: str</span>
+<span class="sd">        Name of y column2.</span>
+<span class="sd">    size_col: str</span>
+<span class="sd">        Column for size of bubble plot.</span>
+<span class="sd">    size_factor: int</span>
+<span class="sd">        Integer to scale size of bubble plot.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the rendered html in notebook.</span>
+<span class="sd">    auto_open: bool</span>
+<span class="sd">        Whether or not to automatically open the ouput html file.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        df1 = df[df.yr_built == 2014]</span>
+<span class="sd">        plotly_bubbleplot(df1, &#39;grade&#39;, &#39;bedrooms&#39;, &#39;bathrooms&#39;, &#39;floors&#39;, size_factor=5)</span>
+
+<span class="sd">    data source: https://www.kaggle.com/harlfoxem/housesalesprediction</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xlabel</span> <span class="o">=</span> <span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+    <span class="n">ylabel</span> <span class="o">=</span>  <span class="n">ycol1</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39; &amp; &#39;</span> <span class="o">+</span>  <span class="n">ycol2</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="k">if</span> <span class="n">ycol2</span> <span class="k">else</span> <span class="n">ycol1</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> vs </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span><span class="n">ycol1</span><span class="o">.</span><span class="n">title</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">size_col</span><span class="p">:</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> vs </span><span class="si">{}</span><span class="s2"> According to </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span><span class="n">ycol1</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span><span class="n">size_col</span><span class="o">.</span><span class="n">title</span><span class="p">())</span>
+
+    <span class="k">if</span> <span class="n">ycol2</span><span class="p">:</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> vs </span><span class="si">{}</span><span class="s2"> &amp; </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span><span class="n">ycol1</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span> <span class="n">ycol2</span><span class="o">.</span><span class="n">title</span><span class="p">())</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">ycol2</span> <span class="ow">and</span> <span class="n">size_col</span><span class="p">):</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> vs </span><span class="si">{}</span><span class="s2"> &amp; </span><span class="si">{}</span><span class="s2"> According to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span><span class="n">ycol1</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span> <span class="n">ycol2</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span><span class="n">size_col</span><span class="o">.</span><span class="n">title</span><span class="p">())</span>
+
+    <span class="n">marker</span><span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">df1</span><span class="p">[</span><span class="n">size_col</span><span class="p">]</span><span class="o">*</span><span class="n">size_factor</span><span class="p">)</span> <span class="k">if</span> <span class="n">size_col</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="n">trace0</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">df1</span><span class="p">[</span><span class="n">xcol</span><span class="p">],</span>
+                        <span class="n">y</span><span class="o">=</span><span class="n">df1</span><span class="p">[</span><span class="n">ycol1</span><span class="p">],</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">ycol1</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
+                        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span>
+                        <span class="n">marker</span> <span class="o">=</span> <span class="n">marker</span>
+                        <span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">trace0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">ycol2</span><span class="p">:</span>
+        <span class="n">trace1</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">df1</span><span class="p">[</span><span class="n">xcol</span><span class="p">],</span>
+                            <span class="n">y</span><span class="o">=</span><span class="n">df1</span><span class="p">[</span><span class="n">ycol2</span><span class="p">],</span>
+                            <span class="n">name</span><span class="o">=</span><span class="n">ycol2</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
+                            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span>
+                            <span class="n">marker</span><span class="o">=</span><span class="n">marker</span>
+                            <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">trace0</span><span class="p">,</span><span class="n">trace1</span><span class="p">]</span>
+
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                            <span class="n">xaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">xlabel</span><span class="p">),</span>
+                            <span class="n">yaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">ylabel</span><span class="p">)</span>
+                        <span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span><span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="n">auto_open</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="get_mapbox_access_token"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.get_mapbox_access_token">[docs]</a><span class="k">def</span> <span class="nf">get_mapbox_access_token</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">json</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">)</span><span class="o">+</span> <span class="s1">&#39;/.mapbox_tokens.json&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fi</span><span class="p">:</span>
+        <span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fi</span><span class="p">)</span>
+
+    <span class="n">mapbox_access_token</span> <span class="o">=</span> <span class="n">json_data</span><span class="p">[</span><span class="s1">&#39;token1&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">mapbox_access_token</span></div>
+
+<div class="viewcode-block" id="plotly_mapbox"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.plotly_mapbox">[docs]</a><span class="k">def</span> <span class="nf">plotly_mapbox</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">lat_col</span><span class="p">,</span> <span class="n">lon_col</span><span class="p">,</span> <span class="n">color_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="s1">&#39;My Map&#39;</span><span class="p">,</span>
+                <span class="n">marker_size</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span><span class="n">zoom</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span>
+                <span class="n">width</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span><span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
+                <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Map plot using mapbox.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df1: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    lat_col: str</span>
+<span class="sd">        Name of latitude column.</span>
+<span class="sd">    lon_col: str</span>
+<span class="sd">        Name of longitude column.</span>
+<span class="sd">    color_col: str</span>
+<span class="sd">        Name of color column.</span>
+<span class="sd">    text_col: str</span>
+<span class="sd">        Name of text column.</span>
+<span class="sd">    title: str</span>
+<span class="sd">        Title of the plot.</span>
+<span class="sd">    marker_size: int</span>
+<span class="sd">        Size of the marker.</span>
+<span class="sd">    zoom: int</span>
+<span class="sd">        Zoom the map.</span>
+<span class="sd">    width: int</span>
+<span class="sd">        Width of the map.</span>
+<span class="sd">    height: int</span>
+<span class="sd">        Height of the map.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the rendered html in notebook.</span>
+<span class="sd">    auto_open: bool</span>
+<span class="sd">        Whether or not to automatically open the ouput html file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mapbox_access_token</span> <span class="o">=</span> <span class="n">get_mapbox_access_token</span><span class="p">()</span>
+
+    <span class="n">color</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">color_col</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">df1</span><span class="p">[</span><span class="n">color_col</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span>
+        <span class="n">ncolors</span> <span class="o">=</span> <span class="n">get_distinct_colors</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">unq</span> <span class="o">=</span> <span class="n">df1</span><span class="p">[</span><span class="n">color_col</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">unq</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="n">ncolors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)}</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="n">df1</span><span class="p">[</span><span class="n">color_col</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">text_col</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">df1</span><span class="p">[</span><span class="n">text_col</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">color_col</span> <span class="ow">and</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;(&#39;</span> <span class="o">+</span> <span class="n">df1</span><span class="p">[</span><span class="n">lat_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="n">df1</span><span class="p">[</span><span class="n">lon_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">+</span>\
+            <span class="s1">&#39;) &#39;</span> <span class="o">+</span> <span class="n">color_col</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;: &#39;</span> <span class="o">+</span> <span class="n">df1</span><span class="p">[</span><span class="n">color_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">df1</span><span class="p">[</span><span class="n">lat_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="n">df1</span><span class="p">[</span><span class="n">lon_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+
+    <span class="n">lat</span> <span class="o">=</span> <span class="n">df1</span><span class="p">[</span><span class="n">lat_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">lon</span> <span class="o">=</span> <span class="n">df1</span><span class="p">[</span><span class="n">lon_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="n">trace0</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scattermapbox</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">,</span><span class="n">lon</span><span class="o">=</span><span class="n">lon</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span>
+                    <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">marker_size</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span> <span class="n">color</span><span class="p">)</span> <span class="p">,</span>
+                                <span class="n">hoverinfo</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                                <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="n">layout</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+                <span class="n">hovermode</span><span class="o">=</span><span class="s2">&quot;closest&quot;</span><span class="p">,</span>
+                <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">mapbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">bearing</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">pitch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">zoom</span><span class="o">=</span><span class="n">zoom</span><span class="p">,</span>
+                            <span class="n">center</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="n">df1</span><span class="p">[</span><span class="n">lat_col</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+                                        <span class="n">lon</span><span class="o">=</span><span class="n">df1</span><span class="p">[</span><span class="n">lon_col</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
+                            <span class="n">accesstoken</span><span class="o">=</span><span class="n">mapbox_access_token</span>
+                            <span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">trace0</span><span class="p">]</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span><span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+
+    <span class="n">markdown_html</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;&quot;&quot;&lt;span style=&quot;background:</span><span class="si">{}</span><span class="s2">&quot;&gt; </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> &lt;/span&gt;&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ncolors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">color_col</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span> <span class="n">unq</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)])</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">markdown_html</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span><span class="n">auto_open</span><span class="o">=</span><span class="n">auto_open</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span></div>
+
+<span class="c1">#============================ Functions needed ========================</span>
+
+<div class="viewcode-block" id="rgb2hex"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.rgb2hex">[docs]</a><span class="k">def</span> <span class="nf">rgb2hex</span><span class="p">(</span><span class="n">color</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts a list or tuple of  an RGB values to HEX string.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    color: list</span>
+<span class="sd">        the list or tuple of integers (e.g. (127, 127, 127))</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str:  the rgb string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;#</span><span class="si">{</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">))[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">:</span><span class="s1">0&gt;2</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">color</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+<div class="viewcode-block" id="hex_to_rgb"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.hex_to_rgb">[docs]</a><span class="k">def</span> <span class="nf">hex_to_rgb</span><span class="p">(</span><span class="n">h</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert hexadecimal color codes to rgb</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    h: str</span>
+<span class="sd">        Hex string to convert to rgb.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        h = &#39;#D8BFD8&#39;</span>
+<span class="sd">        rgb = &#39;rgb(216, 191, 216)&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">)</span>
+    <span class="n">rgb</span> <span class="o">=</span> <span class="s1">&#39;rgb&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">rgb</span></div>
+
+<div class="viewcode-block" id="get_distinct_colors"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_plotly.get_distinct_colors">[docs]</a><span class="k">def</span> <span class="nf">get_distinct_colors</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get distinct colors.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    key: str or int</span>
+<span class="sd">        String or integer to get the key. Look the example below for valid names.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+<span class="sd">        key is one of the integers: 10 20 30 40 50 75 100</span>
+<span class="sd">        key is one of the following strings:</span>
+
+<span class="sd">        &#39;reds&#39; &#39;greens&#39; &#39;blues&#39; &#39;grays&#39;&#39;yellows&#39;</span>
+<span class="sd">        &#39;colors10_names&#39; &#39;colors10_hex&#39;</span>
+<span class="sd">        &#39;colors20_names&#39; &#39;colors20_hex&#39;</span>
+<span class="sd">        &#39;colors30_names&#39; &#39;colors30_hex&#39;</span>
+<span class="sd">        &#39;colors40_names&#39; &#39;colors40_hex&#39;</span>
+<span class="sd">        &#39;colors50_names&#39; &#39;colors50_hex&#39;,</span>
+<span class="sd">        &#39;colors75_names&#39; &#39;colors75_hex&#39;</span>
+<span class="sd">        &#39;colors100_names&#39; &#39;colors100_hex&#39;</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">reds</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#D8BFD8&#39;</span><span class="p">,</span> <span class="s1">&#39;#FFC0CB&#39;</span><span class="p">,</span> <span class="s1">&#39;#FA8072&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;#D2691E&#39;</span><span class="p">,</span> <span class="s1">&#39;#BC8F8F&#39;</span><span class="p">,</span> <span class="s1">&#39;#A52A2A&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;#FF69B4&#39;</span><span class="p">,</span> <span class="s1">&#39;#EE82EE&#39;</span><span class="p">,</span> <span class="s1">&#39;#FF1493&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;#FF00FF&#39;</span><span class="p">,</span> <span class="s1">&#39;#DC143C&#39;</span><span class="p">,</span> <span class="s1">&#39;#FF0000&#39;</span><span class="p">]</span>
+
+    <span class="n">greens</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#32CD32&#39;</span><span class="p">,</span> <span class="s1">&#39;#006400&#39;</span><span class="p">,</span> <span class="s1">&#39;#66CDAA&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;#20B2AA&#39;</span><span class="p">,</span> <span class="s1">&#39;#9ACD32&#39;</span><span class="p">,</span> <span class="s1">&#39;#6B8E23&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;#808000&#39;</span><span class="p">,</span> <span class="s1">&#39;#7CFC00&#39;</span><span class="p">,</span> <span class="s1">&#39;#90EE90&#39;</span><span class="p">,</span> <span class="s1">&#39;#8FBC8F&#39;</span><span class="p">]</span>
+
+    <span class="n">blues</span><span class="o">=</span>  <span class="p">[</span><span class="s1">&#39;#6495ED&#39;</span><span class="p">,</span> <span class="s1">&#39;#B0C4DE&#39;</span><span class="p">,</span> <span class="s1">&#39;#0000FF&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;#00008B&#39;</span><span class="p">,</span> <span class="s1">&#39;#6A5ACD&#39;</span><span class="p">,</span> <span class="s1">&#39;#800080&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;#663399&#39;</span><span class="p">,</span> <span class="s1">&#39;#8A2BE2&#39;</span><span class="p">,</span> <span class="s1">&#39;#DA70D6&#39;</span><span class="p">]</span>
+
+    <span class="n">grays</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#D3D3D3&#39;</span><span class="p">,</span> <span class="s1">&#39;#D8BFD8&#39;</span><span class="p">,</span> <span class="s1">&#39;#708090&#39;</span><span class="p">,</span> <span class="s1">&#39;#000000&#39;</span><span class="p">]</span>
+
+    <span class="n">yellows</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#D2B48C&#39;</span><span class="p">,</span> <span class="s1">&#39;#FFD700&#39;</span><span class="p">,</span> <span class="s1">&#39;#DAA520&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;#B8860B&#39;</span><span class="p">,</span> <span class="s1">&#39;#BDB76B&#39;</span><span class="p">,</span> <span class="s1">&#39;#FFFF00&#39;</span><span class="p">]</span>
+
+    <span class="n">colors10_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;darkgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;darkblue&#39;</span><span class="p">,</span> <span class="s1">&#39;maroon3&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="s1">&#39;lime&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;aqua&#39;</span><span class="p">,</span> <span class="s1">&#39;fuchsia&#39;</span><span class="p">,</span> <span class="s1">&#39;cornflower&#39;</span><span class="p">,</span> <span class="s1">&#39;navajowhite&#39;</span><span class="p">]</span>
+
+    <span class="n">colors10_hex</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#006400&#39;</span><span class="p">,</span> <span class="s1">&#39;#00008b&#39;</span><span class="p">,</span> <span class="s1">&#39;#b03060&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#ff0000&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffff00&#39;</span><span class="p">,</span> <span class="s1">&#39;#00ff00&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#00ffff&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff00ff&#39;</span><span class="p">,</span> <span class="s1">&#39;#6495ed&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffdead&#39;</span><span class="p">]</span>
+
+    <span class="n">colors20_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;darkslategray&#39;</span><span class="p">,</span> <span class="s1">&#39;maroon&#39;</span><span class="p">,</span> <span class="s1">&#39;darkgreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;navy&#39;</span><span class="p">,</span> <span class="s1">&#39;yellowgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;darkorange&#39;</span><span class="p">,</span> <span class="s1">&#39;gold&#39;</span><span class="p">,</span> <span class="s1">&#39;lime&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;mediumorchid&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumspringgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;aqua&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;fuchsia&#39;</span><span class="p">,</span> <span class="s1">&#39;dodgerblue&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;salmon&#39;</span><span class="p">,</span> <span class="s1">&#39;plum&#39;</span><span class="p">,</span> <span class="s1">&#39;deeppink&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;lightskyblue&#39;</span><span class="p">,</span> <span class="s1">&#39;bisque&#39;</span><span class="p">]</span>
+
+    <span class="n">colors20_hex</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#2f4f4f&#39;</span><span class="p">,</span> <span class="s1">&#39;#800000&#39;</span><span class="p">,</span> <span class="s1">&#39;#006400&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#000080&#39;</span><span class="p">,</span> <span class="s1">&#39;#9acd32&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff0000&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#ff8c00&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffd700&#39;</span><span class="p">,</span> <span class="s1">&#39;#00ff00&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#ba55d3&#39;</span><span class="p">,</span> <span class="s1">&#39;#00fa9a&#39;</span><span class="p">,</span> <span class="s1">&#39;#00ffff&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#0000ff&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff00ff&#39;</span><span class="p">,</span> <span class="s1">&#39;#1e90ff&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#fa8072&#39;</span><span class="p">,</span> <span class="s1">&#39;#dda0dd&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff1493&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#87cefa&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffe4c4&#39;</span><span class="p">]</span>
+
+    <span class="n">colors30_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;dimgray&#39;</span><span class="p">,</span> <span class="s1">&#39;lightgray&#39;</span><span class="p">,</span> <span class="s1">&#39;saddlebrown&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;forestgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;olive&#39;</span><span class="p">,</span> <span class="s1">&#39;darkslateblue&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;darkcyan&#39;</span><span class="p">,</span> <span class="s1">&#39;steelblue&#39;</span><span class="p">,</span> <span class="s1">&#39;navy&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;darkseagreen&#39;</span><span class="p">,</span> <span class="s1">&#39;darkmagenta&#39;</span><span class="p">,</span> <span class="s1">&#39;maroon3&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s1">&#39;darkorange&#39;</span><span class="p">,</span> <span class="s1">&#39;lime&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;darkviolet&#39;</span><span class="p">,</span> <span class="s1">&#39;springgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;crimson&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;aqua&#39;</span><span class="p">,</span> <span class="s1">&#39;sandybrown&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;lightcoral&#39;</span><span class="p">,</span> <span class="s1">&#39;greenyellow&#39;</span><span class="p">,</span> <span class="s1">&#39;dodgerblue&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;khaki&#39;</span><span class="p">,</span> <span class="s1">&#39;laserlemon&#39;</span><span class="p">,</span> <span class="s1">&#39;plum&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;lightgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;deeppink&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumslateblue&#39;</span><span class="p">]</span>
+
+    <span class="n">colors30_hex</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#696969&#39;</span><span class="p">,</span> <span class="s1">&#39;#d3d3d3&#39;</span><span class="p">,</span> <span class="s1">&#39;#8b4513&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#228b22&#39;</span><span class="p">,</span> <span class="s1">&#39;#808000&#39;</span><span class="p">,</span> <span class="s1">&#39;#483d8b&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#008b8b&#39;</span><span class="p">,</span> <span class="s1">&#39;#4682b4&#39;</span><span class="p">,</span> <span class="s1">&#39;#000080&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#8fbc8f&#39;</span><span class="p">,</span> <span class="s1">&#39;#8b008b&#39;</span><span class="p">,</span> <span class="s1">&#39;#b03060&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#ff4500&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff8c00&#39;</span><span class="p">,</span> <span class="s1">&#39;#00ff00&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#9400d3&#39;</span><span class="p">,</span> <span class="s1">&#39;#00ff7f&#39;</span><span class="p">,</span> <span class="s1">&#39;#dc143c&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#00ffff&#39;</span><span class="p">,</span> <span class="s1">&#39;#f4a460&#39;</span><span class="p">,</span> <span class="s1">&#39;#0000ff&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#f08080&#39;</span><span class="p">,</span> <span class="s1">&#39;#adff2f&#39;</span><span class="p">,</span> <span class="s1">&#39;#1e90ff&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#f0e68c&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffff54&#39;</span><span class="p">,</span> <span class="s1">&#39;#dda0dd&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#90ee90&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff1493&#39;</span><span class="p">,</span> <span class="s1">&#39;#7b68ee&#39;</span><span class="p">]</span>
+
+    <span class="n">colors40_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;darkgray&#39;</span><span class="p">,</span> <span class="s1">&#39;darkslategray&#39;</span><span class="p">,</span> <span class="s1">&#39;darkolivegreen&#39;</span><span class="p">,</span> <span class="s1">&#39;sienna&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;forestgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;maroon2&#39;</span><span class="p">,</span> <span class="s1">&#39;midnightblue&#39;</span><span class="p">,</span> <span class="s1">&#39;olive&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;darkcyan&#39;</span><span class="p">,</span> <span class="s1">&#39;steelblue&#39;</span><span class="p">,</span> <span class="s1">&#39;yellowgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;darkblue&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;limegreen&#39;</span><span class="p">,</span> <span class="s1">&#39;goldenrod&#39;</span><span class="p">,</span> <span class="s1">&#39;darkseagreen&#39;</span><span class="p">,</span> <span class="s1">&#39;purple&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s1">&#39;darkorange&#39;</span><span class="p">,</span> <span class="s1">&#39;gold&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumvioletred&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;lime&#39;</span><span class="p">,</span> <span class="s1">&#39;crimson&#39;</span><span class="p">,</span> <span class="s1">&#39;aqua&#39;</span><span class="p">,</span> <span class="s1">&#39;deepskyblue&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;sandybrown&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumpurple&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;purple3&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;greenyellow&#39;</span><span class="p">,</span> <span class="s1">&#39;fuchsia&#39;</span><span class="p">,</span> <span class="s1">&#39;dodgerblue&#39;</span><span class="p">,</span> <span class="s1">&#39;palevioletred&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;khaki&#39;</span><span class="p">,</span> <span class="s1">&#39;salmon&#39;</span><span class="p">,</span> <span class="s1">&#39;plum&#39;</span><span class="p">,</span> <span class="s1">&#39;paleturquoise&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;violet&#39;</span><span class="p">,</span> <span class="s1">&#39;palegreen&#39;</span><span class="p">,</span> <span class="s1">&#39;peachpuff&#39;</span><span class="p">,</span> <span class="s1">&#39;lightpink&#39;</span><span class="p">]</span>
+
+    <span class="n">colors40_hex</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#a9a9a9&#39;</span><span class="p">,</span> <span class="s1">&#39;#2f4f4f&#39;</span><span class="p">,</span> <span class="s1">&#39;#556b2f&#39;</span><span class="p">,</span> <span class="s1">&#39;#a0522d&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#228b22&#39;</span><span class="p">,</span> <span class="s1">&#39;#7f0000&#39;</span><span class="p">,</span> <span class="s1">&#39;#191970&#39;</span><span class="p">,</span> <span class="s1">&#39;#808000&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#008b8b&#39;</span><span class="p">,</span> <span class="s1">&#39;#4682b4&#39;</span><span class="p">,</span> <span class="s1">&#39;#9acd32&#39;</span><span class="p">,</span> <span class="s1">&#39;#00008b&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#32cd32&#39;</span><span class="p">,</span> <span class="s1">&#39;#daa520&#39;</span><span class="p">,</span> <span class="s1">&#39;#8fbc8f&#39;</span><span class="p">,</span> <span class="s1">&#39;#800080&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#ff4500&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff8c00&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffd700&#39;</span><span class="p">,</span> <span class="s1">&#39;#c71585&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#00ff00&#39;</span><span class="p">,</span> <span class="s1">&#39;#dc143c&#39;</span><span class="p">,</span> <span class="s1">&#39;#00ffff&#39;</span><span class="p">,</span> <span class="s1">&#39;#00bfff&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#f4a460&#39;</span><span class="p">,</span> <span class="s1">&#39;#9370db&#39;</span><span class="p">,</span> <span class="s1">&#39;#0000ff&#39;</span><span class="p">,</span> <span class="s1">&#39;#a020f0&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#adff2f&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff00ff&#39;</span><span class="p">,</span> <span class="s1">&#39;#1e90ff&#39;</span><span class="p">,</span> <span class="s1">&#39;#db7093&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#f0e68c&#39;</span><span class="p">,</span> <span class="s1">&#39;#fa8072&#39;</span><span class="p">,</span> <span class="s1">&#39;#dda0dd&#39;</span><span class="p">,</span> <span class="s1">&#39;#afeeee&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#ee82ee&#39;</span><span class="p">,</span> <span class="s1">&#39;#98fb98&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffdab9&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffb6c1&#39;</span><span class="p">]</span>
+
+    <span class="n">colors50_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;darkslategray&#39;</span><span class="p">,</span> <span class="s1">&#39;darkolivegreen&#39;</span><span class="p">,</span> <span class="s1">&#39;olivedrab&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;sienna&#39;</span><span class="p">,</span> <span class="s1">&#39;seagreen&#39;</span><span class="p">,</span> <span class="s1">&#39;forestgreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;maroon2&#39;</span><span class="p">,</span> <span class="s1">&#39;slategray&#39;</span><span class="p">,</span> <span class="s1">&#39;darkslateblue&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;rosybrown&#39;</span><span class="p">,</span> <span class="s1">&#39;teal&#39;</span><span class="p">,</span> <span class="s1">&#39;darkgoldenrod&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;darkkhaki&#39;</span><span class="p">,</span> <span class="s1">&#39;steelblue&#39;</span><span class="p">,</span> <span class="s1">&#39;navy&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;chocolate&#39;</span><span class="p">,</span> <span class="s1">&#39;yellowgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;indianred&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;limegreen&#39;</span><span class="p">,</span> <span class="s1">&#39;darkseagreen&#39;</span><span class="p">,</span> <span class="s1">&#39;darkmagenta&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;darkorchid&#39;</span><span class="p">,</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s1">&#39;orange&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;gold&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumblue&#39;</span><span class="p">,</span> <span class="s1">&#39;lime&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;mediumspringgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;royalblue&#39;</span><span class="p">,</span> <span class="s1">&#39;crimson&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;aqua&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;purple3&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;greenyellow&#39;</span><span class="p">,</span> <span class="s1">&#39;tomato&#39;</span><span class="p">,</span> <span class="s1">&#39;orchid&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;thistle&#39;</span><span class="p">,</span> <span class="s1">&#39;fuchsia&#39;</span><span class="p">,</span> <span class="s1">&#39;palevioletred&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;laserlemon&#39;</span><span class="p">,</span> <span class="s1">&#39;cornflower&#39;</span><span class="p">,</span> <span class="s1">&#39;plum&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;deeppink&#39;</span><span class="p">,</span> <span class="s1">&#39;lightsalmon&#39;</span><span class="p">,</span> <span class="s1">&#39;wheat&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;paleturquoise&#39;</span><span class="p">,</span> <span class="s1">&#39;palegreen&#39;</span><span class="p">,</span> <span class="s1">&#39;lightskyblue&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;aquamarine&#39;</span><span class="p">,</span> <span class="s1">&#39;hotpink&#39;</span><span class="p">]</span>
+
+    <span class="n">colors50_hex</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#2f4f4f&#39;</span><span class="p">,</span> <span class="s1">&#39;#556b2f&#39;</span><span class="p">,</span> <span class="s1">&#39;#6b8e23&#39;</span><span class="p">,</span> <span class="s1">&#39;#a0522d&#39;</span><span class="p">,</span> <span class="s1">&#39;#2e8b57&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#228b22&#39;</span><span class="p">,</span> <span class="s1">&#39;#7f0000&#39;</span><span class="p">,</span> <span class="s1">&#39;#708090&#39;</span><span class="p">,</span> <span class="s1">&#39;#483d8b&#39;</span><span class="p">,</span> <span class="s1">&#39;#bc8f8f&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#008080&#39;</span><span class="p">,</span> <span class="s1">&#39;#b8860b&#39;</span><span class="p">,</span> <span class="s1">&#39;#bdb76b&#39;</span><span class="p">,</span> <span class="s1">&#39;#4682b4&#39;</span><span class="p">,</span> <span class="s1">&#39;#000080&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#d2691e&#39;</span><span class="p">,</span> <span class="s1">&#39;#9acd32&#39;</span><span class="p">,</span> <span class="s1">&#39;#cd5c5c&#39;</span><span class="p">,</span> <span class="s1">&#39;#32cd32&#39;</span><span class="p">,</span> <span class="s1">&#39;#8fbc8f&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#8b008b&#39;</span><span class="p">,</span> <span class="s1">&#39;#9932cc&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff4500&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffa500&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffd700&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#0000cd&#39;</span><span class="p">,</span> <span class="s1">&#39;#00ff00&#39;</span><span class="p">,</span> <span class="s1">&#39;#00fa9a&#39;</span><span class="p">,</span> <span class="s1">&#39;#4169e1&#39;</span><span class="p">,</span> <span class="s1">&#39;#dc143c&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#00ffff&#39;</span><span class="p">,</span> <span class="s1">&#39;#0000ff&#39;</span><span class="p">,</span> <span class="s1">&#39;#a020f0&#39;</span><span class="p">,</span> <span class="s1">&#39;#adff2f&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff6347&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#da70d6&#39;</span><span class="p">,</span> <span class="s1">&#39;#d8bfd8&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff00ff&#39;</span><span class="p">,</span> <span class="s1">&#39;#db7093&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffff54&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#6495ed&#39;</span><span class="p">,</span> <span class="s1">&#39;#dda0dd&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff1493&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffa07a&#39;</span><span class="p">,</span> <span class="s1">&#39;#f5deb3&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#afeeee&#39;</span><span class="p">,</span> <span class="s1">&#39;#98fb98&#39;</span><span class="p">,</span> <span class="s1">&#39;#87cefa&#39;</span><span class="p">,</span> <span class="s1">&#39;#7fffd4&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff69b4&#39;</span><span class="p">]</span>
+
+    <span class="n">colors75_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;dimgray&#39;</span><span class="p">,</span> <span class="s1">&#39;darkgray&#39;</span><span class="p">,</span> <span class="s1">&#39;gainsboro&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;darkslategray&#39;</span><span class="p">,</span> <span class="s1">&#39;darkolivegreen&#39;</span><span class="p">,</span> <span class="s1">&#39;saddlebrown&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;olivedrab&#39;</span><span class="p">,</span> <span class="s1">&#39;seagreen&#39;</span><span class="p">,</span> <span class="s1">&#39;forestgreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;maroon2&#39;</span><span class="p">,</span> <span class="s1">&#39;midnightblue&#39;</span><span class="p">,</span> <span class="s1">&#39;darkgreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;olive&#39;</span><span class="p">,</span> <span class="s1">&#39;darkslateblue&#39;</span><span class="p">,</span> <span class="s1">&#39;firebrick&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;cadetblue&#39;</span><span class="p">,</span> <span class="s1">&#39;lightslategray&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumseagreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;rosybrown&#39;</span><span class="p">,</span> <span class="s1">&#39;rebeccapurple&#39;</span><span class="p">,</span> <span class="s1">&#39;teal&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;darkgoldenrod&#39;</span><span class="p">,</span> <span class="s1">&#39;darkkhaki&#39;</span><span class="p">,</span> <span class="s1">&#39;peru&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;steelblue&#39;</span><span class="p">,</span> <span class="s1">&#39;chocolate&#39;</span><span class="p">,</span> <span class="s1">&#39;yellowgreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;darkblue&#39;</span><span class="p">,</span> <span class="s1">&#39;indigo&#39;</span><span class="p">,</span> <span class="s1">&#39;limegreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;purple2&#39;</span><span class="p">,</span> <span class="s1">&#39;darkseagreen&#39;</span><span class="p">,</span> <span class="s1">&#39;maroon3&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;mediumturquoise&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumaquamarine&#39;</span><span class="p">,</span> <span class="s1">&#39;darkorchid&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="s1">&#39;gold&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumvioletred&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumblue&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;lawngreen&#39;</span><span class="p">,</span> <span class="s1">&#39;burlywood&#39;</span><span class="p">,</span> <span class="s1">&#39;lime&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;mediumorchid&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumspringgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;springgreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;crimson&#39;</span><span class="p">,</span> <span class="s1">&#39;aqua&#39;</span><span class="p">,</span> <span class="s1">&#39;deepskyblue&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;mediumpurple&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;purple3&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;lightcoral&#39;</span><span class="p">,</span> <span class="s1">&#39;greenyellow&#39;</span><span class="p">,</span> <span class="s1">&#39;lightsteelblue&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;coral&#39;</span><span class="p">,</span> <span class="s1">&#39;fuchsia&#39;</span><span class="p">,</span> <span class="s1">&#39;palevioletred&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;khaki&#39;</span><span class="p">,</span> <span class="s1">&#39;laserlemon&#39;</span><span class="p">,</span> <span class="s1">&#39;cornflower&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;plum&#39;</span><span class="p">,</span> <span class="s1">&#39;powderblue&#39;</span><span class="p">,</span> <span class="s1">&#39;lightgreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;deeppink&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumslateblue&#39;</span><span class="p">,</span> <span class="s1">&#39;lightsalmon&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;violet&#39;</span><span class="p">,</span> <span class="s1">&#39;lightskyblue&#39;</span><span class="p">,</span> <span class="s1">&#39;aquamarine&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;hotpink&#39;</span><span class="p">,</span> <span class="s1">&#39;bisque&#39;</span><span class="p">,</span> <span class="s1">&#39;pink&#39;</span><span class="p">]</span>
+
+    <span class="n">colors75_hex</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#696969&#39;</span><span class="p">,</span> <span class="s1">&#39;#a9a9a9&#39;</span><span class="p">,</span> <span class="s1">&#39;#dcdcdc&#39;</span><span class="p">,</span> <span class="s1">&#39;#2f4f4f&#39;</span><span class="p">,</span> <span class="s1">&#39;#556b2f&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#8b4513&#39;</span><span class="p">,</span> <span class="s1">&#39;#6b8e23&#39;</span><span class="p">,</span> <span class="s1">&#39;#2e8b57&#39;</span><span class="p">,</span> <span class="s1">&#39;#228b22&#39;</span><span class="p">,</span> <span class="s1">&#39;#7f0000&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#191970&#39;</span><span class="p">,</span> <span class="s1">&#39;#006400&#39;</span><span class="p">,</span> <span class="s1">&#39;#808000&#39;</span><span class="p">,</span> <span class="s1">&#39;#483d8b&#39;</span><span class="p">,</span> <span class="s1">&#39;#b22222&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#5f9ea0&#39;</span><span class="p">,</span> <span class="s1">&#39;#778899&#39;</span><span class="p">,</span> <span class="s1">&#39;#3cb371&#39;</span><span class="p">,</span> <span class="s1">&#39;#bc8f8f&#39;</span><span class="p">,</span> <span class="s1">&#39;#663399&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#008080&#39;</span><span class="p">,</span> <span class="s1">&#39;#b8860b&#39;</span><span class="p">,</span> <span class="s1">&#39;#bdb76b&#39;</span><span class="p">,</span> <span class="s1">&#39;#cd853f&#39;</span><span class="p">,</span> <span class="s1">&#39;#4682b4&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#d2691e&#39;</span><span class="p">,</span> <span class="s1">&#39;#9acd32&#39;</span><span class="p">,</span> <span class="s1">&#39;#00008b&#39;</span><span class="p">,</span> <span class="s1">&#39;#4b0082&#39;</span><span class="p">,</span> <span class="s1">&#39;#32cd32&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#7f007f&#39;</span><span class="p">,</span> <span class="s1">&#39;#8fbc8f&#39;</span><span class="p">,</span> <span class="s1">&#39;#b03060&#39;</span><span class="p">,</span> <span class="s1">&#39;#48d1cc&#39;</span><span class="p">,</span> <span class="s1">&#39;#66cdaa&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#9932cc&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff4500&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffa500&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffd700&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffff00&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#c71585&#39;</span><span class="p">,</span> <span class="s1">&#39;#0000cd&#39;</span><span class="p">,</span> <span class="s1">&#39;#7cfc00&#39;</span><span class="p">,</span> <span class="s1">&#39;#deb887&#39;</span><span class="p">,</span> <span class="s1">&#39;#00ff00&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#ba55d3&#39;</span><span class="p">,</span> <span class="s1">&#39;#00fa9a&#39;</span><span class="p">,</span> <span class="s1">&#39;#00ff7f&#39;</span><span class="p">,</span> <span class="s1">&#39;#dc143c&#39;</span><span class="p">,</span> <span class="s1">&#39;#00ffff&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#00bfff&#39;</span><span class="p">,</span> <span class="s1">&#39;#9370db&#39;</span><span class="p">,</span> <span class="s1">&#39;#0000ff&#39;</span><span class="p">,</span> <span class="s1">&#39;#a020f0&#39;</span><span class="p">,</span> <span class="s1">&#39;#f08080&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#adff2f&#39;</span><span class="p">,</span> <span class="s1">&#39;#b0c4de&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff7f50&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff00ff&#39;</span><span class="p">,</span> <span class="s1">&#39;#db7093&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#f0e68c&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffff54&#39;</span><span class="p">,</span> <span class="s1">&#39;#6495ed&#39;</span><span class="p">,</span> <span class="s1">&#39;#dda0dd&#39;</span><span class="p">,</span> <span class="s1">&#39;#b0e0e6&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#90ee90&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff1493&#39;</span><span class="p">,</span> <span class="s1">&#39;#7b68ee&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffa07a&#39;</span><span class="p">,</span> <span class="s1">&#39;#ee82ee&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#87cefa&#39;</span><span class="p">,</span> <span class="s1">&#39;#7fffd4&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff69b4&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffe4c4&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffc0cb&#39;</span><span class="p">]</span>
+
+    <span class="n">colors100_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;dimgray&#39;</span><span class="p">,</span> <span class="s1">&#39;darkgray&#39;</span><span class="p">,</span> <span class="s1">&#39;gainsboro&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;darkslategray&#39;</span><span class="p">,</span> <span class="s1">&#39;darkolivegreen&#39;</span><span class="p">,</span> <span class="s1">&#39;saddlebrown&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;olivedrab&#39;</span><span class="p">,</span> <span class="s1">&#39;seagreen&#39;</span><span class="p">,</span> <span class="s1">&#39;forestgreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;maroon2&#39;</span><span class="p">,</span> <span class="s1">&#39;midnightblue&#39;</span><span class="p">,</span> <span class="s1">&#39;darkgreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;olive&#39;</span><span class="p">,</span> <span class="s1">&#39;darkslateblue&#39;</span><span class="p">,</span> <span class="s1">&#39;firebrick&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;cadetblue&#39;</span><span class="p">,</span> <span class="s1">&#39;lightslategray&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumseagreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;rosybrown&#39;</span><span class="p">,</span> <span class="s1">&#39;rebeccapurple&#39;</span><span class="p">,</span> <span class="s1">&#39;teal&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;darkgoldenrod&#39;</span><span class="p">,</span> <span class="s1">&#39;darkkhaki&#39;</span><span class="p">,</span> <span class="s1">&#39;peru&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;steelblue&#39;</span><span class="p">,</span> <span class="s1">&#39;chocolate&#39;</span><span class="p">,</span> <span class="s1">&#39;yellowgreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;indianred&#39;</span><span class="p">,</span> <span class="s1">&#39;darkblue&#39;</span><span class="p">,</span> <span class="s1">&#39;indigo&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;limegreen&#39;</span><span class="p">,</span> <span class="s1">&#39;purple2&#39;</span><span class="p">,</span> <span class="s1">&#39;darkseagreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;maroon3&#39;</span><span class="p">,</span> <span class="s1">&#39;tan&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumaquamarine&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;darkorchid&#39;</span><span class="p">,</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s1">&#39;darkturquoise&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="s1">&#39;gold&#39;</span><span class="p">,</span> <span class="s1">&#39;yellow&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;mediumvioletred&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumblue&#39;</span><span class="p">,</span> <span class="s1">&#39;chartreuse&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;lime&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumorchid&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumspringgreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;springgreen&#39;</span><span class="p">,</span> <span class="s1">&#39;royalblue&#39;</span><span class="p">,</span> <span class="s1">&#39;crimson&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;aqua&#39;</span><span class="p">,</span> <span class="s1">&#39;deepskyblue&#39;</span><span class="p">,</span> <span class="s1">&#39;mediumpurple&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;purple3&#39;</span><span class="p">,</span> <span class="s1">&#39;greenyellow&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;thistle&#39;</span><span class="p">,</span> <span class="s1">&#39;coral&#39;</span><span class="p">,</span> <span class="s1">&#39;fuchsia&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;palevioletred&#39;</span><span class="p">,</span> <span class="s1">&#39;palegoldenrod&#39;</span><span class="p">,</span> <span class="s1">&#39;laserlemon&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;cornflower&#39;</span><span class="p">,</span> <span class="s1">&#39;plum&#39;</span><span class="p">,</span> <span class="s1">&#39;lightgreen&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;lightblue&#39;</span><span class="p">,</span> <span class="s1">&#39;deeppink&#39;</span><span class="p">,</span> <span class="s1">&#39;lightsalmon&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;violet&#39;</span><span class="p">,</span> <span class="s1">&#39;lightskyblue&#39;</span><span class="p">,</span> <span class="s1">&#39;aquamarine&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;hotpink&#39;</span><span class="p">,</span> <span class="s1">&#39;bisque&#39;</span><span class="p">,</span> <span class="s1">&#39;pink&#39;</span><span class="p">]</span>
+
+    <span class="n">colors100_hex</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#696969&#39;</span><span class="p">,</span> <span class="s1">&#39;#a9a9a9&#39;</span><span class="p">,</span> <span class="s1">&#39;#dcdcdc&#39;</span><span class="p">,</span> <span class="s1">&#39;#2f4f4f&#39;</span><span class="p">,</span> <span class="s1">&#39;#556b2f&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#8b4513&#39;</span><span class="p">,</span> <span class="s1">&#39;#6b8e23&#39;</span><span class="p">,</span> <span class="s1">&#39;#2e8b57&#39;</span><span class="p">,</span> <span class="s1">&#39;#228b22&#39;</span><span class="p">,</span> <span class="s1">&#39;#7f0000&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#191970&#39;</span><span class="p">,</span> <span class="s1">&#39;#006400&#39;</span><span class="p">,</span> <span class="s1">&#39;#808000&#39;</span><span class="p">,</span> <span class="s1">&#39;#483d8b&#39;</span><span class="p">,</span> <span class="s1">&#39;#b22222&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#5f9ea0&#39;</span><span class="p">,</span> <span class="s1">&#39;#778899&#39;</span><span class="p">,</span> <span class="s1">&#39;#3cb371&#39;</span><span class="p">,</span> <span class="s1">&#39;#bc8f8f&#39;</span><span class="p">,</span> <span class="s1">&#39;#663399&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#008080&#39;</span><span class="p">,</span> <span class="s1">&#39;#b8860b&#39;</span><span class="p">,</span> <span class="s1">&#39;#bdb76b&#39;</span><span class="p">,</span> <span class="s1">&#39;#cd853f&#39;</span><span class="p">,</span> <span class="s1">&#39;#4682b4&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#d2691e&#39;</span><span class="p">,</span> <span class="s1">&#39;#9acd32&#39;</span><span class="p">,</span> <span class="s1">&#39;#cd5c5c&#39;</span><span class="p">,</span> <span class="s1">&#39;#00008b&#39;</span><span class="p">,</span> <span class="s1">&#39;#4b0082&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#32cd32&#39;</span><span class="p">,</span> <span class="s1">&#39;#7f007f&#39;</span><span class="p">,</span> <span class="s1">&#39;#8fbc8f&#39;</span><span class="p">,</span> <span class="s1">&#39;#b03060&#39;</span><span class="p">,</span> <span class="s1">&#39;#d2b48c&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#66cdaa&#39;</span><span class="p">,</span> <span class="s1">&#39;#9932cc&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff4500&#39;</span><span class="p">,</span> <span class="s1">&#39;#00ced1&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffa500&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#ffd700&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffff00&#39;</span><span class="p">,</span> <span class="s1">&#39;#c71585&#39;</span><span class="p">,</span> <span class="s1">&#39;#0000cd&#39;</span><span class="p">,</span> <span class="s1">&#39;#7fff00&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#00ff00&#39;</span><span class="p">,</span> <span class="s1">&#39;#ba55d3&#39;</span><span class="p">,</span> <span class="s1">&#39;#00fa9a&#39;</span><span class="p">,</span> <span class="s1">&#39;#00ff7f&#39;</span><span class="p">,</span> <span class="s1">&#39;#4169e1&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#dc143c&#39;</span><span class="p">,</span> <span class="s1">&#39;#00ffff&#39;</span><span class="p">,</span> <span class="s1">&#39;#00bfff&#39;</span><span class="p">,</span> <span class="s1">&#39;#9370db&#39;</span><span class="p">,</span> <span class="s1">&#39;#0000ff&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#a020f0&#39;</span><span class="p">,</span> <span class="s1">&#39;#adff2f&#39;</span><span class="p">,</span> <span class="s1">&#39;#d8bfd8&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff7f50&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff00ff&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#db7093&#39;</span><span class="p">,</span> <span class="s1">&#39;#eee8aa&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffff54&#39;</span><span class="p">,</span> <span class="s1">&#39;#6495ed&#39;</span><span class="p">,</span> <span class="s1">&#39;#dda0dd&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#90ee90&#39;</span><span class="p">,</span> <span class="s1">&#39;#add8e6&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff1493&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffa07a&#39;</span><span class="p">,</span> <span class="s1">&#39;#ee82ee&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;#87cefa&#39;</span><span class="p">,</span> <span class="s1">&#39;#7fffd4&#39;</span><span class="p">,</span> <span class="s1">&#39;#ff69b4&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffe4c4&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffc0cb&#39;</span><span class="p">]</span>
+
+    <span class="n">colors_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;reds&#39;</span><span class="p">:</span> <span class="n">reds</span><span class="p">,</span>
+                <span class="s1">&#39;greens&#39;</span><span class="p">:</span> <span class="n">greens</span><span class="p">,</span>
+                <span class="s1">&#39;blues&#39;</span><span class="p">:</span> <span class="n">blues</span><span class="p">,</span>
+                <span class="s1">&#39;grays&#39;</span><span class="p">:</span> <span class="n">grays</span><span class="p">,</span>
+                <span class="s1">&#39;yellows&#39;</span><span class="p">:</span> <span class="n">yellows</span><span class="p">,</span>
+                <span class="s1">&#39;colors10_names&#39;</span><span class="p">:</span> <span class="n">colors10_names</span><span class="p">,</span>
+                <span class="s1">&#39;colors10_hex&#39;</span><span class="p">:</span> <span class="n">colors10_hex</span><span class="p">,</span>
+                <span class="s1">&#39;colors20_names&#39;</span><span class="p">:</span> <span class="n">colors20_names</span><span class="p">,</span>
+                <span class="s1">&#39;colors20_hex&#39;</span><span class="p">:</span> <span class="n">colors20_hex</span><span class="p">,</span>
+                <span class="s1">&#39;colors30_names&#39;</span><span class="p">:</span> <span class="n">colors30_names</span><span class="p">,</span>
+                <span class="s1">&#39;colors30_hex&#39;</span><span class="p">:</span> <span class="n">colors30_hex</span><span class="p">,</span>
+                <span class="s1">&#39;colors40_names&#39;</span><span class="p">:</span> <span class="n">colors40_names</span><span class="p">,</span>
+                <span class="s1">&#39;colors40_hex&#39;</span><span class="p">:</span> <span class="n">colors40_hex</span><span class="p">,</span>
+                <span class="s1">&#39;colors50_names&#39;</span><span class="p">:</span> <span class="n">colors50_names</span><span class="p">,</span>
+                <span class="s1">&#39;colors50_hex&#39;</span> <span class="p">:</span> <span class="n">colors50_hex</span><span class="p">,</span>
+                <span class="s1">&#39;colors75_names&#39;</span><span class="p">:</span> <span class="n">colors75_names</span><span class="p">,</span>
+                <span class="s1">&#39;colors75_hex&#39;</span><span class="p">:</span> <span class="n">colors75_hex</span><span class="p">,</span>
+                <span class="s1">&#39;colors100_names&#39;</span><span class="p">:</span> <span class="n">colors100_names</span><span class="p">,</span>
+                <span class="s1">&#39;colors100_hex&#39;</span><span class="p">:</span> <span class="n">colors100_hex</span><span class="p">,</span>
+                <span class="mi">10</span><span class="p">:</span> <span class="n">colors10_hex</span><span class="p">,</span>
+                <span class="mi">20</span><span class="p">:</span> <span class="n">colors20_hex</span><span class="p">,</span>
+                <span class="mi">30</span><span class="p">:</span> <span class="n">colors30_hex</span><span class="p">,</span>
+                <span class="mi">40</span><span class="p">:</span> <span class="n">colors40_hex</span><span class="p">,</span>
+                <span class="mi">50</span><span class="p">:</span> <span class="n">colors50_hex</span><span class="p">,</span>
+                <span class="mi">75</span><span class="p">:</span> <span class="n">colors75_hex</span><span class="p">,</span>
+                <span class="mi">100</span><span class="p">:</span> <span class="n">colors100_hex</span><span class="p">,</span>
+                <span class="p">}</span>
+    <span class="k">return</span> <span class="n">colors_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Bhishan 1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Bhishan Poudel.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.4.
+    </div>
+  </body>
+</html>

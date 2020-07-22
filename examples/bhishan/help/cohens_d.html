@@ -1,0 +1,70 @@
+<div class="alert alert-block alert-info">
+	<div align="center">
+		<h3> Cohen's D </h3>
+	</div>
+
+	<a href="https://www.statisticshowto.com/cohens-d/">Cohen’s D: Definition, Examples, Formulas</a><br><br>
+
+	Formula:
+	d = (m1 - m2) / s_pooled <br>
+	s_pooled = sqrt((s1**2 + s2**2)/2) <br><br>
+	s_pooled for unequal samples is given by: <br><br>
+
+	    &emsp; &emsp;&emsp;  (n1-1) s1^2 +   (n2-1) s2^2 <br>
+	sqrt ---------------------------------<br>
+	    &emsp;&emsp;&emsp;&emsp;     n1+n2-2 <br><br>
+
+	For small samples, we can use this formula:
+	d = d * factor <br>
+	factor is given by <br><br>
+	N-3 <br>
+	------- sqrt [ (N-2) / N ] <br>
+	N-2.25 <br><br>
+
+	Rule of Thumb<br>
+
+
+	<table class="wikitable">
+		<tbody><tr>
+		<th><i>Effect size</i></th>
+		<th><i>d</i></th>
+		<th>Reference
+		</th></tr>
+		<tr>
+		<td>Very small</td>
+		<td align="left">0.01</td>
+		<td>Sawilowsky, 2009
+		</td></tr>
+		<tr>
+		<td>Small</td>
+		<td align="left">0.20</td>
+		<td>Cohen, 1988
+		</td></tr>
+		<tr>
+		<td>Medium</td>
+		<td align="left">0.50</td>
+		<td>Cohen, 1988
+		</td></tr>
+		<tr>
+		<td>Large</td>
+		<td align="left">0.80</td>
+		<td>Cohen, 1988
+		</td></tr>
+		<tr>
+		<td>Very large</td>
+		<td align="left">1.20</td>
+		<td>Sawilowsky, 2009
+		</td></tr>
+		<tr>
+		<td>Huge</td>
+		<td align="left">2.0</td>
+		<td>Sawilowsky, 2009
+		</td></tr>
+		</tbody></table>
+
+	“Small” effects are difficult to see with the naked eye. For example, Cohen reported that the height difference between 15-year-old and 16-year-old girls in the US is about this effect size. “Medium” is probably big enough to be discerned with the naked eye, while effects that are “large” can definitely be seen with the naked eye (Cohen calls this “grossly perceptible and therefore large”). For example, the difference in heights between 13-year-old and 18-year-old girls is 0.8. An effect under 0.2 can be considered trivial, even if your results are statistically significant.<br><br>
+
+	Bear in mind that a “large” effect isn’t necessarily better than a “small” effect, especially in settings where small differences can have a major impact. For example, an increase in academic scores or health grades by an effect size of just 0.1 can be very significant in the real world. Durlak (2009) suggests referring to prior research in order to get an idea of where your findings fit into the bigger context.<br><br>
+
+	Cohen's d is frequently used in estimating sample sizes for statistical testing. A lower Cohen's d indicates the necessity of larger sample sizes, and vice versa, as can subsequently be determined together with the additional parameters of desired significance level and statistical power.
+</div>

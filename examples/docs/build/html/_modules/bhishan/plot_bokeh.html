@@ -1,0 +1,602 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>bhishan.plot_bokeh &#8212; Bhishan 1 documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Bhishan 1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for bhishan.plot_bokeh</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+
+<span class="kn">import</span> <span class="nn">bokeh</span>
+<span class="kn">from</span> <span class="nn">bokeh.io</span> <span class="kn">import</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">output_notebook</span><span class="p">,</span> <span class="n">save</span>
+<span class="kn">from</span> <span class="nn">bokeh.plotting</span> <span class="kn">import</span> <span class="n">figure</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">reset_output</span>
+<span class="kn">from</span> <span class="nn">bokeh.models</span> <span class="kn">import</span> <span class="n">ColumnDataSource</span>
+<span class="kn">from</span> <span class="nn">bokeh.layouts</span> <span class="kn">import</span> <span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">gridplot</span>
+<span class="kn">from</span> <span class="nn">bokeh.models.widgets</span> <span class="kn">import</span> <span class="n">Tabs</span><span class="p">,</span> <span class="n">Panel</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Bhishan Poudel&#39;</span>
+
+<span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">To stop auto opening of new tab with html in jupyte notebook, we can use</span>
+<span class="s2">following two lines in each cell of jupyter notebook:</span>
+
+<span class="s2">.. code-block:: python</span>
+
+<span class="s2">    import bokeh</span>
+<span class="s2">    bokeh.io.reset_output()</span>
+<span class="s2">    bokeh.io.output_notebook()</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+
+<span class="n">reds</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#D8BFD8&#39;</span><span class="p">,</span> <span class="s1">&#39;#FFC0CB&#39;</span><span class="p">,</span> <span class="s1">&#39;#FA8072&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;#D2691E&#39;</span><span class="p">,</span> <span class="s1">&#39;#BC8F8F&#39;</span><span class="p">,</span> <span class="s1">&#39;#A52A2A&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;#FF69B4&#39;</span><span class="p">,</span> <span class="s1">&#39;#EE82EE&#39;</span><span class="p">,</span> <span class="s1">&#39;#FF1493&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;#FF00FF&#39;</span><span class="p">,</span> <span class="s1">&#39;#DC143C&#39;</span><span class="p">,</span> <span class="s1">&#39;#FF0000&#39;</span><span class="p">]</span>
+
+<span class="n">greens</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#32CD32&#39;</span><span class="p">,</span> <span class="s1">&#39;#006400&#39;</span><span class="p">,</span> <span class="s1">&#39;#66CDAA&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;#20B2AA&#39;</span><span class="p">,</span> <span class="s1">&#39;#9ACD32&#39;</span><span class="p">,</span> <span class="s1">&#39;#6B8E23&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;#808000&#39;</span><span class="p">,</span> <span class="s1">&#39;#7CFC00&#39;</span><span class="p">,</span> <span class="s1">&#39;#90EE90&#39;</span><span class="p">,</span> <span class="s1">&#39;#8FBC8F&#39;</span><span class="p">]</span>
+
+<span class="n">blues</span><span class="o">=</span>  <span class="p">[</span><span class="s1">&#39;#6495ED&#39;</span><span class="p">,</span> <span class="s1">&#39;#B0C4DE&#39;</span><span class="p">,</span> <span class="s1">&#39;#0000FF&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;#00008B&#39;</span><span class="p">,</span> <span class="s1">&#39;#6A5ACD&#39;</span><span class="p">,</span> <span class="s1">&#39;#800080&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;#663399&#39;</span><span class="p">,</span> <span class="s1">&#39;#8A2BE2&#39;</span><span class="p">,</span> <span class="s1">&#39;#DA70D6&#39;</span><span class="p">]</span>
+
+<span class="n">grays</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#D3D3D3&#39;</span><span class="p">,</span> <span class="s1">&#39;#D8BFD8&#39;</span><span class="p">,</span> <span class="s1">&#39;#708090&#39;</span><span class="p">,</span> <span class="s1">&#39;#000000&#39;</span><span class="p">]</span>
+
+<span class="n">yellows</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#D2B48C&#39;</span><span class="p">,</span> <span class="s1">&#39;#FFD700&#39;</span><span class="p">,</span> <span class="s1">&#39;#DAA520&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;#B8860B&#39;</span><span class="p">,</span> <span class="s1">&#39;#BDB76B&#39;</span><span class="p">,</span> <span class="s1">&#39;#FFFF00&#39;</span><span class="p">]</span>
+
+<span class="n">colors</span> <span class="o">=</span> <span class="n">reds</span> <span class="o">+</span> <span class="n">greens</span> <span class="o">+</span> <span class="n">blues</span> <span class="o">+</span> <span class="n">grays</span> <span class="o">+</span> <span class="n">yellows</span>
+<span class="n">colors</span> <span class="o">=</span> <span class="n">colors</span> <span class="o">*</span> <span class="mi">100</span>
+
+
+<span class="c1">#===============================================================================</span>
+<span class="c1"># Scatterplot</span>
+<span class="c1">#===============================================================================</span>
+<div class="viewcode-block" id="scatterplot_bokeh"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_bokeh.scatterplot_bokeh">[docs]</a><span class="k">def</span> <span class="nf">scatterplot_bokeh</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">xcol</span><span class="p">,</span><span class="n">ycol</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">xaxis_type</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span><span class="n">yaxis_type</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span>
+        <span class="n">xrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">yrange</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">height</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#000000&#39;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Scatterplot using bokeh.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input dataframe.</span>
+<span class="sd">    xcol: str</span>
+<span class="sd">        x column name.</span>
+<span class="sd">    ycol: str</span>
+<span class="sd">        y column name.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">       Name of output html.</span>
+<span class="sd">    xaxis_type: str</span>
+<span class="sd">        Type of xaxis. e.g. linear, log.</span>
+<span class="sd">    yaxis_type: str</span>
+<span class="sd">        Type of yaxis. Eg. linear, log.</span>
+<span class="sd">    xrange: list</span>
+<span class="sd">       X axis limit.</span>
+<span class="sd">    yrange: list</span>
+<span class="sd">        Y axis limit.</span>
+<span class="sd">    height: int</span>
+<span class="sd">        Height of the image.</span>
+<span class="sd">    width: int</span>
+<span class="sd">        Width of the image.</span>
+<span class="sd">    color: str</span>
+<span class="sd">        Name of color. e.g hexstrings.</span>
+<span class="sd">    size: int</span>
+<span class="sd">       Size of the scatter dots.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># if ofile write html and open new tab.</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">output_file</span><span class="p">(</span><span class="n">ofile</span><span class="p">)</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mi">800</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">800</span>
+
+    <span class="c1"># when ofile is None, do not open new tab.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ofile</span><span class="p">:</span>
+            <span class="n">bokeh</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">reset_output</span><span class="p">()</span>
+            <span class="n">bokeh</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_notebook</span><span class="p">()</span>
+
+    <span class="n">source</span> <span class="o">=</span> <span class="n">ColumnDataSource</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> vs. </span><span class="si">{}</span><span class="s2"> Scatterplot&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span> <span class="n">ycol</span><span class="o">.</span><span class="n">title</span><span class="p">()),</span>
+              <span class="n">x_axis_label</span><span class="o">=</span><span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
+              <span class="n">y_axis_label</span><span class="o">=</span><span class="n">ycol</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
+              <span class="n">plot_height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+              <span class="n">plot_width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+              <span class="n">x_axis_location</span><span class="o">=</span><span class="s1">&#39;below&#39;</span><span class="p">,</span>
+              <span class="n">x_axis_type</span><span class="o">=</span><span class="n">xaxis_type</span><span class="p">,</span>
+              <span class="n">y_axis_type</span><span class="o">=</span><span class="n">yaxis_type</span><span class="p">,</span>
+              <span class="n">x_range</span><span class="o">=</span><span class="n">xrange</span><span class="p">,</span>
+              <span class="n">y_range</span><span class="o">=</span><span class="n">yrange</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">xcol</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">ycol</span><span class="p">,</span> <span class="n">line_color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="n">show</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></div>
+
+<span class="c1">#===============================================================================</span>
+<span class="c1"># Count plot</span>
+<span class="c1">#===============================================================================</span>
+<div class="viewcode-block" id="countplot_bokeh"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_bokeh.countplot_bokeh">[docs]</a><span class="k">def</span> <span class="nf">countplot_bokeh</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">cat</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">height</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">400</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Count plot of categorical feature using bokeh.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+
+<span class="sd">    cat: str</span>
+<span class="sd">        categorical column name.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    If the figure is not displayed use following:</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import bokeh</span>
+<span class="sd">        bokeh.io.reset_output()</span>
+<span class="sd">        bokeh.io.output_notebook()</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">bokeh.io</span> <span class="kn">import</span> <span class="n">show</span><span class="p">,</span> <span class="n">output_file</span>
+    <span class="kn">from</span> <span class="nn">bokeh.palettes</span> <span class="kn">import</span> <span class="n">Category20_20</span>
+    <span class="kn">from</span> <span class="nn">bokeh.models</span> <span class="kn">import</span> <span class="n">ColumnDataSource</span>
+    <span class="kn">from</span> <span class="nn">bokeh.plotting</span> <span class="kn">import</span> <span class="n">figure</span>
+
+    <span class="c1"># if ofile write html and open new tab.</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">output_file</span><span class="p">(</span><span class="n">ofile</span><span class="p">)</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mi">800</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">800</span>
+
+    <span class="c1"># when ofile is None, do not open new tab.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ofile</span><span class="p">:</span>
+            <span class="n">bokeh</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">reset_output</span><span class="p">()</span>
+            <span class="n">bokeh</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_notebook</span><span class="p">()</span>
+
+    <span class="n">vals</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">(</span><span class="n">Category20_20</span><span class="o">*</span><span class="mi">10</span><span class="p">)[:</span><span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)]</span>
+
+    <span class="n">source</span> <span class="o">=</span> <span class="n">ColumnDataSource</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">vals</span><span class="o">=</span><span class="n">vals</span><span class="p">,</span>
+                                        <span class="n">counts</span><span class="o">=</span><span class="n">counts</span><span class="p">,</span>
+                                        <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">))</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">x_range</span><span class="o">=</span><span class="n">vals</span><span class="p">,</span><span class="n">y_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot; Counts&quot;</span><span class="p">,</span>
+            <span class="n">x_axis_label</span><span class="o">=</span><span class="n">cat</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
+            <span class="n">y_axis_label</span><span class="o">=</span><span class="s1">&#39;Count&#39;</span><span class="p">,</span>
+            <span class="n">plot_height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+            <span class="n">plot_width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">toolbar_location</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">tools</span><span class="o">=</span><span class="s2">&quot;hover&quot;</span><span class="p">,</span>
+            <span class="n">tooltips</span><span class="o">=</span><span class="s2">&quot;Count: @counts &quot;</span>
+            <span class="p">)</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">vbar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;vals&#39;</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="s1">&#39;counts&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="s2">&quot;vals&quot;</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">)</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">xgrid</span><span class="o">.</span><span class="n">grid_line_color</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">legend</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="s2">&quot;horizontal&quot;</span>
+
+    <span class="n">show</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></div>
+
+
+<span class="c1">#===============================================================================</span>
+<span class="c1"># Stacked Bar plot</span>
+<span class="c1">#===============================================================================</span>
+<div class="viewcode-block" id="stacked_barplot_bokeh"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_bokeh.stacked_barplot_bokeh">[docs]</a><span class="k">def</span> <span class="nf">stacked_barplot_bokeh</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">xcol</span><span class="p">,</span><span class="n">ycols</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Stacked barplot using bokeh.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    xcol: str</span>
+<span class="sd">        Name of x column.</span>
+<span class="sd">    ycols: list</span>
+<span class="sd">        List with y column names.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of output file.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        df1 = pd.DataFrame({&#39;fruits&#39; : [&#39;Apples&#39;, &#39;Pears&#39;, &#39;Nectarines&#39;,</span>
+<span class="sd">                                    &#39;Plums&#39;, &#39;Grapes&#39;, &#39;Strawberries&#39;],</span>
+<span class="sd">                &#39;2015&#39;   : [2, 1, 4, 3, 2, 4],</span>
+<span class="sd">                &#39;2016&#39;   : [5, 3, 4, 2, 4, 6],</span>
+<span class="sd">                &#39;2017&#39;   : [3, 2, 4, 4, 5, 3]})</span>
+
+<span class="sd">        ycols = [&#39;2015&#39;,&#39;2016&#39;]</span>
+<span class="sd">        xcol = &#39;fruits&#39;</span>
+<span class="sd">        stacked_barplot_bokeh(df1, &#39;fruits&#39;,[&#39;2015&#39;,&#39;2016&#39;])</span>
+
+
+<span class="sd">        df1 = (df.groupby([&#39;yr_sales&#39;,&#39;view&#39;])</span>
+<span class="sd">            .agg({&#39;price&#39;:&#39;count&#39;})</span>
+<span class="sd">            .unstack(level=0)</span>
+<span class="sd">            .droplevel(0,axis=1)</span>
+<span class="sd">            .reset_index()</span>
+<span class="sd">            )</span>
+
+<span class="sd">        stacked_barplot_bokeh(df1, &#39;view&#39;,df1.columns[1:])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">bokeh</span>
+    <span class="kn">from</span> <span class="nn">bokeh.palettes</span> <span class="kn">import</span> <span class="n">Category20</span>
+    <span class="kn">from</span> <span class="nn">bokeh.plotting</span> <span class="kn">import</span> <span class="n">figure</span>
+    <span class="kn">from</span> <span class="nn">bokeh.core.properties</span> <span class="kn">import</span> <span class="n">value</span>
+    <span class="kn">from</span> <span class="nn">bokeh.io</span> <span class="kn">import</span> <span class="n">show</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">reset_output</span><span class="p">,</span> <span class="n">output_notebook</span>
+
+    <span class="c1"># we need to make column names string.</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">ycols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ycols</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">(</span><span class="n">Category20</span><span class="p">[</span><span class="mi">20</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span><span class="p">)[:</span><span class="nb">len</span><span class="p">(</span><span class="n">ycols</span><span class="p">)]</span>
+    <span class="n">xvals</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">xcol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="c1"># if ofile write html and open new tab.</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">output_file</span><span class="p">(</span><span class="n">ofile</span><span class="p">)</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mi">800</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">800</span>
+
+    <span class="c1"># when ofile is None, do not open new tab.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ofile</span><span class="p">:</span>
+            <span class="n">bokeh</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">reset_output</span><span class="p">()</span>
+            <span class="n">bokeh</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_notebook</span><span class="p">()</span>
+
+    <span class="c1"># plot figure</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">x_range</span><span class="o">=</span><span class="n">xvals</span><span class="p">,</span>
+            <span class="n">plot_height</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">toolbar_location</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">tools</span><span class="o">=</span><span class="s2">&quot;hover&quot;</span><span class="p">,</span>
+            <span class="n">tooltips</span><span class="o">=</span><span class="s2">&quot;$name @</span><span class="si">{}</span><span class="s2">: @$name&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xcol</span><span class="p">))</span>
+
+    <span class="c1"># vertical bar stacks</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">vbar_stack</span><span class="p">(</span><span class="n">ycols</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">xcol</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+                <span class="n">legend</span><span class="o">=</span><span class="p">[</span><span class="n">value</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ycols</span><span class="p">])</span>
+
+    <span class="c1"># settings</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">y_range</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">x_range</span><span class="o">.</span><span class="n">range_padding</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">xgrid</span><span class="o">.</span><span class="n">grid_line_color</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">minor_tick_line_color</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">outline_line_color</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">legend</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="s2">&quot;top_left&quot;</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">legend</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="s2">&quot;horizontal&quot;</span>
+
+    <span class="n">show</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></div>
+<span class="c1">#===============================================================================</span>
+<span class="c1"># Stacked count plot</span>
+<span class="c1">#===============================================================================</span>
+<div class="viewcode-block" id="stacked_countplot_bokeh"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_bokeh.stacked_countplot_bokeh">[docs]</a><span class="k">def</span> <span class="nf">stacked_countplot_bokeh</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">xcol</span><span class="p">,</span><span class="n">ycol</span><span class="p">,</span><span class="n">target</span><span class="p">,</span>
+    <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">agg_type</span><span class="o">=</span><span class="s1">&#39;count&#39;</span><span class="p">,</span><span class="n">height</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">400</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Stacked countplot using bokeh.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    xcol: str</span>
+<span class="sd">        Name of x column.</span>
+<span class="sd">    ycol: str</span>
+<span class="sd">        Name of y column.</span>
+<span class="sd">    target: str</span>
+<span class="sd">        Name of the target column.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    agg_type: str</span>
+<span class="sd">        Type of aggregation. E.g. &#39;count&#39;, &#39;sum&#39;</span>
+<span class="sd">    height: int</span>
+<span class="sd">        Height of the plot.</span>
+<span class="sd">    width: int</span>
+<span class="sd">        Width of the plot.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">bokeh</span>
+    <span class="kn">from</span> <span class="nn">bokeh.palettes</span> <span class="kn">import</span> <span class="n">Category20</span>
+    <span class="kn">from</span> <span class="nn">bokeh.plotting</span> <span class="kn">import</span> <span class="n">figure</span>
+    <span class="kn">from</span> <span class="nn">bokeh.core.properties</span> <span class="kn">import</span> <span class="n">value</span>
+    <span class="kn">from</span> <span class="nn">bokeh.io</span> <span class="kn">import</span> <span class="n">show</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">reset_output</span><span class="p">,</span> <span class="n">output_notebook</span>
+
+    <span class="c1"># get the tidy format dataframe</span>
+    <span class="n">df1</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">ycol</span><span class="p">,</span><span class="n">xcol</span><span class="p">])</span>
+        <span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="n">target</span><span class="p">:</span><span class="n">agg_type</span><span class="p">})</span>
+        <span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">droplevel</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="p">)</span>
+    <span class="c1"># if ofile write html and open new tab.</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">output_file</span><span class="p">(</span><span class="n">ofile</span><span class="p">)</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mi">800</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">800</span>
+
+    <span class="c1"># when ofile is None, do not open new tab.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ofile</span><span class="p">:</span>
+            <span class="n">bokeh</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">reset_output</span><span class="p">()</span>
+            <span class="n">bokeh</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_notebook</span><span class="p">()</span>
+
+    <span class="c1"># we need to make column names string.</span>
+    <span class="n">df1</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">ycols</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">(</span><span class="n">Category20</span><span class="p">[</span><span class="mi">20</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span><span class="p">)[:</span><span class="nb">len</span><span class="p">(</span><span class="n">ycols</span><span class="p">)]</span>
+    <span class="n">xvals</span> <span class="o">=</span> <span class="n">df1</span><span class="p">[</span><span class="n">xcol</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="c1"># plot figure</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">x_range</span><span class="o">=</span><span class="n">xvals</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span> <span class="s2">&quot;Stacked count plot of </span><span class="si">{}</span><span class="s2"> vs </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span> <span class="n">ycol</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+            <span class="p">),</span>
+            <span class="n">x_axis_label</span><span class="o">=</span><span class="n">xcol</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
+            <span class="n">y_axis_label</span><span class="o">=</span><span class="n">agg_type</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
+            <span class="n">plot_height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+            <span class="n">plot_width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">toolbar_location</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">tools</span><span class="o">=</span><span class="s2">&quot;hover&quot;</span><span class="p">,</span>
+            <span class="n">tooltips</span><span class="o">=</span><span class="s2">&quot;$name @</span><span class="si">{}</span><span class="s2">: @$name&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xcol</span><span class="p">))</span>
+
+    <span class="c1"># vertical bar stacks</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">vbar_stack</span><span class="p">(</span><span class="n">ycols</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">xcol</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">df1</span><span class="p">,</span>
+                <span class="n">legend</span><span class="o">=</span><span class="p">[</span><span class="n">value</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ycols</span><span class="p">])</span>
+
+    <span class="c1"># settings</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">y_range</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">x_range</span><span class="o">.</span><span class="n">range_padding</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">xgrid</span><span class="o">.</span><span class="n">grid_line_color</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">minor_tick_line_color</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">outline_line_color</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">legend</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="s2">&quot;top_left&quot;</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">legend</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="s2">&quot;horizontal&quot;</span>
+
+    <span class="n">show</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></div>
+
+<span class="c1">#===============================================================================</span>
+<span class="c1"># Histogram</span>
+<span class="c1">#===============================================================================</span>
+<div class="viewcode-block" id="histogram_bokeh"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_bokeh.histogram_bokeh">[docs]</a><span class="k">def</span> <span class="nf">histogram_bokeh</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">col</span><span class="p">,</span><span class="n">n_bins</span><span class="p">,</span><span class="n">bin_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">height</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+                        <span class="n">color</span><span class="o">=</span><span class="s1">&#39;violet&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot interactive histogram using bokeh.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    col: str</span>
+<span class="sd">        Name of the column.</span>
+<span class="sd">    n_bins: int</span>
+<span class="sd">        Number of bins in the histogram.</span>
+<span class="sd">    bin_range: (float, float)</span>
+<span class="sd">        Lower and uppr range of bins in the histogram.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    height: int</span>
+<span class="sd">        Height of the plot.</span>
+<span class="sd">    width: int</span>
+<span class="sd">        Width of the plot.</span>
+<span class="sd">    color: str</span>
+<span class="sd">        Color of the histogram.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">from</span> <span class="nn">bokeh.plotting</span> <span class="kn">import</span> <span class="n">figure</span>
+
+    <span class="kn">from</span> <span class="nn">bokeh.io</span> <span class="kn">import</span> <span class="n">show</span><span class="p">,</span> <span class="n">output_notebook</span>
+    <span class="kn">from</span> <span class="nn">bokeh.models</span> <span class="kn">import</span> <span class="n">ColumnDataSource</span><span class="p">,</span> <span class="n">HoverTool</span><span class="p">,</span> <span class="n">CategoricalColorMapper</span>
+    <span class="kn">from</span> <span class="nn">bokeh.palettes</span> <span class="kn">import</span> <span class="n">Category10_5</span><span class="p">,</span> <span class="n">Category20_16</span>
+
+    <span class="c1"># some labels</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Histogram of </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">title</span><span class="p">())</span>
+    <span class="n">x_axis_label</span> <span class="o">=</span> <span class="n">col</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+    <span class="n">x_tooltip</span> <span class="o">=</span> <span class="n">col</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+
+    <span class="c1"># if ofile write html and open new tab.</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">output_file</span><span class="p">(</span><span class="n">ofile</span><span class="p">)</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mi">800</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">800</span>
+
+    <span class="c1"># when ofile if None, do not open new tab.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ofile</span><span class="p">:</span>
+            <span class="n">bokeh</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">reset_output</span><span class="p">()</span>
+            <span class="n">bokeh</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_notebook</span><span class="p">()</span>
+
+    <span class="c1"># histogram from numpy.histogram</span>
+    <span class="n">arr_hist</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="n">bins</span><span class="o">=</span><span class="n">n_bins</span><span class="p">,</span><span class="nb">range</span><span class="o">=</span><span class="n">bin_range</span><span class="p">)</span>
+
+    <span class="c1"># pandas dataframe from numpy histogram values</span>
+    <span class="n">arr_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="n">arr_hist</span><span class="p">,</span>
+                           <span class="s1">&#39;left&#39;</span><span class="p">:</span> <span class="n">edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                           <span class="s1">&#39;right&#39;</span><span class="p">:</span> <span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:]})</span>
+
+    <span class="n">arr_df</span><span class="p">[</span><span class="s1">&#39;f_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">count</span> <span class="k">for</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">arr_df</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]]</span>
+    <span class="n">arr_df</span><span class="p">[</span><span class="s1">&#39;f_interval&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> to </span><span class="si">%d</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+                            <span class="k">for</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">arr_df</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">],</span> <span class="n">arr_df</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">])]</span>
+
+    <span class="c1"># column data source from pandas dataframe</span>
+    <span class="n">arr_src</span> <span class="o">=</span> <span class="n">ColumnDataSource</span><span class="p">(</span><span class="n">arr_df</span><span class="p">)</span>
+
+    <span class="c1"># Set up the figure same as before</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">plot_width</span> <span class="o">=</span> <span class="n">width</span><span class="p">,</span>
+               <span class="n">plot_height</span> <span class="o">=</span> <span class="n">height</span><span class="p">,</span>
+               <span class="n">title</span> <span class="o">=</span> <span class="n">title</span><span class="p">,</span>
+               <span class="n">x_axis_label</span> <span class="o">=</span> <span class="n">x_axis_label</span><span class="p">,</span>
+               <span class="n">y_axis_label</span> <span class="o">=</span> <span class="s1">&#39;Count&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Add a quad glyph with source this time</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+           <span class="n">top</span><span class="o">=</span><span class="s1">&#39;count&#39;</span><span class="p">,</span>
+           <span class="n">left</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+           <span class="n">right</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">,</span>
+           <span class="n">source</span><span class="o">=</span><span class="n">arr_src</span><span class="p">,</span>
+           <span class="n">fill_color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+           <span class="n">hover_fill_alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+           <span class="n">hover_fill_color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+           <span class="n">line_color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Add style to the plot</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">align</span> <span class="o">=</span> <span class="s1">&#39;center&#39;</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">text_font_size</span> <span class="o">=</span> <span class="s1">&#39;18pt&#39;</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">axis_label_text_font_size</span> <span class="o">=</span> <span class="s1">&#39;12pt&#39;</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">major_label_text_font_size</span> <span class="o">=</span> <span class="s1">&#39;12pt&#39;</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">axis_label_text_font_size</span> <span class="o">=</span> <span class="s1">&#39;12pt&#39;</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">major_label_text_font_size</span> <span class="o">=</span> <span class="s1">&#39;12pt&#39;</span>
+
+    <span class="c1"># Add a hover tool referring to the formatted columns</span>
+    <span class="n">hover</span> <span class="o">=</span> <span class="n">HoverTool</span><span class="p">(</span><span class="n">tooltips</span> <span class="o">=</span> <span class="p">[(</span><span class="n">x_tooltip</span><span class="p">,</span> <span class="s1">&#39;@f_interval&#39;</span><span class="p">),</span>
+                                  <span class="p">(</span><span class="s1">&#39;Count&#39;</span><span class="p">,</span> <span class="s1">&#39;@f_count&#39;</span><span class="p">)])</span>
+
+    <span class="c1"># Add the hover tool to the graph</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">add_tools</span><span class="p">(</span><span class="n">hover</span><span class="p">)</span>
+
+    <span class="c1"># show the plot</span>
+    <span class="n">show</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></div>
+
+<span class="c1">#===============================================================================</span>
+<span class="c1"># Map visualization</span>
+<span class="c1">#===============================================================================</span>
+<div class="viewcode-block" id="merc"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_bokeh.merc">[docs]</a><span class="k">def</span> <span class="nf">merc</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">col_lat</span><span class="p">,</span> <span class="n">col_lon</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mercaptor plot.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    col_lat: str</span>
+<span class="sd">        Name of latitude column.</span>
+<span class="sd">    col_lon: str</span>
+<span class="sd">        Name of longitude column.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lat</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col_lat</span><span class="p">]</span>
+    <span class="n">lon</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col_lon</span><span class="p">]</span>
+
+    <span class="n">r_major</span> <span class="o">=</span> <span class="mf">6378137.000</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">r_major</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">x</span><span class="o">/</span><span class="n">lon</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="mf">180.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">4.0</span> <span class="o">+</span> <span class="n">lat</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">180.0</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span><span class="p">))</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="map_plot_bokeh"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_bokeh.map_plot_bokeh">[docs]</a><span class="k">def</span> <span class="nf">map_plot_bokeh</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">col_lat</span><span class="p">,</span> <span class="n">col_lon</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mercaptor plot from latitude and longitude using bokeh.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    col_lat: str</span>
+<span class="sd">        Name of latitude column.</span>
+<span class="sd">    col_lon: str</span>
+<span class="sd">        Name of longitude column.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of output file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">bokeh.io</span> <span class="kn">import</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">output_notebook</span>
+    <span class="kn">from</span> <span class="nn">bokeh.plotting</span> <span class="kn">import</span> <span class="n">figure</span><span class="p">,</span> <span class="n">show</span>
+    <span class="kn">from</span> <span class="nn">bokeh.tile_providers</span> <span class="kn">import</span> <span class="n">get_provider</span><span class="p">,</span> <span class="n">Vendors</span>
+
+    <span class="n">tile_provider</span> <span class="o">=</span> <span class="n">get_provider</span><span class="p">(</span><span class="n">Vendors</span><span class="o">.</span><span class="n">CARTODBPOSITRON</span><span class="p">)</span>
+
+    <span class="c1"># if ofile write html and open new tab.</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">output_file</span><span class="p">(</span><span class="n">ofile</span><span class="p">)</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mi">800</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">800</span>
+
+    <span class="c1"># when ofile if None, do not open new tab.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ofile</span><span class="p">:</span>
+            <span class="n">bokeh</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">reset_output</span><span class="p">()</span>
+            <span class="n">bokeh</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_notebook</span><span class="p">()</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">x_axis_type</span><span class="o">=</span><span class="s2">&quot;mercator&quot;</span><span class="p">,</span> <span class="n">y_axis_type</span><span class="o">=</span><span class="s2">&quot;mercator&quot;</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">add_tile</span><span class="p">(</span><span class="n">tile_provider</span><span class="p">)</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">merc</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">col_lat</span><span class="p">,</span> <span class="n">col_lon</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+             <span class="n">y</span> <span class="o">=</span> <span class="n">merc</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">col_lat</span><span class="p">,</span> <span class="n">col_lon</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+
+    <span class="n">show</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Bhishan 1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Bhishan Poudel.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.4.
+    </div>
+  </body>
+</html>

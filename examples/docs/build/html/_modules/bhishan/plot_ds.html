@@ -1,0 +1,1215 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>bhishan.plot_ds &#8212; Bhishan 1 documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Bhishan 1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for bhishan.plot_ds</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">pandas.api.types</span> <span class="kn">import</span> <span class="n">is_numeric_dtype</span>
+
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">color_codes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm_notebook</span> <span class="k">as</span> <span class="n">tqdm</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;ggplot&#39;</span><span class="p">)</span> <span class="c1"># better than sns styles.</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">calendar</span>
+
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
+
+<span class="kn">from</span> <span class="nn">.plot_utils</span> <span class="kn">import</span> <span class="n">magnify</span>
+
+<span class="c1">#==============================================================================</span>
+<div class="viewcode-block" id="add_text_barplot"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.add_text_barplot">[docs]</a><span class="k">def</span> <span class="nf">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">rot</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">percent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">comma</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add the text to bar plot.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    ax: matplotlib Axis object</span>
+<span class="sd">        Matplotlib axis.</span>
+<span class="sd">    decimals: int</span>
+<span class="sd">        Number of decimal places to show in top of the bar.</span>
+<span class="sd">    rot: int</span>
+<span class="sd">        Rotation to rotate the label on top of the bar.</span>
+<span class="sd">    percent: bool</span>
+<span class="sd">        Whether or not show the percentage.</span>
+<span class="sd">    comma: bool</span>
+<span class="sd">        Whether or not format the number using comma.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span><span class="s1">&#39;patches&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ax</span><span class="o">.</span><span class="n">patches</span><span class="p">:</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_height</span><span class="p">(),</span> <span class="n">decimals</span><span class="o">=</span><span class="n">decimals</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">comma</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span><span class="o">==</span><span class="n">txt</span><span class="p">):</span>
+                <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:,}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">txt</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:,.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+
+        <span class="n">txt</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;%&#39;</span> <span class="k">if</span> <span class="n">percent</span> <span class="k">else</span> <span class="n">txt</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span><span class="o">+</span><span class="n">p</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span><span class="o">/</span><span class="mf">2.</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">txt</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">),</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+                <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">rotation</span><span class="o">=</span><span class="n">rot</span><span class="p">,</span><span class="n">textcoords</span><span class="o">=</span><span class="s1">&#39;offset points&#39;</span><span class="p">)</span></div>
+
+<span class="c1">#==========================================================</span>
+<div class="viewcode-block" id="plot_num"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_num">[docs]</a><span class="k">def</span> <span class="nf">plot_num</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">col</span><span class="p">,</span><span class="n">xlim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">disp</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">print_</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot numerical column.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    col: str</span>
+<span class="sd">        Name of the numerical column.</span>
+<span class="sd">    xlim: list</span>
+<span class="sd">        X-axis limit. eg. [0,100]</span>
+<span class="sd">    disp: bool</span>
+<span class="sd">        Whether or not to display output dataframe.</span>
+<span class="sd">    print_: bool</span>
+<span class="sd">        Whether or not to print output dataframe.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the plot</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s1"> must be a numeric column&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">disp</span><span class="p">:</span>
+        <span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">print_</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">xlim</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">x</span><span class="o">&gt;=</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">x</span><span class="o">&lt;=</span><span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+    <span class="n">hist_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;histtype&#39;</span><span class="p">:</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;edgecolor&#39;</span><span class="p">:</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">}</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+
+    <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">hist_kws</span><span class="o">=</span><span class="n">hist_kws</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]),</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">hist_kws</span><span class="o">=</span><span class="n">hist_kws</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">)</span>
+
+    <span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;purple&#39;</span><span class="p">)</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">violinplot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+
+    <span class="c1"># labels</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;log(</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s1">) (&gt;0)&#39;</span><span class="p">)</span>
+
+    <span class="c1"># tight</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="c1"># save</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;images/</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s1">.png&#39;</span>
+
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">)</span>
+
+    <span class="c1"># show</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+<span class="c1">#==========================================================</span>
+<div class="viewcode-block" id="plot_cat"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_cat">[docs]</a><span class="k">def</span> <span class="nf">plot_cat</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">cat</span><span class="p">,</span><span class="n">comma</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot the categorical feature.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    cat: str</span>
+<span class="sd">        categorical feature to plot.</span>
+<span class="sd">    comma: bool</span>
+<span class="sd">        Whether or not to format the number with comma.</span>
+<span class="sd">    save: bool</span>
+<span class="sd">        Wheter or not to save the image.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of output image. e.g images/cat.png</span>
+<span class="sd">        The folder images is created if it</span>
+<span class="sd">        does not exist.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the plot.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">df1</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+    <span class="n">df1_pct</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">df1</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+
+    <span class="n">df1</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="s1">&#39;magma&#39;</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">df1</span><span class="p">)),</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">df1_pct</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="s1">&#39;magma&#39;</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">df1</span><span class="p">)),</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">comma</span><span class="o">=</span><span class="n">comma</span><span class="p">)</span>
+    <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">percent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class distribution of </span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;images/</span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s1">.png&#39;</span>
+
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">50</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Feature: **</span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s1">**&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Overall Count: &#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">df1_pct</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;    </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">%&#39;</span><span class="p">)</span></div>
+
+<span class="c1">#==========================================================</span>
+<div class="viewcode-block" id="plot_num_num"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_num_num">[docs]</a><span class="k">def</span> <span class="nf">plot_num_num</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">num1</span><span class="p">,</span><span class="n">num2</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot the numeric feature.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    num1: str</span>
+<span class="sd">        Numerical column 1</span>
+<span class="sd">    num2: str</span>
+<span class="sd">        Numerical column 2</span>
+<span class="sd">    fontsize: int</span>
+<span class="sd">        Fontsize of x and yticklabels</span>
+<span class="sd">        (NOT xlabel and ylabels)</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Output file path. eg. images/scatter_a_vs_b.png</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">num1</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">num1</span><span class="si">}</span><span class="s1"> must be a numeric column&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">num2</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">num2</span><span class="si">}</span><span class="s1"> must be a numeric column&#39;</span><span class="p">)</span>
+
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">num1</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">num2</span><span class="p">,</span>
+                        <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span>
+                        <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Scatterplot of </span><span class="si">{</span><span class="n">num1</span><span class="si">}</span><span class="s1"> vs </span><span class="si">{</span><span class="n">num2</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">num1</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">num2</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plot of </span><span class="si">{</span><span class="n">num1</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">num2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;images/</span><span class="si">{</span><span class="n">num1</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">num2</span><span class="si">}</span><span class="s1">.png&#39;</span>
+
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+<span class="c1">#===========================================================</span>
+<div class="viewcode-block" id="plot_num_cat"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_num_cat">[docs]</a><span class="k">def</span> <span class="nf">plot_num_cat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_num</span><span class="p">,</span><span class="n">target_cat</span><span class="p">,</span>
+                <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span><span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span>
+                <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">save</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">disp</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">print_</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot of continuous variable vs binary-target.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    col_num: str</span>
+<span class="sd">        Numerical feature which is to be plotted.</span>
+<span class="sd">    target_cat: str</span>
+<span class="sd">        Target categorical feature.</span>
+<span class="sd">    figsize: (int, int)</span>
+<span class="sd">        Figure size.</span>
+<span class="sd">    bins: int</span>
+<span class="sd">        Number of bins in the histogram.</span>
+<span class="sd">    fontsize: int</span>
+<span class="sd">        Font size of xlabel and ylabels of all plots.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of output plot. eg. images/mycol_target.png</span>
+<span class="sd">    save: bool</span>
+<span class="sd">        Whether to save the image or not.</span>
+<span class="sd">    disp: bool</span>
+<span class="sd">        Display output dataframe or not.</span>
+<span class="sd">    print_: bool</span>
+<span class="sd">        Print output dataframe or not.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Wheter or not to show the image.</span>
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        col_num = &#39;age&#39;</span>
+<span class="sd">        target_cat = &#39;conversion&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="n">col_num</span><span class="p">])</span>
+    <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">target_cat</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+
+    <span class="c1"># top-left violin and top-right boxplot</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">violinplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">target_cat</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">col_num</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">target_cat</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">col_num</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># bottom left two-distplots</span>
+    <span class="n">ser1</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2"> == @a&quot;</span><span class="p">)[</span><span class="n">col_num</span><span class="p">]</span>
+    <span class="n">ser2</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2"> == @b&quot;</span><span class="p">)[</span><span class="n">col_num</span><span class="p">]</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span><span class="n">ser1</span><span class="p">,</span><span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span><span class="n">ser2</span><span class="p">,</span><span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># bottom right stripplot</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">stripplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">target_cat</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">col_num</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># beautify</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">target_cat</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">col_num</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">target_cat</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">col_num</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">target_cat</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">col_num</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">col_num</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">target_cat</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plot of </span><span class="si">{</span><span class="n">col_num</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="c1"># save</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;images/</span><span class="si">{</span><span class="n">col_num</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s1">.png&#39;</span>
+
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="c1"># display</span>
+    <span class="k">if</span> <span class="n">disp</span><span class="p">:</span>
+        <span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">target_cat</span><span class="p">)[</span><span class="n">col_num</span><span class="p">]</span>
+        <span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">add_prefix</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s1">_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col_num</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="n">print_</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">target_cat</span><span class="p">)[</span><span class="n">col_num</span><span class="p">]</span>
+        <span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">add_prefix</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s1">_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col_num</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span></div>
+
+<span class="c1">#================================================</span>
+<div class="viewcode-block" id="plot_cat_num"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_cat_num">[docs]</a><span class="k">def</span> <span class="nf">plot_cat_num</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">cat</span><span class="p">,</span><span class="n">num</span><span class="p">,</span>
+                    <span class="n">comma</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">decimals</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">rot</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">add_text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span>
+                    <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot the categorical feature against numerical feature.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    cat: str</span>
+<span class="sd">        Categorical feature.</span>
+<span class="sd">    num: str</span>
+<span class="sd">        Numerical feature.</span>
+<span class="sd">    comma: bool</span>
+<span class="sd">        Wheter or not to style bar plot with comma.</span>
+<span class="sd">    decimals: int</span>
+<span class="sd">        Number of decimal places to use in bar plot text.</span>
+<span class="sd">    rot: int</span>
+<span class="sd">        Degree of rotation for text in barplot.</span>
+<span class="sd">    add_text: bool</span>
+<span class="sd">        Whether or not to add the text to plots.</span>
+<span class="sd">    fontsize: int</span>
+<span class="sd">        Font size of xlabel and ylabels of all plots.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of output plot. eg. images/mycol_target.png</span>
+<span class="sd">    save: bool</span>
+<span class="sd">        Whether to save the image or not.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Wheter or not to show the image.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        categorical feature: age</span>
+<span class="sd">        target numerical column: salary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">num</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">num</span><span class="si">}</span><span class="s1"> must be a numeric column&#39;</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">12</span><span class="p">))</span>
+
+    <span class="n">df1</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">df1</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">pal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s1">&#39;magma&#39;</span><span class="p">,</span><span class="s1">&#39;Paired&#39;</span><span class="p">,</span> <span class="s1">&#39;inferno&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;Spectral&#39;</span><span class="p">,</span> <span class="s1">&#39;RdBu&#39;</span><span class="p">,</span> <span class="s1">&#39;BrBG&#39;</span><span class="p">,</span><span class="s1">&#39;PRGn&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;seismic&#39;</span><span class="p">,</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span><span class="s1">&#39;PuOr&#39;</span><span class="p">,</span><span class="s1">&#39;twilight&#39;</span><span class="p">])</span>
+
+    <span class="n">sns</span><span class="o">.</span><span class="n">stripplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">cat</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">num</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span><span class="n">palette</span><span class="o">=</span><span class="n">pal</span><span class="p">)</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">violinplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">cat</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">num</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span><span class="n">palette</span><span class="o">=</span><span class="n">pal</span><span class="p">)</span>
+
+    <span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">cat</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">num</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span><span class="n">palette</span><span class="o">=</span><span class="n">pal</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">cat</span><span class="p">)[</span><span class="n">num</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">cat</span><span class="p">)[</span><span class="n">num</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>\
+    <span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="n">pal</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">)),</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">sns</span><span class="o">.</span><span class="n">countplot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span><span class="n">palette</span><span class="o">=</span><span class="n">pal</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">cat</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df1</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span><span class="n">palette</span><span class="o">=</span><span class="n">pal</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">add_text</span><span class="p">:</span>
+        <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">comma</span><span class="o">=</span><span class="n">comma</span><span class="p">,</span><span class="n">decimals</span><span class="o">=</span><span class="n">decimals</span><span class="p">,</span><span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">)</span>
+        <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="n">comma</span><span class="o">=</span><span class="n">comma</span><span class="p">,</span><span class="n">decimals</span><span class="o">=</span><span class="n">decimals</span><span class="p">,</span><span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">)</span>
+        <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">comma</span><span class="o">=</span><span class="n">comma</span><span class="p">,</span><span class="n">decimals</span><span class="o">=</span><span class="n">decimals</span><span class="p">,</span><span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">)</span>
+        <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="n">comma</span><span class="o">=</span><span class="n">comma</span><span class="p">,</span><span class="n">decimals</span><span class="o">=</span><span class="n">decimals</span><span class="p">,</span><span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">)</span>
+
+    <span class="c1"># beautify</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">num</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">num</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">cat</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">cat</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plot of </span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">num</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="c1"># save</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;images/</span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">num</span><span class="si">}</span><span class="s1">.png&#39;</span>
+
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+<span class="c1">#=====================================================</span>
+<div class="viewcode-block" id="plot_cat_cat"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_cat_cat">[docs]</a><span class="k">def</span> <span class="nf">plot_cat_cat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cat</span><span class="p">,</span><span class="n">binn</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">12</span><span class="p">),</span><span class="n">ylim2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">rot</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">comma</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;lower left&#39;</span><span class="p">,</span>
+                <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot 2*2 plot for categorical feature vs target-categorical feature.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    cat: str</span>
+<span class="sd">        categorical feature.</span>
+<span class="sd">    binn: str</span>
+<span class="sd">        Binary feature.</span>
+<span class="sd">    figsize: (int, int)</span>
+<span class="sd">        Figure size.</span>
+<span class="sd">    ylim2: int</span>
+<span class="sd">        Second plot y-limit upper range.</span>
+<span class="sd">    rot: int</span>
+<span class="sd">        Degree to rotate the text on barplot.</span>
+<span class="sd">    comma: bool</span>
+<span class="sd">        Whether or not to style the number with comma in text in barplots.</span>
+<span class="sd">    loc: str</span>
+<span class="sd">        matplotlib plot loc (location) variable. 0 1 2 3 or &#39;upper right&#39; etc.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of output plot. eg. images/mycol_target.png</span>
+<span class="sd">    save: bool</span>
+<span class="sd">        Whether to save the image or not.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Wheter or not to show the image.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        cat = &#39;sex&#39;</span>
+<span class="sd">        target_cat = &#39;conversion&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># data</span>
+    <span class="n">rare</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">binn</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">idxmin</span><span class="p">()</span>
+    <span class="n">df1</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">cat</span><span class="p">,</span><span class="n">binn</span><span class="p">])</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">rare</span><span class="p">)</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="c1"># top right</span>
+    <span class="n">df1_pct</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">df1</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># mid right</span>
+    <span class="n">df1_pct_cat</span> <span class="o">=</span>  <span class="n">df1</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">df1</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">df1_pct_cat_sorted</span> <span class="o">=</span> <span class="n">df1_pct_cat</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">rare</span><span class="p">,</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">df1_pct_cat_order</span> <span class="o">=</span> <span class="n">df1_pct_cat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+
+    <span class="c1"># bottom right</span>
+    <span class="n">df1_per_cat</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">df1</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">df1_per_cat_order</span> <span class="o">=</span> <span class="n">df1_per_cat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+    <span class="n">df1_per_cat_sorted</span> <span class="o">=</span> <span class="n">df1_per_cat</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">rare</span><span class="p">,</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">pal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s1">&#39;magma&#39;</span><span class="p">,</span><span class="s1">&#39;Paired&#39;</span><span class="p">,</span> <span class="s1">&#39;inferno&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;Spectral&#39;</span><span class="p">,</span> <span class="s1">&#39;RdBu&#39;</span><span class="p">,</span> <span class="s1">&#39;BrBG&#39;</span><span class="p">,</span><span class="s1">&#39;PRGn&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;seismic&#39;</span><span class="p">,</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span><span class="s1">&#39;PuOr&#39;</span><span class="p">,</span><span class="s1">&#39;twilight&#39;</span><span class="p">])</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+
+    <span class="c1"># top left count plot</span>
+    <span class="n">df1</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">binn</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
+        <span class="n">color</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="n">pal</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()),</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">,</span><span class="n">comma</span><span class="o">=</span><span class="n">comma</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">loc</span><span class="p">)</span>
+
+    <span class="c1"># top right percent plot</span>
+    <span class="n">df1_pct</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">binn</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="n">pal</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()),</span>
+                    <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">percent</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">loc</span><span class="p">)</span>
+
+    <span class="c1"># mid left count plot</span>
+    <span class="n">df1</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="n">pal</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()),</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">,</span><span class="n">comma</span><span class="o">=</span><span class="n">comma</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
+
+    <span class="c1"># mid right percent plot</span>
+    <span class="n">df1_pct_cat_order</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">percent</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
+
+    <span class="c1"># bottom left count plot</span>
+    <span class="n">df1</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="n">pal</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()),</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">,</span><span class="n">comma</span><span class="o">=</span><span class="n">comma</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
+
+    <span class="c1"># bottom right</span>
+    <span class="n">df1_per_cat_order</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">percent</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">rot</span><span class="o">=</span><span class="n">rot</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
+
+    <span class="c1"># limits</span>
+    <span class="k">if</span> <span class="n">ylim2</span><span class="p">:</span>
+        <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">ylim2</span><span class="p">)</span>
+
+    <span class="c1"># title</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Count and Percent plot for </span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s1"> vs </span><span class="si">{</span><span class="n">binn</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+
+    <span class="c1"># decorate</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="c1"># save</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;images/</span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">binn</span><span class="si">}</span><span class="s1">.png&#39;</span>
+
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="c1"># print</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">50</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Feature: **</span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s1">**&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Overall Count: &#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;    </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">%&#39;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Total  **</span><span class="si">{</span><span class="n">binn</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">rare</span><span class="si">}</span><span class="s1">** distribution:&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">df1_pct_cat_sorted</span><span class="p">[</span><span class="n">rare</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;    </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">%&#39;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Per </span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s1">  **</span><span class="si">{</span><span class="n">binn</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">rare</span><span class="si">}</span><span class="s1">** distribution:&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">df1_per_cat_sorted</span><span class="p">[</span><span class="n">rare</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;    </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">%&#39;</span><span class="p">)</span></div>
+
+<span class="c1">#=================================================</span>
+<div class="viewcode-block" id="plot_date_cat"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_date_cat">[docs]</a><span class="k">def</span> <span class="nf">plot_date_cat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">col_date</span><span class="p">,</span><span class="n">target_cat</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span>
+                    <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Seasonal plot of datetime column vs target cat.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    col_date: str</span>
+<span class="sd">        datetime feature.</span>
+<span class="sd">    target_cat: str</span>
+<span class="sd">        binary target feature</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the image.</span>
+<span class="sd">    save: bool</span>
+<span class="sd">        Whether or not to save the image.</span>
+
+<span class="sd">    Usage:</span>
+<span class="sd">    -------</span>
+<span class="sd">    df = pd.DataFrame({</span>
+<span class="sd">        &#39;date&#39;: pd.date_range(start=&#39;1/1/2018&#39;,</span>
+<span class="sd">                            end=&#39;2/1/2019&#39;,freq=&#39;H&#39;),</span>
+<span class="sd">        &#39;target&#39;: np.random.choice([0,1],size=len(ts))})</span>
+<span class="sd">    print(df.head(2))</span>
+
+<span class="sd">    df.bp.plot_date_cat(&#39;date&#39;,&#39;target&#39;,save=True,show=False)</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    -------</span>
+<span class="sd">    To see full images in jupyter notebook use this:</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        %%javascript</span>
+<span class="sd">        IPython.OutputArea.auto_scroll_threshold = 9999;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">calendar</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_datetime64_any_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col_date</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">col_date</span><span class="si">}</span><span class="s1"> must be a datetime column.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># day name</span>
+    <span class="n">map_dayofweek</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">),</span><span class="nb">list</span><span class="p">(</span><span class="n">calendar</span><span class="o">.</span><span class="n">day_name</span><span class="p">)))</span>
+    <span class="n">unq</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col_date</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">dayofweek</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">unq</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">map_dayofweek</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col_date</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day_name</span><span class="p">()</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">target_cat</span><span class="p">])</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span>\
+    <span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">order</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Seasonal variation of **</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s1">** with **Day of Week**&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Count&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col_date</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2">_dow_count.png&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># month name</span>
+    <span class="n">map_month</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">13</span><span class="p">),</span><span class="nb">list</span><span class="p">(</span><span class="n">calendar</span><span class="o">.</span><span class="n">month_name</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]))</span>
+    <span class="n">unq</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col_date</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">unq</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">map_month</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col_date</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month_name</span><span class="p">()</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">target_cat</span><span class="p">])</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span>\
+        <span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">order</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Seasonal variation of **</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s1">** wrt **Month**&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Count&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col_date</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2">_monthly_count.png&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># day of month</span>
+    <span class="n">agg</span> <span class="o">=</span> <span class="s1">&#39;day&#39;</span>
+    <span class="n">x</span> <span class="o">=</span>  <span class="nb">getattr</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col_date</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="n">agg</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">target_cat</span><span class="p">])</span>\
+        <span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Seasonal variation of **</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s1">** wrt **Day of Month**&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Count&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col_date</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2">_daily_count.png&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># hour</span>
+    <span class="n">agg</span> <span class="o">=</span> <span class="s1">&#39;hour&#39;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col_date</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="n">agg</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">target_cat</span><span class="p">])</span>\
+        <span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Seasonal variation of **</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s1">** wrt **Hour of Day**&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Count&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col_date</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2">_hourly_count.png&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<span class="c1">#===========================================================</span>
+<div class="viewcode-block" id="plot_daily_cat"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_daily_cat">[docs]</a><span class="k">def</span> <span class="nf">plot_daily_cat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">col_date</span><span class="p">,</span><span class="n">target_cat</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span><span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">show_xticks</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Daily total plot of binary target.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    col_date: str</span>
+<span class="sd">        Datetime feature.</span>
+<span class="sd">    target_cat: str</span>
+<span class="sd">        Categorical target variable.</span>
+<span class="sd">    figsize: (int, int)</span>
+<span class="sd">        Figure size.</span>
+<span class="sd">    save: bool</span>
+<span class="sd">        Whether or not to save the image.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the image.</span>
+<span class="sd">    show_xticks: bool</span>
+<span class="sd">        Whether or not to show the xticks.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        col_date = &#39;date&#39; # datetime format</span>
+<span class="sd">        target_cat = &#39;subscribed&#39; # True or False</span>
+
+<span class="sd">    NOTE</span>
+<span class="sd">    -----</span>
+<span class="sd">    This function plots the daily sum for binary target (eg. True and False).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_datetime64_any_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col_date</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">col_date</span><span class="si">}</span><span class="s1"> must be a datetime column.&#39;</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col_date</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">target_cat</span><span class="p">])</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span>\
+        <span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">xtickvals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span><span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">freq</span><span class="o">=</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">xtickvals</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">show_xticks</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([])</span>
+
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col_date</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2">_daily.png&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c1">#=====================================================</span>
+    <span class="k">def</span> <span class="nf">plot_boxplot_cats_num</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cats</span><span class="p">,</span><span class="n">num</span><span class="p">,</span><span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot boxplots in a loop.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        df: pandas.DataFrame</span>
+<span class="sd">            Input data.</span>
+<span class="sd">        cats: list</span>
+<span class="sd">            List of categorical columns to plot boxplots.</span>
+<span class="sd">        num: str</span>
+<span class="sd">            Name of numerical target column.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        --------</span>
+<span class="sd">        df = sns.load_dataset(&#39;titanic&#39;)</span>
+<span class="sd">        df.bp.plot_boxplot_cats_num([&#39;pclass&#39;,&#39;sex&#39;],&#39;age&#39;,show=True)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">cat</span> <span class="ow">in</span> <span class="n">cats</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Box plot of </span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s1"> vs </span><span class="si">{</span><span class="n">num</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">num</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">cat</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+                        <span class="n">width</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
+                    <span class="n">orient</span> <span class="o">=</span> <span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">showmeans</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">fliersize</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+                <span class="n">ofile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">num</span><span class="si">}</span><span class="s2">_boxplot.png&quot;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<span class="c1">#=======================================================</span>
+<div class="viewcode-block" id="plot_multiple_jointplots_with_pearsonr"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_multiple_jointplots_with_pearsonr">[docs]</a><span class="k">def</span> <span class="nf">plot_multiple_jointplots_with_pearsonr</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">cols</span><span class="p">,</span><span class="n">target</span><span class="p">,</span><span class="n">ofile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot multiple jointplots with pearsonr correlation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    cols: list</span>
+<span class="sd">        List of columns.</span>
+<span class="sd">    target: str</span>
+<span class="sd">        Name of target column.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">scipy</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">col</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">kind</span> <span class="o">=</span> <span class="s1">&#39;reg&#39;</span><span class="p">,</span>
+                        <span class="n">height</span> <span class="o">=</span> <span class="mi">5</span> <span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.33</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="s2">&quot;pearsonr = </span><span class="si">{:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r</span><span class="p">),</span>
+                <span class="n">ha</span> <span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">15</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span></div>
+
+<span class="c1">#========================================================</span>
+<span class="k">def</span> <span class="nf">_annotate_pearsonr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
+    <span class="n">r</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">&quot;pearsonr = </span><span class="si">{:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r</span><span class="p">),</span>
+                <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="o">.</span><span class="mi">9</span><span class="p">),</span> <span class="n">xycoords</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+
+<span class="c1">#========================================================</span>
+<span class="k">def</span> <span class="nf">plot_corrplot_with_pearsonr</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">cols</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Correlation plot with Pearson correlation coefficient.</span>
+<span class="sd">    Diagonals are distplots, right are scatterplots and left are kde.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    cols: list</span>
+<span class="sd">        List of columns.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of output image file.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        cols = [&#39;sqft_living&#39;, &#39;sqft_living15&#39;, &#39;sqft_above&#39;]</span>
+<span class="sd">        corrplot_with_pearsonr(df,cols)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">PairGrid</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="nb">vars</span> <span class="o">=</span> <span class="n">cols</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="mf">3.5</span><span class="p">)</span>
+
+    <span class="n">g</span><span class="o">.</span><span class="n">map_upper</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;#8A2BE2&#39;</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">map_diag</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">map_lower</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;Blues_d&quot;</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">map_lower</span><span class="p">(</span><span class="n">_annotate_pearsonr</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1">#========================================================</span>
+<div class="viewcode-block" id="plot_count_cat"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_count_cat">[docs]</a><span class="k">def</span> <span class="nf">plot_count_cat</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">cat</span><span class="p">,</span> <span class="n">percent</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">bottom</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span><span class="n">fontsizex</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">fontsizey</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">horizontal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">number</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;count plot of given column with optional percent display.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    cat: str</span>
+<span class="sd">        Name of categorical column.</span>
+<span class="sd">    percent: bool</span>
+<span class="sd">        Whether or not the percent to be shown.</span>
+<span class="sd">    bottom: float</span>
+<span class="sd">        Adjust the matplotlib figure bottom.</span>
+<span class="sd">    figsize: (int, int)</span>
+<span class="sd">        Figure size.</span>
+<span class="sd">    fontsizex: int</span>
+<span class="sd">        Font size for xticks.</span>
+<span class="sd">    fontsizey: int</span>
+<span class="sd">        Font size for yticks.</span>
+<span class="sd">    horizontal: bool</span>
+<span class="sd">        Whether or not plot horizontal bar plot.</span>
+<span class="sd">    number: int</span>
+<span class="sd">        Whether or not to show to number on top of barplots.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">])</span> <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">horizontal</span><span class="p">:</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">countplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">cat</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ax</span><span class="o">.</span><span class="n">patches</span><span class="p">:</span>
+            <span class="n">xp</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span><span class="o">+</span><span class="n">p</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span><span class="o">/</span><span class="mf">2.</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span>
+            <span class="n">yp</span> <span class="o">=</span> <span class="n">height</span>
+            <span class="n">txt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{:1.2f}</span><span class="s1">%&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">height</span><span class="o">/</span><span class="n">total</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">percent</span><span class="p">:</span>
+                <span class="n">txt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{:d}</span><span class="s1"> (</span><span class="si">{:1.2f}</span><span class="s1">%)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="p">(</span><span class="n">height</span><span class="o">/</span><span class="n">total</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">xp</span><span class="p">,</span><span class="n">bottom</span><span class="p">,</span><span class="n">txt</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">horizontal</span><span class="p">:</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">countplot</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">cat</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ax</span><span class="o">.</span><span class="n">patches</span><span class="p">:</span>
+            <span class="n">xp</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="c1"># p.get_width() gives 0</span>
+            <span class="n">yp</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_y</span><span class="p">()</span>
+
+            <span class="c1"># text</span>
+            <span class="n">txt_number</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_width</span><span class="p">(),</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="n">txt_pct</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span><span class="o">/</span><span class="n">total</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;%&#39;</span>
+
+            <span class="k">if</span> <span class="n">number</span><span class="p">:</span>
+                <span class="n">percent</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">xp</span><span class="p">,</span><span class="n">yp</span><span class="p">,</span><span class="n">txt_number</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">percent</span><span class="p">:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">xp</span><span class="p">,</span><span class="n">yp</span><span class="p">,</span><span class="n">txt_pct</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsizex</span><span class="p">,</span><span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsizey</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">cat</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsizex</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsizey</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span><span class="sa">f</span><span class="s1">&#39;countplot_</span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s1">.png&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<span class="c1">#=========================================================</span>
+<div class="viewcode-block" id="plot_corrplot_with_pearsonr"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_corrplot_with_pearsonr">[docs]</a><span class="k">def</span> <span class="nf">plot_corrplot_with_pearsonr</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">cols</span><span class="p">,</span><span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Correlation plot with Pearson correlation coefficient.</span>
+<span class="sd">    Diagonals are distplots, right are scatterplots and left are kde.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    cols: list</span>
+<span class="sd">        List of columns.</span>
+<span class="sd">    save: bool</span>
+<span class="sd">        Whether or not to save the image.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the image.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        cols = [&#39;sqft_living&#39;, &#39;sqft_living15&#39;, &#39;sqft_above&#39;]</span>
+<span class="sd">        corrplot_with_pearsonr(df,cols)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">PairGrid</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="nb">vars</span> <span class="o">=</span> <span class="n">cols</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="mf">3.5</span><span class="p">)</span>
+
+    <span class="n">g</span><span class="o">.</span><span class="n">map_upper</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;#8A2BE2&#39;</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">map_diag</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">map_lower</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;Blues_d&quot;</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">map_lower</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotate_pearsonr</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_corrplot_pearsonr.png&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<span class="c1">#=========================================================</span>
+<div class="viewcode-block" id="plot_corr"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_corr">[docs]</a><span class="k">def</span> <span class="nf">plot_corr</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdBu&#39;</span><span class="p">,</span><span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span>
+                    <span class="n">xrot</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">yrot</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+                    <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Correlation plot.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    cols: list,optional</span>
+<span class="sd">        List of columns.</span>
+<span class="sd">    cmap: str,optional</span>
+<span class="sd">        Colormap. eg. RdBu, coolward,PuBu</span>
+<span class="sd">    annot: bool</span>
+<span class="sd">        Show annotation or not.</span>
+<span class="sd">    figsize: (int,int)</span>
+<span class="sd">        Figure size.</span>
+<span class="sd">    xrot: int</span>
+<span class="sd">        Rotation of xtick labels</span>
+<span class="sd">    yrot: int</span>
+<span class="sd">        Rotation of ytick labels</span>
+<span class="sd">    fontsize: int</span>
+<span class="sd">        Size of x and y ticklabels</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    save: bool</span>
+<span class="sd">        Whether or not to save the image.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the image.</span>
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        cols = [&#39;sqft_living&#39;, &#39;sqft_living15&#39;, &#39;sqft_above&#39;]</span>
+<span class="sd">        plot_corr(df,cols)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cols</span><span class="p">:</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+
+    <span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">(),</span>
+                    <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+                    <span class="n">annot</span><span class="o">=</span><span class="n">annot</span><span class="p">)</span>
+
+    <span class="n">g</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">(),</span>
+                    <span class="n">rotation</span><span class="o">=</span><span class="n">yrot</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span>
+                    <span class="n">rotation</span><span class="o">=</span><span class="n">xrot</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Correlation Heatmap&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span><span class="sa">f</span><span class="s1">&#39;corrplot_&#39;</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<span class="c1">#==========================================================</span>
+<div class="viewcode-block" id="plot_corr_style"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_corr_style">[docs]</a><span class="k">def</span> <span class="nf">plot_corr_style</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdBu&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Correlation plot with style and magnification.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    cols: list,optional</span>
+<span class="sd">        List of columns.</span>
+<span class="sd">    cmap: str,optional</span>
+<span class="sd">        Colormap. eg. RdBu, coolward,PuBu</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        cols = [&#39;sqft_living&#39;, &#39;sqft_living15&#39;, &#39;sqft_above&#39;]</span>
+<span class="sd">        plot_corrplot_with_pearsonr(df,cols)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cols</span><span class="p">:</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">background_gradient</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>\
+    <span class="o">.</span><span class="n">set_properties</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s1">&#39;max-width&#39;</span><span class="p">:</span> <span class="s1">&#39;80px&#39;</span><span class="p">,</span> <span class="s1">&#39;font-size&#39;</span><span class="p">:</span> <span class="s1">&#39;10pt&#39;</span><span class="p">})</span>\
+    <span class="o">.</span><span class="n">set_caption</span><span class="p">(</span><span class="s2">&quot;Hover to magify&quot;</span><span class="p">)</span>\
+    <span class="o">.</span><span class="n">set_precision</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>\
+    <span class="o">.</span><span class="n">set_table_styles</span><span class="p">(</span><span class="n">magnify</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
+
+<span class="c1">#==========================================================</span>
+<div class="viewcode-block" id="plot_cat_cat2"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_cat_cat2">[docs]</a><span class="k">def</span> <span class="nf">plot_cat_cat2</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">cat</span><span class="p">,</span><span class="n">target_cat</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span><span class="n">ylim2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot 2*2 plot for categorical feature vs target-cateogoical feature.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    cat: str</span>
+<span class="sd">        Categorical feature.</span>
+<span class="sd">    target_cat: str</span>
+<span class="sd">        Categorical target feature.</span>
+<span class="sd">    figsize: (int, int)</span>
+<span class="sd">        Figure size.</span>
+<span class="sd">    ylim2: int</span>
+<span class="sd">        Upper limit of yaxis.</span>
+<span class="sd">    ofile: str</span>
+<span class="sd">        Name of the output file.</span>
+<span class="sd">    save: bool</span>
+<span class="sd">        Whether or not to save the image.</span>
+<span class="sd">    show: bool</span>
+<span class="sd">        Whether or not to show the image.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        cat = &#39;sex&#39;</span>
+<span class="sd">        target_cat = &#39;conversion&#39;</span>
+<span class="sd">        odir = &#39;images&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+
+    <span class="c1"># single count plot</span>
+    <span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="s1">&#39;magma&#39;</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()),</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># single percent plot</span>
+    <span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>\
+        <span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="s1">&#39;magma&#39;</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()),</span>
+                    <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># double count  plot</span>
+    <span class="n">column0</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">],</span><span class="n">df</span><span class="p">[</span><span class="n">target_cat</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">],</span><span class="n">df</span><span class="p">[</span><span class="n">target_cat</span><span class="p">])</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">column0</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># # double percent plot</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">cat</span><span class="p">],</span><span class="n">df</span><span class="p">[</span><span class="n">target_cat</span><span class="p">],</span><span class="n">normalize</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>\
+    <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">column0</span><span class="p">)</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">ylim2</span><span class="p">:</span>
+        <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">ylim2</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Count and Percent plot for </span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s1"> vs </span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+
+    <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">percent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">add_text_barplot</span><span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">percent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">ofile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">,</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s1">_vs_</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s1">.png&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ofile</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<span class="c1">#===========================================================</span>
+<div class="viewcode-block" id="plot_num_cat2"><a class="viewcode-back" href="../../bhishan.html#bhishan.plot_ds.plot_num_cat2">[docs]</a><span class="k">def</span> <span class="nf">plot_num_cat2</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">col_num</span><span class="p">,</span><span class="n">target_cat</span><span class="p">,</span>
+                                    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span><span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                                    <span class="n">odir</span><span class="o">=</span><span class="s1">&#39;images&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot of continuous variable vs binary-target.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        Input data.</span>
+<span class="sd">    col_num: str</span>
+<span class="sd">        Name of numeric column.</span>
+<span class="sd">    target_cat: str</span>
+<span class="sd">        Name of categorical column.</span>
+<span class="sd">    figsize: (int, int)</span>
+<span class="sd">        Figure size.</span>
+<span class="sd">    bins: int</span>
+<span class="sd">        Number of bins in the histogram.</span>
+<span class="sd">    odir: str</span>
+<span class="sd">        Name of output directory.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        col_num = &#39;age&#39;</span>
+<span class="sd">        target_cat = &#39;conversion&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="n">col_num</span><span class="p">])</span>
+    <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="o">=</span>  <span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">target_cat</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+
+    <span class="c1"># top-left violin and top-right boxplot</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">violinplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">target_cat</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">col_num</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">target_cat</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">col_num</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># bottom left two-distplots</span>
+    <span class="n">ser1</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2"> == @a&quot;</span><span class="p">)[</span><span class="n">col_num</span><span class="p">]</span>
+    <span class="n">ser2</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2"> == @b&quot;</span><span class="p">)[</span><span class="n">col_num</span><span class="p">]</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span><span class="n">ser1</span><span class="p">,</span><span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span><span class="n">ser2</span><span class="p">,</span><span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># bottom right stripplot</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">stripplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">target_cat</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">col_num</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># beautify</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="c1"># save</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">odir</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">col_num</span><span class="si">}</span><span class="s1">_vs_</span><span class="si">{</span><span class="n">target_cat</span><span class="si">}</span><span class="s1">.png&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Bhishan 1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Bhishan Poudel.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.4.
+    </div>
+  </body>
+</html>
