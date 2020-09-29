@@ -10,8 +10,18 @@
 
 # API Introduction
 ![](gif/api.gif)
+
+# Miscellaneous Plots
 ![](gif/misc.gif)
+
+# Plotly Plots
 ![](gif/plotly.gif)
+
+# Numerical and Category Plots
 ![](gif/plots.gif)
+
+# Statistics Plots
 ![](gif/stats.gif)
+
+# Timeseries Plots
 ![](gif/timeseries.gif)
