@@ -25,3 +25,6 @@
 
 # Timeseries Plots
 ![](gif/timeseries.gif)
+
+# Machine Learning
+![](gif/model_eval.gif)
