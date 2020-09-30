@@ -7,6 +7,7 @@
 | pandas_api_plotly.ipynb  | [ipynb](https://github.com/bhishanpdl/bp/blob/master/examples/pandas_api_plotly.ipynb), [rendered](https://nbviewer.jupyter.org/github/bhishanpdl/bp/blob/master/examples/pandas_api_plotly.ipynb)  |   | [Bhishan Poudel](https://bhishanpdl.github.io/)  |
 | pandas_api_timeseries.ipynb  | [ipynb](https://github.com/bhishanpdl/bp/blob/master/examples/pandas_api_timeseries.ipynb), [rendered](https://nbviewer.jupyter.org/github/bhishanpdl/bp/blob/master/examples/pandas_api_timeseries.ipynb)  |   | [Bhishan Poudel](https://bhishanpdl.github.io/)  |
 | example_mpl_style.ipynb  | [ipynb](https://github.com/bhishanpdl/bp/blob/master/examples/example_mpl_style.ipynb), [rendered](https://nbviewer.jupyter.org/github/bhishanpdl/bp/blob/master/examples/example_mpl_style.ipynb)  |   | [Bhishan Poudel](https://bhishanpdl.github.io/)  |
+| example_model_eval.ipynb  | [ipynb](https://github.com/bhishanpdl/bp/blob/master/examples/example_model_eval.ipynb), [rendered](https://nbviewer.jupyter.org/github/bhishanpdl/bp/blob/master/examples/example_model_eval.ipynb)  |   | [Bhishan Poudel](https://bhishanpdl.github.io/)  |
 
 # API Introduction
 ![](gif/api.gif)
