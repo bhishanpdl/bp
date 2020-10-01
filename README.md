@@ -4,7 +4,7 @@
 `bp` is my personal library for day to day use scripts such as data cleaning, machine learning, data visualization and so on.
 # API References
 For the usage of the module, visit API tutorials at ReadTheDocs or Github Pages.
-- [API Usage of bp @ Read the Docs](http://bhishan.readthedocs.io/)
+- [API Usage of bp @ Read the Docs](https://bp.readthedocs.io/en/latest/?badge=latest)
 - [API Usage of bp @ GitHub Pages](https://bhishanpdl.github.io/bp/)
 
 # Motivation
