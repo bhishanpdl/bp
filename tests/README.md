@@ -4,8 +4,8 @@
   so it needs test files ending with required format.
 - To run pre-commit
   + first install module [pre-commit](https://pre-commit.com/) `pip install pre-commit`
-  + create a .pre-commit-config.yaml file in root of repo
-  + create .git/hooks/pre-commit executable file `pre-commit install`
+  + create a `.pre-commit-config.yaml` file in root of repo
+  + create `.git/hooks/pre-commit` executable file using `pre-commit install`
   + run pre-commit `pre-commit run --all-files`
 
 
