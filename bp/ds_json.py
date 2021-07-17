@@ -42,10 +42,10 @@ class MyJson(object):
         mj = MyJson()
         ans = mj.parse_json_col(df,'payload')
         """
-        # give increasing index to comine later
+        # give increasing index to combine later
         df = df.reset_index()
 
-        df_json = df[json_col].apply(json.loads).apply(pd.io.json.json_normalize)
+        df_json = df[json_col].apply(json.loads).apply(pd.json_normalize)
         df_json = pd.concat(df_json.to_numpy())
         df_json.index = range(len(df_json))
 

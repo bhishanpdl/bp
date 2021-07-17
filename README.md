@@ -35,8 +35,8 @@ We can run the `bp` Jupyter notebooks live over the web at [Binder](http://mybin
 Go to your conda environment and install the module.
 
 ## Install final version
-```
-1. First go the folder where is setup.py located.
+```bash
+# First go the folder where is setup.py located.
 which pip # make sure you are in right environment
 python setup.py install --user # This will build some eggs and build directories.
 
@@ -45,13 +45,46 @@ python setup.py install --user # This will build some eggs and build directories
 ```
 
 ## Developer Version
-```
+```bash
 # If you plan to update the module frequently (I do) use developer method.
 which pip # make sure you are in correct conda environment
 pip install -e .  # -e means editable version and dot is the path
                   # where there is setup.py file located.
 
 # this will create: bp.egg-info folder.
+```
+
+# Using Docker
+```bash
+mkdir -p ~/temp # create temporary directory and go there
+cd ~/temp
+
+# download the docker file
+pwd # make sure you are in right place
+wget https://raw.githubusercontent.com/bhishanpdl/bp/master/Dockerfile
+
+# Now Open the Docker app and make sure it is running
+# We can see whale icon running on menubar
+
+# build the docker image for docker file and give name of docker image bp
+ls # make sure there is Dockerfile
+docker build -t bp .
+# if you build twice it uses cache
+# (to avoid cache use --no-cache but using cache is better whenever possible)
+
+# check if any other docker images are running
+docker ps
+
+# run the docker
+docker run -t bp
+
+# this somehow opens terminal with python running
+# close that terminal and open new terminal from Docker dashboard
+# we can run command python and use module bp there
+# or, also we can run the scripts there.
+
+# close the docker
+# go to docker dashboard and stop the container.
 ```
 
 # License
