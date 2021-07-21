@@ -1,0 +1,15 @@
+{
+    "id": [
+        0
+    ],
+    "payload": [
+        {
+            "analytics": {
+                "device": "Desktop",
+                "email_open_rate_pct": 14
+            },
+            "industry": "Construction",
+            "time_in_product_mins": 62.45
+        }
+    ]
+}

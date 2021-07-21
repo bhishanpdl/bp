@@ -76,7 +76,7 @@ docker build -t bp .
 docker ps
 
 # run the docker
-docker run -t bp
+docker run -ti bp
 
 # this somehow opens terminal with python running
 # close that terminal and open new terminal from Docker dashboard
