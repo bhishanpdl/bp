@@ -14277,9 +14277,6 @@ a.anchor-link {
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
 
-<span class="kn">from</span> <span class="nn">bhishan</span> <span class="kn">import</span> <span class="n">bp</span>
-<span class="kn">from</span> <span class="nn">bhishan</span> <span class="kn">import</span> <span class="n">randomcolor</span>
-
 <span class="o">%</span><span class="k">load_ext</span> autoreload
 <span class="o">%</span><span class="k">load_ext</span> watermark
 
@@ -14305,10 +14302,10 @@ a.anchor-link {
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Bhishan Poudel 2020-09-28 
+<pre>Bhishan Poudel 2021-07-11 
 
 CPython 3.7.7
-IPython 7.18.1
+IPython 7.22.0
 
 compiler   : Clang 4.0.1 (tags/RELEASE_401/final)
 system     : Darwin
@@ -14317,11 +14314,9 @@ machine    : x86_64
 processor  : i386
 CPU cores  : 4
 interpreter: 64bit
-json     2.0.9
-seaborn  0.11.0
-autopep8 1.5.2
-pandas   1.1.0
-numpy    1.18.4
+pandas  1.2.4
+numpy   1.19.5
+seaborn 0.11.0
 
 </pre>
 </div>
@@ -14329,6 +14324,26 @@ numpy    1.18.4
 
 </div>
 
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># my local library</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/Users/poudel/Dropbox/a00_Bhishan_Modules/&quot;</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/Users/poudel/Dropbox/a00_Bhishan_Modules/bhishan&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">bhishan</span> <span class="kn">import</span> <span class="n">bp</span>
+
+<span class="kn">from</span> <span class="nn">bhishan</span> <span class="kn">import</span> <span class="n">randomcolor</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
 </div>
 
 </div>
@@ -14349,7 +14364,7 @@ numpy    1.18.4
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">rand_color</span> <span class="o">=</span> <span class="n">randomcolor</span><span class="o">.</span><span class="n">RandomColor</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
@@ -14363,49 +14378,12 @@ numpy    1.18.4
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">bhishan.randomcolor</span> <span class="kn">import</span> <span class="n">RandomColor</span> <span class="k">as</span> <span class="n">RC</span>
 
 <span class="n">RC</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>[&#39;#e5a997&#39;, &#39;#e87183&#39;, &#39;#fca9c2&#39;]</pre>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rand_color</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
 </pre></div>
 
      </div>
@@ -14427,7 +14405,7 @@ numpy    1.18.4
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>[&#39;#e094be&#39;]</pre>
+<pre>[&#39;#e5a997&#39;, &#39;#e87183&#39;, &#39;#fca9c2&#39;]</pre>
 </div>
 
 </div>
@@ -14442,7 +14420,7 @@ numpy    1.18.4
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rand_color</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">hue</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rand_color</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
 </pre></div>
 
      </div>
@@ -14464,7 +14442,7 @@ numpy    1.18.4
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>[&#39;#628fc9&#39;, &#39;#92c8db&#39;, &#39;#37217f&#39;]</pre>
+<pre>[&#39;#e094be&#39;]</pre>
 </div>
 
 </div>
@@ -14479,7 +14457,7 @@ numpy    1.18.4
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rand_color</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="c1"># ONLY gives one color</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rand_color</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">hue</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14501,7 +14479,7 @@ numpy    1.18.4
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>[&#39;#a0e5e8&#39;]</pre>
+<pre>[&#39;#628fc9&#39;, &#39;#92c8db&#39;, &#39;#37217f&#39;]</pre>
 </div>
 
 </div>
@@ -14516,7 +14494,7 @@ numpy    1.18.4
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rand_color</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">luminosity</span><span class="o">=</span><span class="s1">&#39;bright&#39;</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rand_color</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="c1"># ONLY gives one color</span>
 </pre></div>
 
      </div>
@@ -14538,7 +14516,7 @@ numpy    1.18.4
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>[&#39;#21ea1e&#39;, &#39;#aa3211&#39;, &#39;#e5026c&#39;]</pre>
+<pre>[&#39;#a0e5e8&#39;]</pre>
 </div>
 
 </div>
@@ -14553,7 +14531,7 @@ numpy    1.18.4
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rand_color</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">hue</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="n">luminosity</span><span class="o">=</span><span class="s1">&#39;dark&#39;</span><span class="p">,</span><span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rand_color</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">luminosity</span><span class="o">=</span><span class="s1">&#39;bright&#39;</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14575,7 +14553,7 @@ numpy    1.18.4
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>[&#39;#d6790e&#39;, &#39;#b2720a&#39;, &#39;#d39c10&#39;]</pre>
+<pre>[&#39;#21ea1e&#39;, &#39;#aa3211&#39;, &#39;#e5026c&#39;]</pre>
 </div>
 
 </div>
@@ -14588,6 +14566,43 @@ numpy    1.18.4
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rand_color</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">hue</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="n">luminosity</span><span class="o">=</span><span class="s1">&#39;dark&#39;</span><span class="p">,</span><span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>[&#39;#d6790e&#39;, &#39;#b2720a&#39;, &#39;#d39c10&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">rand_color</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">hue</span><span class="o">=</span><span class="s1">&#39;monochrome&#39;</span><span class="p">,</span> <span class="n">format_</span><span class="o">=</span><span class="s1">&#39;rgb&#39;</span><span class="p">)</span>
@@ -14606,7 +14621,7 @@ numpy    1.18.4
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
 
 
 

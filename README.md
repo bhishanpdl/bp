@@ -1,92 +1,57 @@
-# bp
-[![Build Status](https://travis-ci.org/bhishanpdl/bp.svg?branch=master)](https://travis-ci.org/bhishanpdl/bp)[![Documentation Status](https://readthedocs.org/projects/bp/badge/?version=latest)](https://bp.readthedocs.io/en/latest/?badge=latest)
+# Module Installation
+- Make sure you are in the root directory where there is setup.py file.
+- Make sure to use -e option for the future edit of the module.
 
-`bp` is my personal library for day to day use scripts such as data cleaning, machine learning, data visualization and so on.
-# API References
-For the usage of the module, visit API tutorials at ReadTheDocs or Github Pages.
-- [API Usage of bp @ Read the Docs](https://bp.readthedocs.io/en/latest/?badge=latest)
-- [API Usage of bp @ GitHub Pages](https://bhishanpdl.github.io/bp/)
-
-# Motivation
-This repository exists for two reasons.
-
-1. Build a code base for personal use so that I don't have to write the same code snippet twice.
-2. Learn the best practices in software industry.
-
-# Examples
-
-**Live Example**  
-We can run the `bp` Jupyter notebooks live over the web at [Binder](http://mybinder.org):
-
-[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/bhishanpdl/bhishan)
-
-**Rendered Preview**  
-
-|  Notebook | Rendered   | Description  |  Author |
-|---|---|---|---|
-| demo.ipynb  | [ipynb](https://github.com/bhishanpdl/bp/blob/master/docs/notebooks/demo.ipynb), [rendered](https://nbviewer.jupyter.org/github/bhishanpdl/bp/blob/master/docs/notebooks/demo.ipynb)  |   | [Bhishan Poudel](https://bhishanpdl.github.io/)  |
-
-
-# Contributors
-
-* [Bhishan Poudel](https://bhishanpdl.github.io/) (Ph.D Physics, Ohio University)
-
-# Installation
-Go to your conda environment and install the module.
-
-## Install final version
-```bash
-# First go the folder where is setup.py located.
-which pip # make sure you are in right environment
-python setup.py install --user # This will build some eggs and build directories.
-
-# once installed, we can not change the source codes.
-# This will installs all the modules given in setup.py file.
+```python
+pip install -e .
 ```
 
-## Developer Version
-```bash
-# If you plan to update the module frequently (I do) use developer method.
-which pip # make sure you are in correct conda environment
-pip install -e .  # -e means editable version and dot is the path
-                  # where there is setup.py file located.
+# Usage
+```python
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from bhishan import bp
 
-# this will create: bp.egg-info folder.
+%load_ext autoreload
+%autoreload 2
+
+df = sns.load_dataset('titanic')
+df.bp.plot_num('age')
 ```
 
-# Using Docker
-```bash
-mkdir -p ~/temp # create temporary directory and go there
-cd ~/temp
+# Install module in gcolab
+```python
+%%capture
+# capture will not print in notebook
 
-# download the docker file
-pwd # make sure you are in right place
-wget https://raw.githubusercontent.com/bhishanpdl/bp/master/Dockerfile
+import os
+import sys
+ENV_COLAB = 'google.colab' in sys.modules
 
-# Now Open the Docker app and make sure it is running
-# We can see whale icon running on menubar
+if ENV_COLAB:
+    ### mount google drive
+    from google.colab import drive
+    drive.mount('/content/drive')
 
-# build the docker image for docker file and give name of docker image bp
-ls # make sure there is Dockerfile
-docker build -t bp .
-# if you build twice it uses cache
-# (to avoid cache use --no-cache but using cache is better whenever possible)
+    ### load the data dir
+    dat_dir = 'drive/My Drive/Colab Notebooks/data/'
+    sys.path.append(dat_dir)
 
-# check if any other docker images are running
-docker ps
+    ### Image dir
+    img_dir = 'drive/My Drive/Colab Notebooks/images/'
+    if not os.path.isdir(img_dir): os.makedirs(img_dir)
+    sys.path.append(img_dir)
 
-# run the docker
-docker run -ti bp
+    ### Output dir
+    out_dir = 'drive/My Drive/Colab Notebooks/outputs/'
+    if not os.path.isdir(out_dir): os.makedirs(out_dir)
+    sys.path.append(out_dir)
 
-# this somehow opens terminal with python running
-# close that terminal and open new terminal from Docker dashboard
-# we can run command python and use module bp there
-# or, also we can run the scripts there.
-
-# close the docker
-# go to docker dashboard and stop the container.
+    ### Also install my custom module
+    module_dir = 'drive/My Drive/Colab Notebooks/Bhishan_Modules/'
+    sys.path.append(module_dir)
+    !cd drive/My Drive/Colab Notebooks/Bhishan_Modules/
+    !pip install -e .
+    !cd -
 ```
-
-# License
-This is my personal library intended to be used by only me.
-Its not a public library.

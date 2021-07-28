@@ -1,6 +1,0 @@
-pre-commit
-matplotlib>=3.1.1
-numpy>=1.16.4
-sphinx
-pandas>=0.25
-sphinx_rtd_theme
