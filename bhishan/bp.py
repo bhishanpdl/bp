@@ -21,7 +21,6 @@ Usage
 # to determine what to display when we use import *
 
 #from bhishan.bp_details import * # this is internal file
-from bhishan.ds_datetime import *
 from bhishan.ds_ds import *
 from bhishan.ds_json import *
 from bhishan.ds_speed import *
@@ -31,6 +30,7 @@ from bhishan.ml_data_proc import *
 from bhishan.ml_model_eval import *
 from bhishan.ml_statsmodels import *
 from bhishan.pandas_api import *
+from bhishan.plot_calendar import *
 from bhishan.plot_colors import *
 from bhishan.plot_ds import *
 from bhishan.plot_map import *

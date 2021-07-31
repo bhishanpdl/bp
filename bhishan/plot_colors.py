@@ -20,8 +20,11 @@ Usage
     bp.plot_colors?
 
 """
-__all__ = ["rgb2hex","hex_to_rgb","get_distinct_colors",
-        "discrete_cmap"]
+__all__ = [ "rgb2hex",
+            "hex_to_rgb",
+            "get_distinct_colors",
+            "discrete_cmap",
+            "get_colornames_from_cmap"]
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -341,9 +344,24 @@ def discrete_cmap(N, base_cmap=None):
     cmap_name = base.name + str(N)
     return LinearSegmentedColormap.from_list(cmap_name, color_list, N)
 
+def get_colornames_from_cmap(cmap_name,n=10):
+    """Get string of color names from given matplotlib cmap name.
+
+    Example:
+    cmap_name = 'cubehelix'
+    n = 10
+    colors = get_colornames_from_cmap(cmap_name, n)
+
+    """
+    import matplotlib
+
+    cmap = matplotlib.cm.get_cmap(cmap_name, n)
+    color_names = [matplotlib.colors.rgb2hex(cmap(i))
+                    for i in range(cmap.N)]
+    return color_names
+
 if __name__ == '__main__':
     N = 5
-
     x = np.random.randn(40)
     y = np.random.randn(40)
     c = np.random.randint(N, size=40)
