@@ -20,11 +20,17 @@ Usage
 """
 __all__ = ["partial_corr","point_biserial_correlation","find_corr"]
 
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+
 import numpy as np
 import pandas as pd
 import scipy
 
-def partial_corr(df,cols,print_=False):
+def partial_corr(df:DataFrame,cols:ARR,print_:bool=False):
     """Partial correlation coefficient among multiple columns of given array.
 
     Parameters
@@ -73,7 +79,7 @@ def partial_corr(df,cols,print_=False):
         print(df_partial_corr)
     return df_partial_corr
 
-def point_biserial_correlation(col1, col2):
+def point_biserial_correlation(col1:SI, col2:SI):
     """Point biserial correlation between two arrays.
     Ref: https://www.kaggle.com/harlfoxem/house-price-prediction-part-1
 
@@ -87,7 +93,7 @@ def point_biserial_correlation(col1, col2):
     r, p = stats.pointbiserialr(df[col1], df[col2])
     print ('Point biserial correlation r is {:.2f} with p = {:.2f}'.format(r,p))
 
-def find_corr(df,cols,target,method='spearman'):
+def find_corr(df:DataFrame,cols:ARR,target:SI,method:str='spearman'):
     """Correlation between multiple columns with target column.
 
     Available methods:

@@ -26,10 +26,17 @@ __all__ = [ "rgb2hex",
             "discrete_cmap",
             "get_colornames_from_cmap"]
 
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
-def rgb2hex(color):
+def rgb2hex(color:TL)->str:
     """Converts a list or tuple of  an RGB values to HEX string.
 
     Parameters
@@ -43,7 +50,7 @@ def rgb2hex(color):
     """
     return f"#{''.join(f'{hex(int(c))[2:].upper():0>2}' for c in color)}"
 
-def hex_to_rgb(h):
+def hex_to_rgb(h:str)->str:
     """Convert hexadecimal color codes to rgb
 
     Parameters
@@ -62,7 +69,7 @@ def hex_to_rgb(h):
     rgb = 'rgb' + str(tuple(int(h[i:i+2], 16) for i in (0, 2, 4)))
     return rgb
 
-def get_distinct_colors(key):
+def get_distinct_colors(key:IS)-> LD:
     """Get distinct colors.
 
     Parameters
@@ -317,7 +324,8 @@ def get_distinct_colors(key):
                 }
     return colors_dict[key]
 
-def discrete_cmap(N, base_cmap=None):
+def discrete_cmap(N:int,
+    base_cmap:ANY=None)-> ANY:
     """Create an N-bin discrete colormap from the specified input map
     Reference: https://gist.github.com/jakevdp/91077b0cae40f8f8244a
 
@@ -344,7 +352,7 @@ def discrete_cmap(N, base_cmap=None):
     cmap_name = base.name + str(N)
     return LinearSegmentedColormap.from_list(cmap_name, color_list, N)
 
-def get_colornames_from_cmap(cmap_name,n=10):
+def get_colornames_from_cmap(cmap_name:str,n:int=10)-> List:
     """Get string of color names from given matplotlib cmap name.
 
     Example:

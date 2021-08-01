@@ -27,13 +27,20 @@ __all__ = ['print_df_eval','freq_count',
         'adjustedR2','multiple_linear_regression',
         'get_high_correlated_features_df']
 
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+import pandas
+from pandas import DataFrame,Series
+from pandas.io.formats.style import Styler
+
+DS = Union[DataFrame,Series]
+DSt = Union[DataFrame,Styler]
+NUM = Union[int,float]
+IS = Union[int,str]
+
 import numpy as np
 import pandas as pd
 import sklearn
-
-# Imports
-import numpy as np
-import pandas as pd
 import os
 from functools import reduce
 from pandas.api.types import is_numeric_dtype
@@ -74,7 +81,9 @@ def print_df_eval():
                         '5-Fold Cross Validation':[]})"""
     print(ans)
 
-def freq_count(df,nlargest=None):
+def freq_count(df: DataFrame,
+    nlargest: Union[int,None]=None
+    )-> DataFrame:
     """ Return the item frequency tuple for each unique elements of columns.
 
     Parameters
@@ -95,6 +104,7 @@ def freq_count(df,nlargest=None):
         df_freq = freq_count(dftmp)
 
     """
+    import collections
     vals = df.values.T
     freq_counter = [ collections.Counter(vals[i]).most_common(nlargest)
             for i in range(len(vals)) ]
@@ -103,7 +113,10 @@ def freq_count(df,nlargest=None):
                             index=df.columns)
     return df_freq
 
-def get_column_descriptions(df, column_list=None,style=True):
+def get_column_descriptions(df: DataFrame,
+    column_list: Union[Iterable,None]=None,
+    style:bool=False
+    )->DSt:
     """Get nice table of columns description of given dataframe.
 
     Parameters
@@ -147,9 +160,12 @@ def get_column_descriptions(df, column_list=None,style=True):
                             )
         df_desc = df_desc_styled
 
-    return(df_desc)
+    return df_desc
 
-def adjustedR2(r2,nrows,kcols):
+def adjustedR2(r2:NUM,
+    nrows:int,
+    kcols:int
+    )-> NUM:
     """Function to calculate adjusted R-squared.
 
     R-squared metric increases with number of features used.
@@ -170,7 +186,11 @@ def adjustedR2(r2,nrows,kcols):
     """
     return r2-(kcols-1)/(nrows-kcols)*(1-r2)
 
-def multiple_linear_regression(df,features,target,model,cv=5):
+def multiple_linear_regression(df: DataFrame,
+    features: Iterable,
+    target:str,
+    model:Any,
+    cv:int=5)->Tuple:
     """ Multiple Linear Regression Modelling using given model.
 
     Parameters
@@ -223,7 +243,10 @@ def multiple_linear_regression(df,features,target,model,cv=5):
 
     return (rmse, r2_train, ar2_train, r2_test, ar2_test, cv)
 
-def get_high_correlated_features_df(df,print_=False,thr=0.5):
+def get_high_correlated_features_df(df: DataFrame,
+    print_: bool=False,
+    thr: float=0.5
+    )-> DataFrame:
     """Get the most correlated features above given threshold.
 
     Note:
@@ -254,9 +277,11 @@ def get_high_correlated_features_df(df,print_=False,thr=0.5):
         print(df1)
     return df1
 
-    return df1
-
-def report_cat_binn(df,cat,binn,one,name):
+def report_cat_binn(df: DataFrame,
+    cat: SI,
+    binn: SI,
+    one: SI,
+    name: SI)->None:
     """Analysis of categorical feature with binary column.
 
     Parameters
@@ -316,10 +341,3 @@ def report_cat_binn(df,cat,binn,one,name):
 {cat_yes_pct_totalyes[i]:5.2f}% of {cat_yes_values.sum():<5d} total {name} and
 {empty:{empty_len}s}{cat_yes_pct_group[i]:5.2f}% of {cat_values[i]:<5d} group {cat_types[i]}\
 )""")
-
-
-
-
-
-
-

@@ -27,6 +27,12 @@ Usage
 __all__ = ["regression_residual_plots","print_statsmodels_summary",
         "lm_stats","lm_plot","lm_residual_corr_plot"]
 
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -41,15 +47,19 @@ import statsmodels.robust as smrb # smrb.mad() etc
 from IPython.display import display, HTML
 
 
-def regression_residual_plots(model_fit, dependent_var,
-                                data, size = [10,10],
-                                cook_xlim=None,
-                                cook_ylim=None,
-                                annotate_outliers=True,
-                                verbose=True,
-                                title=None,
-                                loc='upper right',
-                                ofile=None):
+def regression_residual_plots(
+    model_fit:Any,
+    dependent_var:str,
+    data:ARR,
+    size:List[int,int] = [10,10],
+    cook_xlim: LIMIT=None,
+    cook_ylim: LIMIT=None,
+    annotate_outliers: bool=True,
+    verbose: bool=True,
+    title: SN=None,
+    loc: SI='upper right',
+    ofile: SN=None
+    ):
     """
     Parameters
     -----------
@@ -60,6 +70,13 @@ def regression_residual_plots(model_fit, dependent_var,
     data: pandas.DataFrame
     size: list
         default is [10,10]. matplotlib figsize = [10,10]
+    cook_xlim=None,
+    cook_ylim=None,
+    annotate_outliers=True,
+    verbose=True,
+    title=None,
+    loc='upper right',
+    ofile=None
 
     .. code-block:: python
 
@@ -248,7 +265,7 @@ def regression_residual_plots(model_fit, dependent_var,
     plt.show()
     plt.close()
 
-def print_statsmodels_summary(summary,verbose=True):
+def print_statsmodels_summary(summary:Any,verbose:bool=True):
     """Print statsmodels fitted model summary with some color hightlights.
 
     Parameters
@@ -447,7 +464,7 @@ def print_statsmodels_summary(summary,verbose=True):
 ################################
 # Functions to emulate R's lm().plot() functionality
 
-def lm_stats(X, y, y_pred):
+def lm_stats(X:ARR, y:ARR, y_pred:ARR):
     """Get leverage and studentised residuals.
 
     Parameters
@@ -475,6 +492,7 @@ def lm_stats(X, y, y_pred):
     residuals = np.array(y - y_pred)
 
     # Hat matrix
+    X = np.array(X)
     H = np.array(X @ np.linalg.inv(X.T @ X)) @ X.T
 
     H = np.array(H)
@@ -506,7 +524,11 @@ def lm_stats(X, y, y_pred):
                         'y_pred': y_pred})
 
 
-def lm_plot(df_X1train, df_ytrain, df_ypreds_train,verbose=True,ofile=None):
+def lm_plot(df_X1train:DataFrame,
+    df_ytrain:Series,
+    df_ypreds_train:ARR,
+    verbose:bool=True,
+    ofile:SN=None):
     """Provides R style residual plots based on results from lm_stats
 
     Parameters
@@ -592,8 +614,12 @@ def lm_plot(df_X1train, df_ytrain, df_ypreds_train,verbose=True,ofile=None):
     if verbose: print(desc)
     plt.show()
 
-def lm_residual_corr_plot(df_X1train,df_ytrain,df_ypreds_train,
-                            verbose=True,ofile=None):
+def lm_residual_corr_plot(
+    df_X1train:DataFrame,
+    df_ytrain:ARR,
+    df_ypreds_train:ARR,
+    verbose:bool=True,
+    ofile:SN=None):
     """Linear models residual correlation plots.
 
     Parameters

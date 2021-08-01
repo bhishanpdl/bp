@@ -28,13 +28,20 @@ __all__ = [
     "plot_ks"
     ]
 
-# imports
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+
 import numpy as np
 import pandas as pd
+from pandas import DataFrame,Series
+import matplotlib.pyplot as plt
+
 import seaborn as sns
 from tqdm import tqdm_notebook as tqdm
 import matplotlib
-import matplotlib.pyplot as plt
 import json
 import os
 import time
@@ -46,10 +53,18 @@ from .plot_utils import add_text_barplot
 sns.set(color_codes=True)
 plt.style.use('ggplot') # better than sns styles.
 
-def plot_statistics(df,cols=None,statistic='mean',color='b',
-                    figsize=(12,4),ylim=None,
-                    decimals=4, rot=30,percent=False,comma=False
-                    ):
+def plot_statistics(
+    df:DataFrame,
+    cols:ARRN=None,
+    statistic:str='mean',
+    color:str='b',
+    figsize:LIMIT=(12,4),
+    ylim:LIMITN=None,
+    decimals:int=4,
+    rot:int=30,
+    percent:bool=False,
+    comma:bool=False
+    ):
     """Plot statistics for given columns.
 
     Parameters
@@ -106,8 +121,17 @@ def plot_statistics(df,cols=None,statistic='mean',color='b',
     plt.show()
     plt.close()
 
-def plot_ecdf(df,col,cross=None,bins=None,color='b',
-            figsize=(12,4),xlim=None,ylim=None,fontsize=12):
+def plot_ecdf(
+    df:DataFrame,
+    col:SI,
+    cross:NUMN=None,
+    bins:IN=None,
+    color:str='b',
+    figsize:LIMIT=(12,4),
+    xlim:LIMITN=None,
+    ylim:LIMITN=None,
+    fontsize:int=12
+    ):
     """Plot empirical cumulative distribution function and histogram.
 
     Parameters
@@ -178,7 +202,11 @@ def plot_ecdf(df,col,cross=None,bins=None,color='b',
     plt.show()
     plt.close()
 
-def get_yprobs_sorted_proportions(df_ytest,col_ytrue,col_yprobs):
+def get_yprobs_sorted_proportions(
+    df_ytest:DataFrame,
+    col_ytrue:SI,
+    col_yprobs:SI
+    ):
     """Sort the df_ytest by predicted probabilities and return
         dataframe with various proportions.
 
@@ -208,7 +236,11 @@ def get_yprobs_sorted_proportions(df_ytest,col_ytrue,col_yprobs):
 
     return df_ytest
 
-def plot_gini(df_ytest_proportions,col_ytrue,col_yprobs):
+def plot_gini(
+    df_ytest_proportions:DataFrame,
+    col_ytrue:SI,
+    col_yprobs:SI
+    ):
     """Plot Kolmogorov-Smirnov Curve.
 
     Parameters:
@@ -246,8 +278,12 @@ def plot_gini(df_ytest_proportions,col_ytrue,col_yprobs):
     plt.legend(loc=2)
     plt.show()
 
-def plot_ks(df_ytest_proportions,col_yprobs,
-            col_cum_perc_good,col_cum_perc_bad):
+def plot_ks(
+    df_ytest_proportions:DataFrame,
+    col_yprobs:SI,
+    col_cum_perc_good:SI,
+    col_cum_perc_bad:SI
+    ):
     """Plot Kolmogorov-Smirnov Curve.
 
     Parameters:

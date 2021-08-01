@@ -24,8 +24,12 @@ __all__ = [
     'display_calendar_month_red_green',
     'display_calendar_month_cmap'
     ]
-from typing import List,Tuple,Dict,Callable,Iterable,Any,Union,Optional
 
+# Imports
+from typing import List,Tuple,Dict,Callable,Iterable,Any,Union,Optional
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
 import numpy as np
 import pandas as pd
 import calendar
@@ -33,7 +37,7 @@ import datetime
 import matplotlib
 from IPython.display import display,HTML
 
-def print_calendar_month(y,m,d):
+def print_calendar_month(y:int,m:int,d:int):
     """Print the calendar from year month day."""
     cal = calendar.TextCalendar(calendar.MONDAY)
     s = cal.formatmonth(y,m,d)
@@ -233,4 +237,3 @@ def display_calendar_month_cmap(
 
     # display html in jupyter notebook
     return display(HTML(s))
-

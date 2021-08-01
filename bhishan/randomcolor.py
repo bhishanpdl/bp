@@ -3,10 +3,16 @@ import colorsys
 import random
 import json
 import sys
+import numpy as np
+import pandas as pd
+from pandas import DataFrame,Series
 
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
 
 class RandomColor(object):
-    def __init__(self, seed=None):
+    def __init__(self, seed:int=None):
         # Load color dictionary and populate the color dictionary
         with open(os.path.join(os.path.dirname(__file__), "lib/colormap.json")) as fh:
             self.colormap = json.load(fh)
@@ -25,7 +31,12 @@ class RandomColor(object):
             self.colormap[color_name]["saturation_range"] = [s_min, s_max]
             self.colormap[color_name]["brightness_range"] = [b_min, b_max]
 
-    def generate(self, hue=None, luminosity=None, count=1, format_="hex"):
+    def generate(self,
+        hue: IN=None,
+        luminosity: SN=None,
+        count: int=1,
+        format_: str="hex"
+        ):
         colors = []
         for _ in range(count):
             # First we pick a hue (H)
@@ -42,7 +53,7 @@ class RandomColor(object):
 
         return colors
 
-    def pick_hue(self, hue):
+    def pick_hue(self, hue:int):
         hue_range = self.get_hue_range(hue)
         hue = self.random_within(hue_range)
 
@@ -53,7 +64,7 @@ class RandomColor(object):
 
         return hue
 
-    def pick_saturation(self, hue, hue_name, luminosity):
+    def pick_saturation(self, hue:int, hue_name:str, luminosity:str):
 
         if luminosity == "random":
             return self.random_within([0, 100])
@@ -75,7 +86,7 @@ class RandomColor(object):
 
         return self.random_within([s_min, s_max])
 
-    def pick_brightness(self, H, S, luminosity):
+    def pick_brightness(self, H:Any, S:Any, luminosity:str):
         b_min = self.get_minimum_brightness(H, S)
         b_max = 100
 
@@ -89,7 +100,7 @@ class RandomColor(object):
 
         return self.random_within([b_min, b_max])
 
-    def set_format(self, hsv, format_):
+    def set_format(self, hsv:Any, format_:str):
         if "hsv" in format_:
             color = hsv
         elif "rgb" in format_:
@@ -125,7 +136,7 @@ class RandomColor(object):
 
         return 0
 
-    def get_hue_range(self, color_input):
+    def get_hue_range(self, color_input:str):
         if color_input and color_input.isdigit():
             number = int(color_input)
 
@@ -140,10 +151,10 @@ class RandomColor(object):
         else:
             return [0, 360]
 
-    def get_saturation_range(self, hue):
+    def get_saturation_range(self, hue:int):
         return self.get_color_info(hue)["saturation_range"]
 
-    def get_color_info(self, hue):
+    def get_color_info(self, hue:int):
         # Maps red colors to make picking hue easier
         if 334 <= hue <= 360:
             hue -= 360
@@ -158,11 +169,11 @@ class RandomColor(object):
         # this should probably raise an exception
         return "Color not found"
 
-    def random_within(self, r):
+    def random_within(self, r:ARR):
         return self.random.randint(int(r[0]), int(r[1]))
 
     @classmethod
-    def hsv_to_rgb(cls, hsv):
+    def hsv_to_rgb(cls, hsv:ARR):
         h, s, v = hsv
         h = 1 if h == 0 else h
         h = 359 if h == 360 else h

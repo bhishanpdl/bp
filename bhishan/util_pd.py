@@ -25,12 +25,15 @@ __all__ = [
     "df_shrink",
 ]
 
-from typing import List,Tuple,Dict,Union,Callable,Any,Sequence,Iterable,Optional
-from pandas import DataFrame,Series
-
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import re
 
 from utils import ifnone
@@ -52,7 +55,7 @@ df.style.set_caption('caption.')
 
 def highlight_row(ser: Series,
     color: str ="lightblue",
-    row: str | int | None =None) -> List:
+    row: SIN=None) -> List:
     if row is None:
         row = ser.index[-1]
     bkg = f"background-color: {color}"
@@ -60,7 +63,7 @@ def highlight_row(ser: Series,
 
 def highlight_col(ser: Series,
     color: str ="salmon",
-    col: str | int | None =None
+    col: SIN=None
     ) -> List:
     if col is None:
         col = ser.index[-1]
@@ -75,13 +78,13 @@ def highlight_diag(dfx: DataFrame, color: str ="khaki") -> DataFrame:
 
 def highlight_rowf(dfx : Dataframe,
     color :str ="lightblue",
-    row: str | int | None =None
+    row: SIN =None
     ) -> Any:
     if row is None:
         row = dfx.index[-1]
 
     def highlight_row(ser: Series,
-        row: str | int | None,
+        row: SIN,
         color: str="salmon") -> List:
         bkg = f"background-color: {color}"
         return [bkg if ser.name == row else "" for _ in ser]
@@ -90,13 +93,13 @@ def highlight_rowf(dfx : Dataframe,
 
 def highlight_rowsf(dfx: DataFrame,
     color: str ="lightblue",
-    rows: str | int | None =None
+    rows: SIN =None
     ) -> Any:
     if rows is None:
         rows = [dfx.index[-1]]
 
     def highlight_row(ser: Series,
-        row: str | int | None,
+        row: SI,
         color: str ="salmon"
         ) -> List:
         bkg = f"background-color: {color}"
@@ -112,7 +115,7 @@ def highlight_rowsf(dfx: DataFrame,
 
 def highlight_colf(dfx: DataFrame,
     color: str ="salmon",
-    col: str | int | None =-1) -> Any:
+    col: SI =-1) -> Any:
     if not isinstance(col, str):
         col = dfx.columns[col]
 
@@ -135,8 +138,8 @@ def highlight_diagf(dfx: DataFrame,
     return dfx.style.apply(highlight_diag, axis=None)
 
 def highlight_rcd(dfx,
-    row: str | int | None =None,
-    col: str | int | None =None,
+    row: SIN =None,
+    col: SIN =None,
     c1: str ="lightblue",
     c2: str ="salmon",
     c3: str ="khaki"):
@@ -147,13 +150,13 @@ def highlight_rcd(dfx,
     )
 
 def describe(df: DataFrame,
-    cols: str | int | None =None,
+    cols: SIN =None,
     style: bool =True,
     print_: bool =False,
-    sort_col: str | int ='Missing',
+    sort_col: str ='Missing',
     transpose: bool =False,
     round_: int =2,
-    fmt: str | None =None
+    fmt: SN =None
     ):
     """Get nice table of columns description of given dataframe.
 
@@ -280,7 +283,7 @@ def describe(df: DataFrame,
 #============= Obtained from fastai.tabular.core
 # https://github.com/fastai/fastai2/blob/master/fastai2/tabular/core.py
 
-def make_date(df: DataFrame, date_field: str | int):
+def make_date(df: DataFrame, date_field: SI):
     "Make sure `df[date_field]` is of the right date type."
     field_dtype = df[date_field].dtype
     if isinstance(field_dtype, pd.core.dtypes.dtypes.DatetimeTZDtype):
@@ -289,11 +292,11 @@ def make_date(df: DataFrame, date_field: str | int):
         df[date_field] = pd.to_datetime(df[date_field], infer_datetime_format=True)
 
 def add_datepart(dfx: DataFrame,
-    col: str | int | None,
-    prefix: str | None =None,
+    col: SI,
+    prefix: SN =None,
     drop: bool =True,
     time: bool =False,
-    attr: List | Tuple | None =None
+    attr: ARRN =None
     ) -> DataFrame:
     "Helper function that adds columns relevant to a date in the column `col` of `df`."
     df = dfx.copy()
@@ -324,10 +327,10 @@ def add_datepart(dfx: DataFrame,
     return df
 
 def _get_elapsed(df: DataFrame,
-    cols: List | Tuple,
-    date_field: str | int,
-    base_field: str | int,
-    prefix: str | None) -> DataFrame:
+    cols: ARR,
+    date_field: SI,
+    base_field: SI,
+    prefix: SI) -> DataFrame:
     for f in cols:
         day1 = np.timedelta64(1, "D")
         last_date, last_base, res = np.datetime64(), None, []
@@ -341,9 +344,9 @@ def _get_elapsed(df: DataFrame,
     return df
 
 def add_elapsed_times(df: DataFrame,
-    cols: str | List | Tuple,
-    date_field: str | int,
-    base_field: str | int,
+    cols: SARR,
+    date_field: SI,
+    base_field: SI,
     )-> DataFrame:
     "Add in `df` for each event in `cols` the elapsed time according to `date_field` grouped by `base_field`"
     cols = list(cols) if isinstance(cols, str) else cols
@@ -378,7 +381,7 @@ def add_elapsed_times(df: DataFrame,
 
 def cont_cat_split(df: DataFrame,
     max_card: int =20,
-    dep_var: str | int | None=None
+    dep_var: SIN=None
     ) -> Tuple:
     "Helper function that returns column names of cont and cat variables from given `df`."
     cont_names, cat_names = [], []

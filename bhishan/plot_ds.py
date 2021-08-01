@@ -46,6 +46,11 @@ __all__ = [
     "plot_stem"
     ]
 
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
@@ -76,7 +81,15 @@ SEED = 100
 # NOTES: I have most of these functions in pandas api, so I might have
 #        slipped some errors. So, find and replace self by df.
 
-def plot_num(df,col,xlim=None,disp=False,print_=False,save=False,ofile=None,show=False):
+def plot_num(
+    df:DataFrame,
+    col:str,
+    xlim:LIMITN=None,
+    disp:bool=False,
+    print_:bool=False,
+    save:bool=False,
+    ofile:SN=None,
+    show:bool=False):
     """Plot numerical column.
 
     Parameters
@@ -137,8 +150,13 @@ def plot_num(df,col,xlim=None,disp=False,print_=False,save=False,ofile=None,show
     if show:
         plt.show()
 
-
-def plot_cat(df,cat,comma=True,save=False,ofile=None,show=False):
+def plot_cat(
+    df:DataFrame,
+    cat:str,
+    comma:str=True,
+    save:bool=False,
+    ofile:SN=None,
+    show:bool=False):
     """Plot the categorical feature.
 
     Parameters
@@ -184,7 +202,15 @@ def plot_cat(df,cat,comma=True,save=False,ofile=None,show=False):
     for i,v in df1_pct.round(2).items():
         print(f'    {i}: {v}%')
 
-def plot_num_num(df,num1,num2,figsize=(12,8),fontsize=12,ofile=None,save=False,show=False):
+def plot_num_num(
+    df:DataFrame,
+    num1:IS,
+    num2:IS,
+    figsize:LIMIT=(12,8),
+    fontsize:int=12,
+    ofile:SN=None,
+    save:bool=False,
+    show:bool=False):
     """Plot the numeric feature.
 
     Parameters
@@ -225,12 +251,20 @@ def plot_num_num(df,num1,num2,figsize=(12,8),fontsize=12,ofile=None,save=False,s
     if show:
         plt.show()
 
-def plot_num_cat(df, num,cat,
-                figsize=(24,18),ms=None,
-                bins=100,fontsize=34,
-                odir='images',
-                ofile=None,save=True,show=False,
-                print_=False,disp=False):
+def plot_num_cat(
+    df:DataFrame, 
+    num:IS,
+    cat:IS,
+    figsize:LIMIT=(24,18),
+    ms:SIN=None,
+    bins:int=100,
+    fontsize:int=34,
+    odir:str='images',
+    ofile:SN=None,
+    save:bool=True,
+    show:bool=False,
+    print_:bool=False,
+    disp:bool=False):
     """Plot of continuous variable vs binary-target.
 
     Parameters
@@ -336,9 +370,18 @@ def plot_num_cat(df, num,cat,
         .append(df[num].describe().round(2)))
 
 
-def plot_cat_num(df,cat,num,
-                    comma=False,decimals=2,rot=30,add_text=True,fontsize=14,
-                    ofile=None,save=False,show=False):
+def plot_cat_num(
+    df:DataFrame,
+    cat:SI,
+    num:SI,
+    comma:bool=False,
+    decimals:int=2,
+    rot:int=30,
+    add_text:bool=True,
+    fontsize:int=14,
+    ofile:SI=None,
+    save:bool=False,
+    show:bool=False):
     """Plot the categorical feature against numerical feature.
 
     Parameters
@@ -431,11 +474,24 @@ def plot_cat_num(df,cat,num,
         plt.show()
 
 
-def plot_cat_cat(df,cat,ycat,figsize=(12,12),ms=None,
-                ylim2=None,rot=80,fontsize=18,text_fontsize=None,comma=True,
-                loc='upper left',
-                hide_xticks=False,odir='images',
-                ofile=None,save=True,show=False,print_=True):
+def plot_cat_cat(
+    df:DataFrame,
+    cat:SI,
+    ycat:SI,
+    figsize:LIMIT=(12,12),
+    ms:SIN=None,
+    ylim2:LIMITN=None,
+    rot:int=80,
+    fontsize:int=18,
+    text_fontsize:IN=None,
+    comma:bool=True,
+    loc:SI='upper left',
+    hide_xticks:bool=False,
+    odir:str='images',
+    ofile:SN=None,
+    save:bool=True,
+    show:bool=False,
+    print_:bool=True):
     """Plot 3*2 plot for categorical feature vs target-categorical feature.
 
     Parameters
@@ -618,65 +674,77 @@ def plot_cat_cat(df,cat,ycat,figsize=(12,12),ms=None,
         for i,v in df1_per_cat_sorted[rare].items():
             print(f'    {i}: {v}%')
 
-def plot_cat_stacked(df,cols,figsize=(12,8),fontsize=14,ms=None,
-            odir='images',
-            ofile=None,save=True,show=False,
-            kws={}):
-        """Plot stacked plot of categorical features.
+def plot_cat_stacked(
+    df,
+    cols,
+    figsize=(12,8),
+    fontsize=14,
+    ms=None,
+    odir='images',
+    ofile=None,
+    save=True,
+    show=False,
+    kws={}):
+    """Plot stacked plot of categorical features.
 
-        Parameters
-        -----------
-        cols: list
-            List of the categorical column.
-        figsize: (int,int)
-            figure size. e.g. (12,8)
-        fontsize: int
-            fontsize
-        ms: int or string
-            mpl style name. eg. ggplot, seaborn_darkgrid, -1-3,-100,-300,538,5
-        odir: str
-            Name of output directory.
-            This directory will be created if it does not exist.
-        ofile: str
-            Base name of output image. eg. col.png
-        save: bool
-            Whether to save the image or not.
-        show: bool
-            Whether or not to show the image.
-        kws: dict
-            Kwargs dict for pandas dataframe plot.
-            e.g. kws = {'rot':90}
-        """
-        # df = self._obj
-        mpl_style = get_mpl_style(ms)
-        plt.style.use(mpl_style)
+    Parameters
+    -----------
+    cols: list
+        List of the categorical column.
+    figsize: (int,int)
+        figure size. e.g. (12,8)
+    fontsize: int
+        fontsize
+    ms: int or string
+        mpl style name. eg. ggplot, seaborn_darkgrid, -1-3,-100,-300,538,5
+    odir: str
+        Name of output directory.
+        This directory will be created if it does not exist.
+    ofile: str
+        Base name of output image. eg. col.png
+    save: bool
+        Whether to save the image or not.
+    show: bool
+        Whether or not to show the image.
+    kws: dict
+        Kwargs dict for pandas dataframe plot.
+        e.g. kws = {'rot':90}
+    """
+    # df = self._obj
+    mpl_style = get_mpl_style(ms)
+    plt.style.use(mpl_style)
 
-        (df[cols]
+    (df[cols]
         .apply(lambda x: x.value_counts(normalize=True))
         .T
         .plot(kind='bar', stacked=True,figsize=figsize,fontsize=fontsize,**kws)
         )
 
-        # layout
-        plt.title('Proportion of values in categorical feature',
+    # layout
+    plt.title('Proportion of values in categorical feature',
                 fontsize=fontsize,y=1.05)
-        plt.tight_layout()
+    plt.tight_layout()
 
-        if ofile:
-            # make sure this is base name
-            assert ofile == os.path.basename(ofile)
-            if not os.path.isdir(odir): os.makedirs(odir)
-            ofile = os.path.join(odir,ofile)
-        else:
-            if not os.path.isdir(odir): os.makedirs(odir)
-            ofile = os.path.join(odir,f'cats_stacked_barchart.png')
+    if ofile:
+        # make sure this is base name
+        assert ofile == os.path.basename(ofile)
+        if not os.path.isdir(odir): os.makedirs(odir)
+        ofile = os.path.join(odir,ofile)
+    else:
+        if not os.path.isdir(odir): os.makedirs(odir)
+        ofile = os.path.join(odir,f'cats_stacked_barchart.png')
 
-        if save: plt.savefig(ofile, dpi=300)
-        if show: plt.show(); plt.close()
+    if save: plt.savefig(ofile, dpi=300)
+    if show: plt.show(); plt.close()
 
 #=================================================
-def plot_date_cat(df,col_date,target_cat,figsize=(8,6),
-                    show=True,save=False):
+def plot_date_cat(
+    df:DataFrame,
+    col_date:SI,
+    target_cat:SI,
+    figsize:LIMIT=(8,6),
+    show:bool=True,
+    save:bool=False):
     """Seasonal plot of datetime column vs target cat.
 
     Parameters
@@ -786,7 +854,14 @@ def plot_date_cat(df,col_date,target_cat,figsize=(8,6),
         plt.close()
 
 #===========================================================
-def plot_daily_cat(df,col_date,target_cat,figsize=(12,8),save=False,show=False,show_xticks=True):
+def plot_daily_cat(
+    df:DataFrame,
+    col_date:SI,
+    target_cat:SI,
+    figsize:LIMIT=(12,8),
+    save:bool=False,
+    show:bool=False,
+    show_xticks:bool=True):
     """Daily total plot of binary target.
 
     Parameters
@@ -837,7 +912,12 @@ def plot_daily_cat(df,col_date,target_cat,figsize=(12,8),save=False,show=False,s
         plt.show()
         plt.close()
 
-def plot_boxplot_cats_num(df,cats,num,save=False,show=False):
+def plot_boxplot_cats_num(
+    df:DataFrame,
+    cats:ARR,
+    num:SI,
+    save:bool=False,
+    show:bool=False):
     """Plot boxplots in a loop.
 
     Parameters
@@ -868,7 +948,11 @@ def plot_boxplot_cats_num(df,cats,num,save=False,show=False):
             plt.show()
             plt.close()
 
-def plot_multiple_jointplots_with_pearsonr(df,cols,target,ofile):
+def plot_multiple_jointplots_with_pearsonr(
+    df:DataFrame,
+    cols:ARR,
+    target:SI,
+    ofile:SN):
     """Plot multiple jointplots with pearsonr correlation.
 
     Parameters
@@ -894,7 +978,10 @@ def plot_multiple_jointplots_with_pearsonr(df,cols,target,ofile):
             plt.savefig(ofile, dpi=300)
 
 #========================================================
-def plot_corrplot_with_pearsonr(df,cols,ofile=None):
+def plot_corrplot_with_pearsonr(
+    df:DataFrame,
+    cols:ARR,
+    ofile:SN=None):
     """Correlation plot with Pearson correlation coefficient.
     Diagonals are distplots, right are scatterplots and left are kde.
 
@@ -927,8 +1014,18 @@ def plot_corrplot_with_pearsonr(df,cols,ofile=None):
     plt.show()
 
 #========================================================
-def plot_count_cat(df, cat, percent=True,bottom=0,figsize=(12,8),fontsizex=18, fontsizey=18, horizontal=False,number=False,
-                save=False,show=False):
+def plot_count_cat(
+    df:DataFrame,
+    cat:SI,
+    percent:bool=True,
+    bottom:int=0,
+    figsize:LIMIT=(12,8),
+    fontsizex:int=18,
+    fontsizey:int=18,
+    horizontal:bool=False,
+    number:bool=False,
+    save:bool=False,
+    show:bool=False):
     """count plot of given column with optional percent display.
 
     Parameters
@@ -999,7 +1096,11 @@ def plot_count_cat(df, cat, percent=True,bottom=0,figsize=(12,8),fontsizex=18, f
         plt.close()
 
 #=========================================================
-def plot_corrplot_with_pearsonr(df,cols,save=False,show=True):
+def plot_corrplot_with_pearsonr(
+    df:DataFrame,
+    cols:ARR,
+    save:bool=False,
+    show:bool=True):
     """Correlation plot with Pearson correlation coefficient.
     Diagonals are distplots, right are scatterplots and left are kde.
 
@@ -1038,10 +1139,25 @@ def plot_corrplot_with_pearsonr(df,cols,save=False,show=True):
         plt.close()
 
 #=========================================================
-def plot_corr(df,cols=None,target=None,topN=10,cmap='RdYlGn',
-    annot=True,figsize=(12,8),annot_fontsize=12,
-    xrot=0,yrot=0,fontsize=18,ytitle=1.05,mask=True,ms=None,
-    odir='images',ofile=None,save=True,show=False):
+def plot_corr(
+    df:DataFrame,
+    cols:ARRN=None,
+    target:SIN=None,
+    topN:int=10,
+    cmap:str='RdYlGn',
+    annot:bool=True,
+    figsize:LIMIT=(12,8),
+    annot_fontsize:int=12,
+    xrot:int=0,
+    yrot:int=0,
+    fontsize:int=18,
+    ytitle:NUM=1.05,
+    mask:bool=True,
+    ms:SIN=None,
+    odir:SN='images',
+    ofile:SN=None,
+    save:bool=True,
+    show:bool=False):
     """Correlation plot.
 
     Parameters
@@ -1144,7 +1260,10 @@ def plot_corr(df,cols=None,target=None,topN=10,cmap='RdYlGn',
         plt.close()
 
 #==========================================================
-def plot_corr_style(df,cols=None,cmap='RdBu'):
+def plot_corr_style(
+    df:DataFrame,
+    cols:ARRN=None,
+    cmap:str='RdBu'):
     """Correlation plot with style and magnification.
 
     Parameters
@@ -1176,9 +1295,15 @@ def plot_corr_style(df,cols=None,cmap='RdBu'):
     return out
 
 #==========================================================
-def plot_cat_cat2(df,cat,target_cat,
-    figsize=(12,8),ylim2=None,
-    ofile=None,save=False,show=False):
+def plot_cat_cat2(
+    df:DataFrame,
+    cat:SI,
+    target_cat:SI,
+    figsize:LIMIT=(12,8),
+    ylim2:LIMITN=None,
+    ofile:SN=None,
+    save:bool=False,
+    show:bool=False):
     """Plot 2*2 plot for categorical feature vs target-cateogoical feature.
 
     Parameters
@@ -1254,9 +1379,13 @@ def plot_cat_cat2(df,cat,target_cat,
         plt.close()
 
 #===========================================================
-def plot_num_cat2(df, col_num,target_cat,
-                                    figsize=(12,8),bins=100,
-                                    odir='images'):
+def plot_num_cat2(
+    df:DataFrame,
+    col_num:SI,
+    target_cat:SI,
+    figsize:LIMIT=(12,8),
+    bins:int=100,
+    odir:str='images'):
     """Plot of continuous variable vs binary-target.
 
     Parameters
@@ -1308,16 +1437,21 @@ def plot_num_cat2(df, col_num,target_cat,
     plt.show()
 
 #===========================================================
-def plot_cat_binn(df, cat, binn,
-            zero_one=None,
-            is_1_good=False,
-            names=None,
-            figsize=(14,5),
-            rot=0,
-            fontsize=14,
-            palette=None,
-            ofile=None,save=False,show=True
-            ):
+def plot_cat_binn(
+    df:DataFrame,
+    cat:SI,
+    binn:SI,
+    zero_one:ARRN=None,
+    is_1_good:bool=False,
+    names:ARRN=None,
+    figsize:LIMIT=(14,5),
+    rot:int=0,
+    fontsize:int=14,
+    palette:SN=None,
+    ofile:SN=None,
+    save:bool=False,
+    show:bool=True
+    ):
     """Analysis of categorical feature with binary column.
 
     Parameters
@@ -1437,11 +1571,19 @@ def plot_cat_binn(df, cat, binn,
         plt.show()
         plt.close()
 
-def plot_pareto(df_,num,cat,thr=None,
-                figsize=(12,8),
-                rot=90,fontsize=18,
-                offset=0, decimals=2,
-                save=False,show=False):
+def plot_pareto(
+    df1:DataFrame,
+    num:SI,
+    cat:SI,
+    thr:NUMN=None,
+    figsize:LIMIT=(12,8),
+    rot:int=90,
+    fontsize:int=18,
+    offset:int=0,
+    decimals:int=2,
+    save:bool=False,
+    show:bool=False
+    ):
     """Pareto Chart.
 
     Each category must be unique.
@@ -1487,7 +1629,7 @@ def plot_pareto(df_,num,cat,thr=None,
         df.bp.plot_pareto('price','item',98)
 
     """
-    df = df_[[cat,num]].sort_values(num,ascending=False)
+    df = df1[[cat,num]].sort_values(num,ascending=False)
     df['pareto'] = df[num].cumsum() / df[num].sum() * 100
     df_below = df
 
@@ -1537,9 +1679,14 @@ def plot_pareto(df_,num,cat,thr=None,
     if show:
         plt.show()
         plt.close()
-def plot_cat_cat_pct(df, col_cat,col_cat2,
-                                    figsize=(12,8),
-                                    odir=None):
+
+def plot_cat_cat_pct(
+    df:DataFrame,
+    col_cat:SI,
+    col_cat2:SI,
+    figsize:LIMIT=(12,8),
+    odir:SN=None
+    ):
     """Plot of categorical vs binary columns such as class vs survived.
 
     Parameters
@@ -1567,20 +1714,22 @@ def plot_cat_cat_pct(df, col_cat,col_cat2,
         txt = str(p.get_height().round(2)) + '%'
         g.text(p.get_x()*1.05,p.get_height()*1.01,txt)
 
-
     # beautify
     plt.tight_layout()
 
     # save
-    if odir: plt.savefig(f'{odir}/{col_cat}_vs_{col_bin}.png')
+    if odir: plt.savefig(f'{odir}/{col_cat}_vs_{col_cat2}.png')
     plt.show()
 
-def plot_donut_binn(df, col, text='',
-            colors=['crimson', 'navy'],
-            labels=['Boring', 'Interesting'],
-            figsize=(7,7),
-            autopct='%1.2f%%'
-            ):
+def plot_donut_binn(
+    df:DataFrame,
+    col:SI,
+    text:str='',
+    colors:ARR=['crimson', 'navy'],
+    labels:ARR=['Boring', 'Interesting'],
+    figsize:LIMIT=(7,7),
+    autopct:str='%1.2f%%'
+    ):
     """
     Plot donut plot for a binary column.
 
@@ -1617,11 +1766,14 @@ def plot_donut_binn(df, col, text='',
     plt.savefig('images/class_balance_donut_plot.png')
     plt.show()
 
-def plot_two_clusters(df,cols,target,
-                    figsize=(24,12),
-                    fontsize=24,
-                    labels=['Boring','Interesting']
-                    ):
+def plot_two_clusters(
+    df:DataFrame,
+    cols:ARR,
+    target:SI,
+    figsize:LIMIT=(24,12),
+    fontsize:int=24,
+    labels:List[str,str]=['Boring','Interesting']
+    ):
     """Plot two clusters using dimensionality reduction methods.
 
     Parameters
@@ -1701,13 +1853,19 @@ def plot_two_clusters(df,cols,target,
     plt.savefig('images/two_clusters_plot.png',dpi=300)
     plt.show()
 
-def plot_stem(x,y,label=None,markerfmt='x',figsize=(8,8),
-            color="#2ca02c"):
+def plot_stem(
+    x:ARR,
+    y:ARR,
+    label:SN=None,
+    markerfmt:str='x',
+    figsize:LIMIT=(8,8),
+    color:str="#2ca02c"
+    ):
     """Plot Step plot of two variables.
 
     Parameters
     ----------
-    x: array-like, optional
+    x: array-like
         The x-positions of the stems. Default: (0, 1, ..., len(y) - 1).
     y: array-like
         The y-values of the stem heads.

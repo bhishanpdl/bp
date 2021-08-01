@@ -22,11 +22,12 @@ Usage
 
 __all__ = ['show_methods','parallelize_dataframe','ifnone']
 
-
-from typing import List,Tuple,Dict,Union,Callable,Any,Sequence,Iterable,Optional
-from pandas import DataFrame,Series
-
 # Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -40,10 +41,10 @@ def ifnone(a,b):
 def show_methods(obj: Any,
     ncols: int =3,
     starts: str =None,
-    contains: str | List | Tuple = None,
-    excludes: str | List | Tuple = None,
-    exclude_contains: str | List | Tuple = None,
-    exclude_starts: str | List | Tuple = None,
+    contains: SARRN = None,
+    excludes: SARRN = None,
+    exclude_contains: SARRN = None,
+    exclude_starts: SARRN = None,
     caps_only: bool =False,
     lower_only: bool =False,
     printt: bool=False) -> Dataframe:
@@ -138,8 +139,7 @@ def show_methods(obj: Any,
 
     return df
 
-def parallelize_dataframe(df: DataFrame,
-    func: Callable) -> DataFrame:
+def parallelize_dataframe(df: DataFrame,func: Callable) -> DataFrame:
     """ Parallize  df.appy(func) operation to a pandas dataframe.
 
     Example:

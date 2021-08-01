@@ -18,11 +18,15 @@ Usage
 """
 __all__ = ['parse_json_col','MyJson']
 
-import numpy as np
-import pandas as pd
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+
 import json
 
-def parse_json_col(df,json_col):
+def parse_json_col(df:DataFrame,json_col:SI)->DataFrame:
     """Explode the json column and attach to original dataframe.
 
     Parameters
@@ -67,10 +71,10 @@ def parse_json_col(df,json_col):
     return df_combined
 
 class MyJson(object):
-    def __init__(self):
+    def __init__(self:Any):
         pass
 
-    def parse_json_col(self, df,json_col):
+    def parse_json_col(self:Any, df:DataFrame,json_col:str)->DataFrame:
         """Explode the json column and attach to original dataframe.
         Parameters
         -----------

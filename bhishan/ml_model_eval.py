@@ -34,19 +34,26 @@ __all__ = ["get_binary_classification_scalar_metrics",
         "plot_roc_skf"
         ]
 
-import numpy as np
-import pandas as pd
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+
+
 from IPython.display import display
 import matplotlib.pyplot as plt
 
-def get_binary_classification_scalar_metrics(model_name,model,
-    Xtest,ytest,
-    ypreds,
-    desc='',
-    df_eval=None,
-    style_col="Recall",
-    show=True,
-    round_=None):
+def get_binary_classification_scalar_metrics(model_name:str,
+    model: Any,
+    Xtest: AD,
+    ytest: AS,
+    ypreds: AS,
+    desc: str='',
+    df_eval:DN =None,
+    style_col: str="Recall",
+    show: bool=True,
+    round_: IN=None)-> DN:
     """Get some scalar metrics for binary classification.
 
     Parameters
@@ -59,7 +66,7 @@ def get_binary_classification_scalar_metrics(model_name,model,
         Test predictor variable
     ytest: np.array
         Test response variable
-    ypred: np.array
+    ypreds: np.array
         Test response predictions.
     df_eval: pandas.DataFrame
         Pandas dataframe for model evaluation.
@@ -226,8 +233,15 @@ def get_binary_classification_scalar_metrics(model_name,model,
 
     return df_eval
 
-def get_binary_classification_scalar_metrics2(model_name,
-    ytest,ypreds,desc='',df_eval=None,style_col="F1",show=True,round_=None):
+def get_binary_classification_scalar_metrics2(model_name:str,
+    ytest:AS,
+    ypreds:AS,
+    desc:str='',
+    df_eval:DN=None,
+    style_col:str="F1",
+    show:bool=True,
+    round_:IN=None
+    )-> DN:
     """Get some scalar metrics for binary classification.
 
     Parameters
@@ -397,11 +411,14 @@ def get_binary_classification_scalar_metrics2(model_name,
 
     return df_eval
 
-def get_binary_classification_report(model_name,
-    ytest,ypreds,
-    desc="",
-    df_clf_report=None,
-    style_col='Recall_1', show=True):
+def get_binary_classification_report(model_name:str,
+    ytest:AS,
+    ypreds:AS,
+    desc:bool="",
+    df_clf_report:DN=None,
+    style_col:str='Recall_1',
+    show:bool=True
+    )->DN:
     """Get binary classification report.
 
     Parameters
@@ -490,8 +507,15 @@ def get_binary_classification_report(model_name,
 
     return df_clf_report
 
-def print_confusion_matrix(model_name,ytest,ypreds,
-        zero,one,color_zero='lightblue',color_one='salmon',show=True):
+def print_confusion_matrix(model_name:str,
+    ytest:AS,
+    ypreds:AS,
+    zero:str,
+    one:str,
+    color_zero:str='lightblue',
+    color_one:str='salmon',
+    show:bool=True
+    )-> DN:
     """Print confusion matrix for binary classification.
 
     Parameters
@@ -572,7 +596,8 @@ def get_false_negative_frauds(model_name,
     ytest,ypreds,
     desc="",
     df_false_negatives=None,
-    show=True):
+    show=True
+    )-> DN:
     """Get False Negative Frauds in a binary classification.
 
     Parameters
@@ -648,10 +673,10 @@ def get_false_negative_frauds(model_name,
 
     return df_false_negatives
 
-def plot_confusion_matrix_plotly(ytest,
-                                ypreds,
-                                labels,
-                                precision=4):
+def plot_confusion_matrix_plotly(ytest:AS,
+    ypreds:AS,
+    labels:ARR,
+    precision:int=4):
 
     """Plot confusion using plotly.
     Parameters
@@ -691,7 +716,9 @@ def plot_confusion_matrix_plotly(ytest,
     init_notebook_mode(connected=True)
     iplot(fig)
 
-def plot_roc_auc(ytest,yprobs_label1):
+def plot_roc_auc(ytest:AS,
+    yprobs:AS
+    ):
     """Plot Area Under the Curve.
 
     Parameters
@@ -710,7 +737,7 @@ def plot_roc_auc(ytest,yprobs_label1):
     """
     from sklearn import metrics
 
-    yprobs = np.array(yprobs_label1)
+    yprobs = np.array(yprobs)
 
     # make 1d array
     if yprobs.shape[1] == 2:
@@ -729,7 +756,13 @@ def plot_roc_auc(ytest,yprobs_label1):
     plt.title('ROC curve')
     plt.show()
 
-def plot_roc_skf(clf,X,y,skf=None,random_state=None,ofile=None):
+def plot_roc_skf(clf:Any,
+    X:AD,
+    y:AS,
+    skf:IN=None,
+    random_state:IN=None,
+    ofile:SN=None
+    ):
     """Plot the ROC Curve for the whole data X,y using stratified k-fold.
 
     Parameters

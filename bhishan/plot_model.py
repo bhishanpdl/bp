@@ -19,6 +19,12 @@ Usage
 """
 __all__ = ["plot_simple_linear_regression"]
 
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas import DataFrame,Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -26,8 +32,16 @@ import seaborn as sns
 
 plt.style.use('ggplot')
 
-def plot_simple_linear_regression(X_test, y_test, model,xlabel,ylabel,
-    figsize=(6,5), data_color='salmon', pred_color='seagreen'):
+def plot_simple_linear_regression(
+    X_test:ARR,
+    y_test:ARR,
+    model:Any,
+    xlabel:str,
+    ylabel:str,
+    figsize:LIMIT=(6,5),
+    data_color:str='salmon',
+    pred_color:str='seagreen'
+    ):
     plt.figure(figsize=figsize)
 
     plt.scatter(X_test, y_test, color=data_color, label="Data", alpha=.1)

@@ -18,15 +18,21 @@ Usage
 """
 __all__ = ['optimize_memory']
 
-import numpy as np
-import pandas as pd
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 plt.style.use('ggplot')
 
-def optimize_memory(df, datetime_features=[None]):
-    """Reduce the memory of pandas dataframe.
-    """
+def optimize_memory(
+    df:DataFrame,
+    datetime_features:List=[None]
+    ):
+    """Reduce the memory of pandas dataframe."""
     # How much memory reduced?
     before = df.memory_usage(deep=True).sum() / 1024**2
 

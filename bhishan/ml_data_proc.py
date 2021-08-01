@@ -32,6 +32,12 @@ __all__ = [
     "select_kbest_features"
     ]
 
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+
 import numpy as np
 import pandas as pd
 from itertools import combinations
@@ -43,7 +49,13 @@ plt.style.use('ggplot')
 from pandas.api.types import is_numeric_dtype
 from pandas.api.types import is_datetime64_any_dtype
 
-def get_outliers(ser,k=1.5,plot_=False,show=False,info=True):
+def get_outliers(
+    ser:Series,
+    k: NUM=1.5,
+    plot_: bool=False,
+    show: bool=False,
+    info: bool=True
+    ):
     """Get outliers based on John Tukey's Inter Quartile Range IQR method.
 
     We remove following outliers:
@@ -111,7 +123,7 @@ def get_outliers(ser,k=1.5,plot_=False,show=False,info=True):
 get_outliers_iqr = get_outliers
 get_outliers_tukey = get_outliers
 
-def get_outliers_kde(x):
+def get_outliers_kde(x:ARR):
     """Find outliers using KDEUnivariate method.
 
     Parameters
@@ -158,7 +170,12 @@ def get_outliers_kde(x):
 
     return idx_outliers, val_outliers
 
-def remove_outliers(df, col, k=1.5, info=True):
+def remove_outliers(
+    df:DataFrame,
+    col:SI,
+    k: NUM=1.5,
+    info: bool=True
+    ):
     """Remove outliers using John Tukey's IQR method.
 
     We remove following outliers:
@@ -212,7 +229,7 @@ def remove_outliers(df, col, k=1.5, info=True):
 remove_outliers_iqr = get_outliers
 remove_outliers_tukey = get_outliers
 
-def add_interactions(df):
+def add_interactions(df:DataFrame):
     """Add two way interaction feature terms for all columns of pandas dataframe.
 
     Parameters
@@ -260,17 +277,24 @@ def add_interactions(df):
 
     return df
 
-def select_kbest_features(df_Xtrain, df_ytrain, df_Xtest):
+def select_kbest_features(
+    df_Xtrain:DataFrame,
+    df_ytrain:ARR,
+    df_Xtest:DataFrame,
+    k:int=20
+    ):
     """Select Kbest features using scikit learn SelectKBest.
 
     Parameters
     -----------
     df_Xtrain: pandas.DataFrame
         Training predictor variables.
-    df_ytest: pandas.DataFrame
+    df_ytest: array-like
         Training response variable.
     df_Xtest: pandas.DataFrame
         Test predictor variables.
+    k: int
+       Number of features to select.
 
     Returns
     --------
@@ -280,7 +304,8 @@ def select_kbest_features(df_Xtrain, df_ytrain, df_Xtest):
         Test data with selected features.
     """
     import sklearn.feature_selection
-    select = sklearn.feature_selection.SelectKBest(k=20)
+
+    select = sklearn.feature_selection.SelectKBest(k=k)
     selected_features = select.fit(df_Xtrain,  df_ytrain)
     indices_selected = selected_features.get_support(indices=True)
     colnames_selected = [df_Xtrain.columns[i] for i in indices_selected]

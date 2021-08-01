@@ -49,6 +49,12 @@ __all__ = [
     "plotly_mapbox"
     ]
 
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -107,7 +113,12 @@ class Plotly_Charts:
     charts = Chart.make_charts()
     """
 
-    def __init__(self, df, target, exclude=None, max_num=None):
+    def __init__(self:Any,
+        df:DataFrame,
+        target:str,
+        exclude:ARRN=None,
+        max_num:IN=None
+        ):
         """Init parameters.
 
         Args:
@@ -142,11 +153,11 @@ class Plotly_Charts:
 
         intr_kwargs = {"manual": True, "manual_name": "Make_Chart"}
 
-        def display_html(txt):
+        def display_html(txt:str):
             html_ = widgets.HTML(value=f"<h1> {txt} </h1>")
             display(html_)
 
-        def display_four_boxes(plot_fn):
+        def display_four_boxes(plot_fn:Callable):
             widgets.interact_manual.opts["manual_name"] = "Make_Chart"
             hbox1 = interactive(plot_fn, intr_kwargs)
             hbox2 = interactive(plot_fn, intr_kwargs)
@@ -342,9 +353,18 @@ class Plotly_Charts:
                 fig['layout']['title']['x'] = 0.5
                 iplot(fig)
 
-def plotly_corr_heatmap(df,target,topN=10,method='pearson',
-                        colorscale='Reds',width=800,height=800,
-                        ofile=None,show=True,auto_open=False):
+def plotly_corr_heatmap(
+    df:DataFrame,
+    target:str,
+    topN:int=10,
+    method:str='pearson',
+    colorscale:str='Reds',
+    width:int=800,
+    height:int=800,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False
+    )->Any:
     """Plot correlation heatmap for top N numerical columns.
 
     Parameters
@@ -400,8 +420,15 @@ def plotly_corr_heatmap(df,target,topN=10,method='pearson',
     if show:
         return iplot(fig)
 
-def plotly_countplot(df,col,topN=None,color=None,ofile=None,
-                    show=True,auto_open=False):
+def plotly_countplot(
+    df:DataFrame,
+    col:str,
+    topN:IN=None,
+    color:SN=None,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False
+    ):
     """Value counts plot using plotly and pandas.
 
     Parameters
@@ -455,8 +482,16 @@ def plotly_countplot(df,col,topN=None,color=None,ofile=None,
     if show:
         return iplot(fig)
 
-def plotly_histogram(df,col,nbins=None,size=None,color=None,
-                    ofile=None,show=True,auto_open=False):
+def plotly_histogram(
+    df:DataFrame,
+    col:str,
+    nbins:IN=None,
+    size:IN=None,
+    color:SN=None,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False
+    ):
     """Histogram plot of given column of pandas dataframe using plotly.
 
     Parameters
@@ -499,7 +534,13 @@ def plotly_histogram(df,col,nbins=None,size=None,color=None,
     if show:
         return iplot(fig)
 
-def plotly_distplot(df, cols,ofile=None,show=True,auto_open=False):
+def plotly_distplot(
+    df:DataFrame,
+    cols:ARR,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False
+    ):
     """Distribution plot using plotly.
 
     Parameters
@@ -533,10 +574,18 @@ def plotly_distplot(df, cols,ofile=None,show=True,auto_open=False):
     if show:
         return iplot(fig)
 
-def plotly_radar_plot(df, target,
-        categories=None,names=None,colors=None,opacities=[0.5,0.5],
-        show_data=False,show_obs=False,
-        ofile=None,show=True,auto_open=False):
+def plotly_radar_plot(
+    df:DataFrame,
+    target:str,
+    categories:ARRN=None,
+    names:ARRN=None,
+    colors:ARRN=None,
+    opacities:ARRN=[0.5,0.5],
+    show_data:bool=False,
+    show_obs:bool=False,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False):
     """Plot the Radar Chart or Spider Diagram or Polygon Plot for Binary Case.
 
     NOTE:
@@ -650,9 +699,15 @@ Feature5 have similar normalized mean between {names[0]} and {names[1]} cases.
     if show:
         return iplot(fig)
 
-
-def plotly_boxplot(df,cols,ylim_lst=None,color=None,ofile=None,
-                    show=True,auto_open=False):
+def plotly_boxplot(
+    df:DataFrame,
+    cols:ARRN,
+    ylim_lst:ARR=None,
+    color:SN=None,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False
+    ):
     """Box plot using plotly.
 
     Parameters
@@ -691,8 +746,14 @@ def plotly_boxplot(df,cols,ylim_lst=None,color=None,ofile=None,
     if show:
         return iplot(fig)
 
-def plotly_boxplot_allpoints_with_outliers(df,col,color=None,
-            ofile=None,show=True,auto_open=False):
+def plotly_boxplot_allpoints_with_outliers(
+    df:DataFrame,
+    col:str,
+    color:SN=None,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False
+    ):
     """Box plot with all points and outliers using plotly.
 
     Parameters
@@ -740,8 +801,13 @@ def plotly_boxplot_allpoints_with_outliers(df,col,color=None,
     if show:
         return iplot(fig)
 
-def plotly_boxplot_categorical_column(df,xcol,ycol,ofile=None,
-                                    show=True,auto_open=False):
+def plotly_boxplot_categorical_column(
+    df:DataFrame,
+    xcol:str,
+    ycol:str,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False):
     """Boxplot of categorical columns.
 
     Parameters
@@ -780,8 +846,17 @@ def plotly_boxplot_categorical_column(df,xcol,ycol,ofile=None,
     if show:
         return iplot(fig)
 
-def plotly_cat_binn_zero_one(df,cat,binn,zero,one,name,is_one_good=False,
-        ofile=None,show=True,auto_open=False) :
+def plotly_cat_binn_zero_one(
+    df:DataFrame,
+    cat:str,
+    binn:str,
+    zero:IS,
+    one:IS,
+    name:str,
+    is_one_good:bool=False,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False) :
     """Plot categorical feature vs binary feature.
 
     Parameters
@@ -881,9 +956,18 @@ def plotly_cat_binn_zero_one(df,cat,binn,zero,one,name,is_one_good=False,
     if show:
         return iplot(fig)
 
-def plotly_pieplots(df,cols,nrows,ncols,
-        height=800,width=600,title=None,colorway=None,
-        ofile=None,show=True,auto_open=False):
+def plotly_pieplots(
+    df:DataFrame,
+    cols:ARRN,
+    nrows:int,
+    ncols:int,
+    height:int=800,
+    width:int=600,
+    title:SN=None,
+    colorway:ARRN=None,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False):
     """Multiple pieplots using plotly.
 
     Parameters
@@ -939,10 +1023,18 @@ def plotly_pieplots(df,cols,nrows,ncols,
     if show:
         return iplot(fig)
 
-def plotly_scattergl_plot(df,xcol,ycol,color=None,colorscale=None,
-                        logx=False,logy=False,
-                        bestfit=False,ofile=None,
-                        show=True,auto_open=False):
+def plotly_scattergl_plot(
+    df:DataFrame,
+    xcol:str,
+    ycol:str,
+    color:SN=None,
+    colorscale:SN=None,
+    logx:bool=False,
+    logy:bool=False,
+    bestfit:bool=False,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False):
     """Scatterplot for large data using webgl.
 
     Parameters
@@ -1030,9 +1122,16 @@ def plotly_scattergl_plot(df,xcol,ycol,color=None,colorscale=None,
         return iplot(fig)
 
 #===================================================================
-def plotly_scattergl_plot_colorcol(df,xcol,ycol,colorcol,
-                                    logx=False,logy=False,ofile=None,
-                                    show=True,auto_open=False):
+def plotly_scattergl_plot_colorcol(
+    df:DataFrame,
+    xcol:str,
+    ycol:str,
+    colorcol:str,
+    logx:bool=False,
+    logy:bool=False,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False):
     """Scatterplot using color column.
 
     Parameters
@@ -1095,9 +1194,16 @@ def plotly_scattergl_plot_colorcol(df,xcol,ycol,colorcol,
         return iplot(fig)
 
 #============================================================================
-def plotly_scattergl_plot_subplots(df,xcol,ycol,subplot_cols,
-                                    logx=False,logy=False,ofile=None,
-                                    show=True,auto_open=False):
+def plotly_scattergl_plot_subplots(
+    df:DataFrame,
+    xcol:str,
+    ycol:str,
+    subplot_cols:ARRN,
+    logx:bool=False,
+    logy:bool=False,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False):
     """Plot x vs y scatterplots for all the subplot columns one below another.
 
     Parameters
@@ -1169,8 +1275,16 @@ def plotly_scattergl_plot_subplots(df,xcol,ycol,subplot_cols,
         return iplot(fig)
 
 #==============================================================================
-def plotly_bubbleplot(df1, xcol, ycol1, ycol2=None, size_col=None,
-            size_factor=5,ofile=None,show=True,auto_open=False):
+def plotly_bubbleplot(
+    df1:DataFrame,
+    xcol:str,
+    ycol1:str,
+    ycol2:SN=None,
+    size_col:SN=None,
+    size_factor:int=5,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False):
     """Bubble plot of two y-axis columns according to size of size column.
 
     Parameters
@@ -1258,12 +1372,20 @@ def get_mapbox_access_token():
     mapbox_access_token = json_data['token1']
     return mapbox_access_token
 
-def plotly_mapbox(df1, lat_col, lon_col, color_col=None, text_col=None,
-                title='My Map',
-                marker_size=4.5,zoom=9,
-                width=800,height=800,
-                ofile=None,show=True,
-                auto_open=False):
+def plotly_mapbox(
+    df1:DataFrame,
+    lat_col:str,
+    lon_col:str,
+    color_col:SN=None,
+    text_col:SN=None,
+    title:str='My Map',
+    marker_size:NUM=4.5,
+    zoom:int=9,
+    width:int=800,
+    height:int=800,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False):
     """Map plot using mapbox.
 
     Parameters
@@ -1348,8 +1470,7 @@ def plotly_mapbox(df1, lat_col, lon_col, color_col=None, text_col=None,
         return iplot(fig)
 
 #============================ Functions needed ========================
-
-def rgb2hex(color):
+def rgb2hex(color:ARR):
     """Converts a list or tuple of  an RGB values to HEX string.
 
     Parameters
@@ -1363,7 +1484,7 @@ def rgb2hex(color):
     """
     return f"#{''.join(f'{hex(int(c))[2:].upper():0>2}' for c in color)}"
 
-def hex_to_rgb(h):
+def hex_to_rgb(h:str):
     """Convert hexadecimal color codes to rgb
 
     Parameters

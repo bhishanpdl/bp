@@ -13,18 +13,32 @@ __all__ = [
     "get_mpl_style",
     "get_plotly_colorscale"
     ]
+
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+
 import numpy as np
+import pandas as pd
+from pandas import DataFrame,Series
 from matplotlib import pyplot as plt
 from scipy import stats
 import seaborn as sns
-import pandas as pd
 import os
 
 home = os.path.expanduser("~")
 mpl_path = home + "/Dropbox/a00_Bhishan_Modules/bhishan/mpl_styles/"
 
-def add_text_barplot(ax, decimals=4, rot=30,percent=False,comma=False,
-                        cumsum=False,fontsize=14):
+def add_text_barplot(
+    ax:Any,
+    decimals: int=4,
+    rot: int=30,
+    percent: bool=False,
+    comma: bool=False,
+    cumsum: bool=False,
+    fontsize: int=14
+    ):
     """Add the text to bar plot.
 
     Parameters
@@ -97,7 +111,7 @@ def magnify():
                         ('font-size', '12pt')])
             ]
 
-def get_mpl_style(style_name):
+def get_mpl_style(style_name:str):
     official_styles_lst = plt.style.available
     official_styles_lst = [i for i in official_styles_lst
                             if i!='_classic_test_patch']
@@ -139,7 +153,7 @@ def get_mpl_style(style_name):
         if style_name in dic.keys():
             return dic[style_name]
 
-def get_plotly_colorscale(cmap_name, data):
+def get_plotly_colorscale(cmap_name:str, data:ARR):
     import matplotlib as mpl
     cmap = plt.get_cmap(cmap_name)
     norm = mpl.colors.Normalize(vmin=np.min(data), vmax=np.max(data))

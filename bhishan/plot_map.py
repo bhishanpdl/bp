@@ -31,6 +31,12 @@ __all__ = ["plotly_usa_map",
         "plotly_mapbox"
         ]
 
+# Imports
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from pandas.core.frame import DataFrame, Series
+from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -64,10 +70,17 @@ colorscale = [[0,'rgb(255, 255, 255)'],[1,'rgb(255, 0, 0)']]
 
 New line in plotly:
 df['text'] = df['state'] + '<br>' + df['city']
-""";
+"""
 
-def plotly_usa_map2(df,col_state,col_value,title=None,
-                ofile=None,show=True,auto_open=False):
+def plotly_usa_map2(
+    df:DataFrame,
+    col_state:SI,
+    col_value:SI,
+    title:SN=None,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False
+    ):
 
     """Plotly map plot for different states of USA.
 
@@ -116,12 +129,20 @@ def plotly_usa_map2(df,col_state,col_value,title=None,
     if show:
         iplot(fig, validate=False)
 
-def plotly_usa_map(df,col_state,col_value,col_text=None,
-        colorscale='Viridis',reversescale=False,
-        title=None,
-        width=800,height=800,
-        ofile=None,show=True,
-        auto_open=False):
+def plotly_usa_map(
+    df:DataFrame,
+    col_state:SI,
+    col_value:SI,
+    col_text:SIN=None,
+    colorscale:str='Viridis',
+    reversescale:bool=False,
+    title:SN=None,
+    width:int=800,
+    height:int=800,
+    ofile:SN=None,
+    show:bool=True,
+    auto_open:bool=False
+    ):
     """Plotly map plot for different states of USA.
 
     Parameters
@@ -206,14 +227,21 @@ def plotly_usa_map(df,col_state,col_value,col_text=None,
         iplot(fig, validate=False)
 
 # USA States Plot Aggregations
-def plotly_agg_usa_plot(df,col_state,col_value,
-                            xlabel='x',ylabel='y',ylim=None,
-                            colorscale = 'Portland',
-                            reversescale=False,
-                            title=None,
-                            width=800,height=800,
-                            ofile=None,show=True,
-                            auto_open=False):
+def plotly_agg_usa_plot(
+    df:DataFrame,
+    col_state:SI,
+    col_value:SI,
+    xlabel:str='x',
+    ylabel:str='y',
+    ylim:LIMITN=None,
+    colorscale: str= 'Portland',
+    reversescale: str=False,
+    title: SN=None,
+    width: int=800,
+    height: int=800,
+    ofile: SN=None,
+    show: bool=True,
+    auto_open: bool=False):
     """Plotly map plot for different states in USA.
 
     Parameters
@@ -335,14 +363,22 @@ def plotly_agg_usa_plot(df,col_state,col_value,
     if show:
         iplot(fig, validate=False)
 
-def plotly_usa_bubble_map(df,col_value,col_lat,col_lon,
-        limits,colors,
-        scale=5000,
-        col_text=None,
-        title=None,
-        width=800,height=800,
-        ofile=None,show=True,
-        auto_open=False):
+def plotly_usa_bubble_map(
+    df:DataFrame,
+    col_value:SI,
+    col_lat:SI,
+    col_lon:SI,
+    limits:List,
+    colors:ARR,
+    scale: int=5000,
+    col_text: SIN=None,
+    title: SN=None,
+    width: int=800,
+    height: int=800,
+    ofile: SN=None,
+    show: bool=True,
+    auto_open: bool=False
+    ):
     """Plotly map plot for different states of USA.
 
     Parameters
@@ -443,14 +479,22 @@ def plotly_usa_bubble_map(df,col_value,col_lat,col_lon,
 
 #================================= Countries Plot ===================
 # Country Plot
-def plotly_country_plot(df1,col_country,col_value,
-                            xlabel='x',ylabel='y',ylim=None,
-                            colorscale='Portland',
-                            reversescale=False,
-                            title=None,
-                            width=800,height=800,
-                            ofile=None,show=True,
-                            auto_open=False):
+def plotly_country_plot(
+    df1:DataFrame,
+    col_country:SI,
+    col_value:SI,
+    xlabel:str='x',
+    ylabel:str='y',
+    ylim:LIMITN=None,
+    colorscale: str='Portland',
+    reversescale: bool=False,
+    title: SN=None,
+    width: int=800,
+    height: int=800,
+    ofile: SN=None,
+    show: bool=True,
+    auto_open: bool=False
+    ):
     """Plotly map plot for different countries.
 
     Parameters
@@ -553,16 +597,25 @@ def plotly_country_plot(df1,col_country,col_value,
 
     if show:
         iplot(fig, validate=False)
+
 #================================= map plot with agg ===========
 # Country Plot Aggregations
-def plotly_agg_country_plot(df,col_country,col_value,
-                            xlabel='x',ylabel='y',ylim=None,
-                            colorscale='Portland',
-                            reversescale=False,
-                            title=None,
-                            width=800,height=800,
-                            ofile=None,show=True,
-                            auto_open=False):
+def plotly_agg_country_plot(
+    df:DataFrame,
+    col_country:SI,
+    col_value:SI,
+    xlabel: str='x',
+    ylabel: str='y',
+    ylim: LIMITN=None,
+    colorscale: str='Portland',
+    reversescale: bool=False,
+    title: SN=None,
+    width: int=800,
+    height: int=800,
+    ofile: SN=None,
+    show: bool=True,
+    auto_open: bool=False
+    ):
     """Plotly map plot for different countries.
 
     Parameters
@@ -680,12 +733,21 @@ def get_mapbox_access_token():
     mapbox_access_token = json_data['token1']
     return mapbox_access_token
 
-def plotly_mapbox(df1, lat_col, lon_col, color_col=None, text_col=None,
-                title='My Map',
-                marker_size=4.5,zoom=9,
-                width=800,height=800,
-                ofile=None,show=True,
-                auto_open=False):
+def plotly_mapbox(
+    df1:DataFrame,
+    lat_col:SI,
+    lon_col:SI,
+    color_col:SIN=None,
+    text_col:SIN=None,
+    title: str='My Map',
+    marker_size: NUM=4.5,
+    zoom: int=9,
+    width: int=800,
+    height: int=800,
+    ofile: SN=None,
+    show: bool=True,
+    auto_open: bool=False
+    ):
     """Map plot using mapbox.
 
     Parameters
