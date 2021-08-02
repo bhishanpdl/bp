@@ -8,7 +8,13 @@ import pandas as pd
 from pandas import DataFrame,Series
 
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
-from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+try:
+    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
+except:
+    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
                         AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
                         LTii,LTff,LTss,LTsi
                         )
@@ -35,7 +41,7 @@ class RandomColor(object):
 
     def generate(self,
         hue: IN=None,
-        luminosity: SN=None,
+        luminosity: str='',
         count: int=1,
         format_: str="hex"
         ):

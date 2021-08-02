@@ -23,7 +23,14 @@ __all__ = ["partial_corr","point_biserial_correlation","find_corr"]
 # Imports
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
 from pandas.core.frame import DataFrame, Series
-from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+
+try:
+    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
+except:
+    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
                         AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
                         LTii,LTff,LTss,LTsi
                         )

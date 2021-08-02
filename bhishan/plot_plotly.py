@@ -52,7 +52,14 @@ __all__ = [
 # Imports
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
 from pandas.core.frame import DataFrame, Series
-from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+
+try:
+    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
+except:
+    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
                         AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
                         LTii,LTff,LTss,LTsi
                         )
@@ -363,7 +370,7 @@ def plotly_corr_heatmap(
     colorscale:str='Reds',
     width:int=800,
     height:int=800,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False
     )->Any:
@@ -426,8 +433,8 @@ def plotly_countplot(
     df:DataFrame,
     col:str,
     topN:IN=None,
-    color:SN=None,
-    ofile:SN=None,
+    color:str='',
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False
     ):
@@ -489,8 +496,8 @@ def plotly_histogram(
     col:str,
     nbins:IN=None,
     size:IN=None,
-    color:SN=None,
-    ofile:SN=None,
+    color:str='',
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False
     ):
@@ -539,7 +546,7 @@ def plotly_histogram(
 def plotly_distplot(
     df:DataFrame,
     cols:ARR,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False
     ):
@@ -585,7 +592,7 @@ def plotly_radar_plot(
     opacities:ARRN=[0.5,0.5],
     show_data:bool=False,
     show_obs:bool=False,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False):
     """Plot the Radar Chart or Spider Diagram or Polygon Plot for Binary Case.
@@ -705,8 +712,8 @@ def plotly_boxplot(
     df:DataFrame,
     cols:ARRN,
     ylim_lst:ARR=None,
-    color:SN=None,
-    ofile:SN=None,
+    color:str='',
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False
     ):
@@ -751,8 +758,8 @@ def plotly_boxplot(
 def plotly_boxplot_allpoints_with_outliers(
     df:DataFrame,
     col:str,
-    color:SN=None,
-    ofile:SN=None,
+    color:str='',
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False
     ):
@@ -807,7 +814,7 @@ def plotly_boxplot_categorical_column(
     df:DataFrame,
     xcol:str,
     ycol:str,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False):
     """Boxplot of categorical columns.
@@ -852,11 +859,11 @@ def plotly_cat_binn_zero_one(
     df:DataFrame,
     cat:str,
     binn:str,
-    zero:IS,
-    one:IS,
+    zero:SI,
+    one:SI,
     name:str,
     is_one_good:bool=False,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False) :
     """Plot categorical feature vs binary feature.
@@ -965,9 +972,9 @@ def plotly_pieplots(
     ncols:int,
     height:int=800,
     width:int=600,
-    title:SN=None,
+    title:str='',
     colorway:ARRN=None,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False):
     """Multiple pieplots using plotly.
@@ -1029,12 +1036,12 @@ def plotly_scattergl_plot(
     df:DataFrame,
     xcol:str,
     ycol:str,
-    color:SN=None,
-    colorscale:SN=None,
+    color:str='',
+    colorscale:str='',
     logx:bool=False,
     logy:bool=False,
     bestfit:bool=False,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False):
     """Scatterplot for large data using webgl.
@@ -1131,7 +1138,7 @@ def plotly_scattergl_plot_colorcol(
     colorcol:str,
     logx:bool=False,
     logy:bool=False,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False):
     """Scatterplot using color column.
@@ -1203,7 +1210,7 @@ def plotly_scattergl_plot_subplots(
     subplot_cols:ARRN,
     logx:bool=False,
     logy:bool=False,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False):
     """Plot x vs y scatterplots for all the subplot columns one below another.
@@ -1281,10 +1288,10 @@ def plotly_bubbleplot(
     df1:DataFrame,
     xcol:str,
     ycol1:str,
-    ycol2:SN=None,
-    size_col:SN=None,
+    ycol2:str='',
+    size_col:str='',
     size_factor:int=5,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False):
     """Bubble plot of two y-axis columns according to size of size column.
@@ -1378,14 +1385,14 @@ def plotly_mapbox(
     df1:DataFrame,
     lat_col:str,
     lon_col:str,
-    color_col:SN=None,
-    text_col:SN=None,
+    color_col:str='',
+    text_col:str='',
     title:str='My Map',
     marker_size:NUM=4.5,
     zoom:int=9,
     width:int=800,
     height:int=800,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False):
     """Map plot using mapbox.

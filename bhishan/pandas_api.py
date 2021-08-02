@@ -23,10 +23,18 @@ __all__ = ["BPAccessor"]
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
 from typing import Optional, Sequence, Type, TypeVar
 from pandas.core.frame import DataFrame, Series
-from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+
+try:
+    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
                         AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
                         LTii,LTff,LTss,LTsi
                         )
+except:
+    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
+
 import numpy as np
 import pandas as pd
 
@@ -63,7 +71,11 @@ mpl.rcParams['axes.titlesize'] = fontsize + 2
 mpl.rcParams['axes.labelsize'] = fontsize
 
 # to use inside bhishan.bp we need to make it from .plot_utils instead of plot_utils.
-from .plot_utils import (add_text_barplot, magnify,
+try:
+    from .plot_utils import (add_text_barplot, magnify,
+                        get_mpl_style, get_plotly_colorscale)
+except:
+    from plot_utils import (add_text_barplot, magnify,
                         get_mpl_style, get_plotly_colorscale)
 
 @pd.api.extensions.register_dataframe_accessor("bp")

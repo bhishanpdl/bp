@@ -49,10 +49,18 @@ __all__ = [
 # Imports
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
 from pandas.core.frame import DataFrame, Series
-from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+
+try:
+    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
                         AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
                         LTii,LTff,LTss,LTsi
                         )
+except:
+    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
+
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
@@ -68,7 +76,11 @@ import time
 import calendar
 from IPython.display import display
 
-from .plot_utils import (add_text_barplot, magnify,
+try:
+    from .plot_utils import (add_text_barplot, magnify,
+                        get_mpl_style, get_plotly_colorscale)
+except:
+    from plot_utils import (add_text_barplot, magnify,
                         get_mpl_style, get_plotly_colorscale)
 
 from sklearn.manifold import TSNE
@@ -1856,7 +1868,7 @@ def plot_two_clusters(
 def plot_stem(
     x:ARR,
     y:ARR,
-    label:SN=None,
+    label:str='',
     markerfmt:str='x',
     figsize:LIMIT=(8,8),
     color:str="#2ca02c"

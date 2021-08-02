@@ -28,7 +28,14 @@ __all__ = [
 # Imports
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
 from pandas.core.frame import DataFrame, Series
-from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+
+try:
+    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
+except:
+    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
                         AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
                         LTii,LTff,LTss,LTsi
                         )
@@ -38,7 +45,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import re
 
-from utils import ifnone
+try:
+    from .utils import ifnone
+except:
+    from utils import ifnone
 
 """
 Built-in functions:

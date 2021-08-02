@@ -30,7 +30,14 @@ __all__ = ["regression_residual_plots","print_statsmodels_summary",
 # Imports
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
 from pandas.core.frame import DataFrame, Series
-from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+
+try:
+    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
+except:
+    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
                         AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
                         LTii,LTff,LTss,LTsi
                         )
@@ -53,7 +60,7 @@ def regression_residual_plots(
     model_fit:Any,
     dependent_var:str,
     data:ARR,
-    size:Lii = [10,10],
+    size:LTii = [10,10],
     cook_xlim: LIMIT=None,
     cook_ylim: LIMIT=None,
     annotate_outliers: bool=True,
