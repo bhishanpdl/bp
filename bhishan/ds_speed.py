@@ -18,24 +18,11 @@ Usage
 """
 __all__ = ['optimize_memory']
 
-# Imports
+# type hints
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+import numpy as np
+import pandas as pd
 from pandas.core.frame import DataFrame, Series
-
-try:
-    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
-except:
-    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-plt.style.use('ggplot')
 
 def optimize_memory(
     df:DataFrame,

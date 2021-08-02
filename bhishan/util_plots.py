@@ -14,20 +14,25 @@ __all__ = [
     "get_plotly_colorscale"
     ]
 
-# Imports
+# type hints
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
-
+from typing import Optional, Sequence, Type, TypeVar
+import numpy as np
+import pandas as pd
+from pandas.core.frame import DataFrame, Series
+from pandas.io.formats.style import Styler
 try:
-    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from .mytyping import (IN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 except:
-    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
-
+    from mytyping import (IN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 
 import numpy as np
 import pandas as pd
@@ -115,9 +120,9 @@ def magnify():
     return [dict(selector="th", props=[("font-size", "7pt")]),
             dict(selector="td", props=[('padding', "0em 0em")]),
             dict(selector="th:hover",
-                 props=[("font-size", "12pt")]),
+                    props=[("font-size", "12pt")]),
             dict(selector="tr:hover td:hover",
-                 props=[('max-width', '200px'),
+                    props=[('max-width', '200px'),
                         ('font-size', '12pt')])
             ]
 

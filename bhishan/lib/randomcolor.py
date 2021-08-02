@@ -7,17 +7,25 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame,Series
 
+# type hints
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from typing import Optional, Sequence, Type, TypeVar
+import numpy as np
+import pandas as pd
+from pandas.core.frame import DataFrame, Series
+from pandas.io.formats.style import Styler
 try:
-    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from .mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 except:
-    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 
 class RandomColor(object):
     def __init__(self, seed:int=None):
@@ -41,7 +49,7 @@ class RandomColor(object):
 
     def generate(self,
         hue: IN=None,
-        luminosity: str='',
+        luminosity: SN=None,
         count: int=1,
         format_: str="hex"
         ):
@@ -65,7 +73,7 @@ class RandomColor(object):
         hue_range = self.get_hue_range(hue)
         hue = self.random_within(hue_range)
 
-        # Instead of storing red as two seperate ranges,
+        # Instead of storing red as two separate ranges,
         # we group them, using negative numbers
         if hue < 0:
             hue += 360

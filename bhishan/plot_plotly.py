@@ -34,6 +34,7 @@ Usage
 """
 __all__ = [
     "Plotly_Charts",
+    "plotly_corr",
     "plotly_corr_heatmap",
     "plotly_countplot",
     "plotly_histogram",
@@ -49,20 +50,25 @@ __all__ = [
     "plotly_mapbox"
     ]
 
-# Imports
+# type hints
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from typing import Optional, Sequence, Type, TypeVar
+import numpy as np
+import pandas as pd
 from pandas.core.frame import DataFrame, Series
-
+from pandas.io.formats.style import Styler
 try:
-    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from .mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 except:
-    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 
 import numpy as np
 import pandas as pd
@@ -95,6 +101,12 @@ COLORS30 = ['#696969', '#d3d3d3', '#8b4513',
                 '#f0e68c', '#ffff54', '#dda0dd',
                 '#90ee90', '#ff1493', '#7b68ee']
 
+
+# local functions
+try:
+    from .util_colors import rgb2hex, hex_to_rgb,get_distinct_colors
+except:
+    from util_colors import rgb2hex, hex_to_rgb,get_distinct_colors
 
 class Plotly_Charts:
     """
@@ -362,6 +374,101 @@ class Plotly_Charts:
                 fig['layout']['title']['x'] = 0.5
                 iplot(fig)
 
+def plotly_corr(
+    df:DataFrame,
+    target:SI,
+    topN:int=10,
+    method:str='pearson',
+    colorscale:str='Reds',
+    width:int=800,
+    height:int=800,
+    ytitle:NUM=0.99,
+    odir:str='images',
+    ofile:str='',
+    save:bool=True,
+    show:bool=True,
+    auto_open:bool=False
+    ):
+    """Plot correlation heatmap for top N numerical columns.
+
+    Parameters
+    -----------
+    df: pandas.DataFrame
+        Input data.
+    target: str
+        Target variable name w.r.t which we choose top N other features.
+        For example price. Then we get top N features most correlated
+        with price.
+    topN: int
+        Top n correlated variables to show in heatmap.
+    method: str
+        Method of correlation. Default is 'pearson'
+    colorscale: str
+        Color scale of heatmap. Default is 'Reds'
+    width: int
+        Width of heatmap.
+    height: int
+        Height of heatmap.
+    ytitle: float
+        Position of title.
+    odir: str
+        Name of output directory.
+        This directory will be created if it does not exist.
+    ofile: str
+        Base name of output image.
+    save: bool
+        Save the html or not.
+    show: bool
+        Whether or not to show the rendered html in notebook.
+    auto_open: bool
+        Whether or not to automatically open the output html file.
+
+    Examples
+    ---------
+    .. code-block:: python
+        diamonds = sns.load_dataset('diamonds')
+        diamonds.bp.plotly_corr('price',topN=4)
+
+    """
+    df_corr = df.corr(method=method)
+
+    colsN = df_corr.nlargest(topN, target).index
+    df_corr = df[colsN].corr()
+
+    z = df_corr.values
+    z = np.tril(z)
+    annotation_text = np.array(
+        ['{:.2f}'.format(i) for i in z.ravel()]).reshape(z.shape)
+
+    fig = ff.create_annotated_heatmap(z,showscale=True,
+                colorscale=colorscale,
+                annotation_text=annotation_text,
+                x=df_corr.columns.values.tolist(),
+                y=df_corr.columns.values.tolist()
+                )
+    fig['layout'].update(width=width,height=height)
+    fig.update_layout(
+        title = {
+            'text': f'Correlation Plot of Top {topN} features with target **{target}**',
+            'y': ytitle
+        }
+    )
+
+    if ofile:
+        # make sure this is base name
+        assert ofile == os.path.basename(ofile)
+        if not os.path.isdir(odir): os.makedirs(odir)
+        ofile = os.path.join(odir,ofile)
+    else:
+        if not os.path.isdir(odir): os.makedirs(odir)
+        ofile = os.path.join(odir,f'correlation_plot.html')
+
+    if save:
+        plot(fig, filename=ofile,auto_open=auto_open)
+
+    if show:
+        return iplot(fig)
+
 def plotly_corr_heatmap(
     df:DataFrame,
     target:str,
@@ -399,7 +506,7 @@ def plotly_corr_heatmap(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
     Examples
     ---------
@@ -431,10 +538,12 @@ def plotly_corr_heatmap(
 
 def plotly_countplot(
     df:DataFrame,
-    col:str,
+    col:SI,
     topN:IN=None,
-    color:str='',
+    color:SN=None,
+    odir:str='images',
     ofile:str='',
+    save:bool=True,
     show:bool=True,
     auto_open:bool=False
     ):
@@ -450,12 +559,22 @@ def plotly_countplot(
         Top n correlated variables to show in heatmap.
     color: str
         Color of count plot.
+    odir: str
+        Name of output directory.
+        This directory will be created if it does not exist.
     ofile: str
-        Name of the output file.
+        Base name of output image.
+    save: bool
+        Save the html or not.
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
         Whether or not to automatically open the ouput html file.
+
+    Example:
+    ----------
+    tips = sns.load_dataset('tips')
+    tips.bp.plotly_countplot('day')
     """
     if not color:
         color='rgb(158,202,225)'
@@ -485,19 +604,29 @@ def plotly_countplot(
                 yaxis=dict(title='Count'))
 
     fig = go.Figure(data=data, layout=layout)
-    fig['layout']['title']['x'] = 0.5
+
     if ofile:
+        # make sure this is base name
+        assert ofile == os.path.basename(ofile)
+        if not os.path.isdir(odir): os.makedirs(odir)
+        ofile = os.path.join(odir,ofile)
+    else:
+        if not os.path.isdir(odir): os.makedirs(odir)
+        ofile = os.path.join(odir,f'{col}.html')
+
+    if save:
         plot(fig, filename=ofile,auto_open=auto_open)
+
     if show:
         return iplot(fig)
 
 def plotly_histogram(
     df:DataFrame,
-    col:str,
+    col:SI,
     nbins:IN=None,
     size:IN=None,
-    color:str='',
-    ofile:str='',
+    color:SN=None,
+    ofile:SN=None,
     show:bool=True,
     auto_open:bool=False
     ):
@@ -546,7 +675,7 @@ def plotly_histogram(
 def plotly_distplot(
     df:DataFrame,
     cols:ARR,
-    ofile:str='',
+    ofile:SN=None,
     show:bool=True,
     auto_open:bool=False
     ):
@@ -563,7 +692,7 @@ def plotly_distplot(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
     """
     cols_list = [cols] if isinstance(cols, str) else cols
@@ -585,14 +714,14 @@ def plotly_distplot(
 
 def plotly_radar_plot(
     df:DataFrame,
-    target:str,
+    target:SI,
     categories:ARRN=None,
     names:ARRN=None,
     colors:ARRN=None,
     opacities:ARRN=[0.5,0.5],
     show_data:bool=False,
     show_obs:bool=False,
-    ofile:str='',
+    ofile:SN=None,
     show:bool=True,
     auto_open:bool=False):
     """Plot the Radar Chart or Spider Diagram or Polygon Plot for Binary Case.
@@ -710,56 +839,128 @@ Feature5 have similar normalized mean between {names[0]} and {names[1]} cases.
 
 def plotly_boxplot(
     df:DataFrame,
-    cols:ARRN,
-    ylim_lst:ARR=None,
-    color:str='',
-    ofile:str='',
+    cols:ARRN=None,
+    show_all_points:bool=False,
+    width:int=600,
+    height:int=800,
+    odir:str='images',
+    ofile:SN=None,
     show:bool=True,
+    save:bool=True,
     auto_open:bool=False
     ):
-    """Box plot using plotly.
+    """Plot correlation heatmap for top N numerical columns.
 
     Parameters
     -----------
     df: pandas.DataFrame
         Input data.
     cols: list
-        List of columns.
-    ylim_lst: list
-        List for yaxis limit.
-    color: str
-        Name of color for the boxplot.
+        List of numerical features.
+    show_all_points: bool
+        Whether or not to show all the points in boxplot.
+    width: int
+        Width of heatmap.
+    height: int
+        Height of heatmap.
+    odir: str
+        Name of output directory.
+        This directory will be created if it does not exist.
     ofile: str
-        Name of the output file.
+        Base name of output image.
+    save: bool
+        Save the html or not.
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
         Whether or not to automatically open the ouput html file.
 
+    Examples
+    ---------
+    .. code-block:: python
+        titanic = sns.load_dataset('titanic')
+        titanic.bp.plotly_boxplot('age')
+
+    Note
+    -----
+    To display large ouput in jupyter notebook without scrolling use this:
+    .. code-block:: python
+        %%javascript
+        IPython.OutputArea.auto_scroll_threshold = 9999
     """
-    cols_list = [cols] if isinstance(cols, str) else cols
+    # select only first 10 numerical features if cols is none.
+    if not cols:
+        cols = df.select_dtypes('number').columns[:10]
+        height = 300 * len(cols)
+        width = 800
 
-    data = [go.Box(y=df[col],
-                name=str(col),
-                marker=dict(color=color),
-                hoverinfo="name+y")
-            for i,col in enumerate(cols_list) ]
+    if isinstance(cols,str) or isinstance(cols,int):
+        cols = [cols]
+        num = cols[0]
+        if not is_numeric_dtype(df[num]):
+            raise AttributeError(f'{num} must be a numeric column')
 
+        ser = df[num].dropna()
+        thr = 1.5
+
+        q1 = np.percentile(ser, 25)
+        q3 = np.percentile(ser, 75)
+        iqr = q3-q1
+        floor = q1 - thr*iqr
+        ceiling = q3 + thr*iqr
+        idx_outliers = list(ser.index[(ser < floor)|(ser > ceiling)])
+        ser_outliers = ser.loc[idx_outliers].to_frame()
+
+    traces = []
+    for col in cols:
+        trace = go.Box(
+            y = df[col].dropna(),
+            name = f"{col}",
+            boxpoints = 'suspectedoutliers',
+            marker = dict(
+                color = 'rgb(8,81,156)',
+                outliercolor = 'rgba(219, 64, 82, 0.6)',
+                line = dict(
+                    outliercolor = 'rgba(219, 64, 82, 0.6)',
+                    outlierwidth = 2)),
+            line = dict(
+                color = 'rgb(8,81,156)')
+        )
+        traces.append(trace)
+
+    fig = make_subplots(rows=len(cols), cols=1)
+    for i in range(len(cols)):
+        fig.add_trace(traces[i],row=i+1,col=1)
+
+    # figure layout
     title = 'Boxplot'
-    layout = go.Layout(title = title, yaxis=dict(range=ylim_lst))
+    fig['layout'].update(width=width,height=height,title=title,title_x=0.5)
 
-    fig = go.Figure(data=data,layout=layout)
-    fig['layout']['title']['x'] = 0.5
     if ofile:
+        # make sure this is base name
+        assert ofile == os.path.basename(ofile)
+        if not os.path.isdir(odir): os.makedirs(odir)
+        ofile = os.path.join(odir,ofile)
+    else:
+        if not os.path.isdir(odir): os.makedirs(odir)
+        name = '_'.join(cols)
+        name = 'few_columns' if len(name) > 50 else name
+        ofile = os.path.join(odir,f'boxplot_' + name + '.html')
+
+    if save:
         plot(fig, filename=ofile,auto_open=auto_open)
+
     if show:
-        return iplot(fig)
+        return display(iplot(fig))
+
+    if isinstance(cols,str) or isinstance(cols,int):
+        return ser_outliers
 
 def plotly_boxplot_allpoints_with_outliers(
     df:DataFrame,
-    col:str,
-    color:str='',
-    ofile:str='',
+    col:SI,
+    color:SN=None,
+    ofile:SN=None,
     show:bool=True,
     auto_open:bool=False
     ):
@@ -812,11 +1013,12 @@ def plotly_boxplot_allpoints_with_outliers(
 
 def plotly_boxplot_categorical_column(
     df:DataFrame,
-    xcol:str,
-    ycol:str,
-    ofile:str='',
+    xcol:SI,
+    ycol:SI,
+    ofile:SN=None,
     show:bool=True,
-    auto_open:bool=False):
+    auto_open:bool=False
+    ):
     """Boxplot of categorical columns.
 
     Parameters
@@ -857,15 +1059,16 @@ def plotly_boxplot_categorical_column(
 
 def plotly_cat_binn_zero_one(
     df:DataFrame,
-    cat:str,
-    binn:str,
+    cat:SI,
+    binn:SI,
     zero:SI,
     one:SI,
     name:str,
     is_one_good:bool=False,
     ofile:str='',
     show:bool=True,
-    auto_open:bool=False) :
+    auto_open:bool=False
+    ):
     """Plot categorical feature vs binary feature.
 
     Parameters
@@ -972,11 +1175,12 @@ def plotly_pieplots(
     ncols:int,
     height:int=800,
     width:int=600,
-    title:str='',
+    title:SN=None,
     colorway:ARRN=None,
-    ofile:str='',
+    ofile:SN=None,
     show:bool=True,
-    auto_open:bool=False):
+    auto_open:bool=False
+    ):
     """Multiple pieplots using plotly.
 
     Parameters
@@ -1032,18 +1236,133 @@ def plotly_pieplots(
     if show:
         return iplot(fig)
 
+def plotly_yearplot(
+    df:DataFrame,
+    val:SI,
+    date:SI=None,
+    index:bool=False,
+    cmap:str='Greens',
+    text:str='text',
+    year:IN=None
+    ):
+    """
+    Plot a timeseries as a yearly heatmap which resembles like github
+    contribution plot.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        Dataframe must have at least two columns `date` and `value`
+    val : string
+        Name of value column.
+    date : string
+        Name of date column.
+
+    cmap : string, optional
+        Colormap. Default is 'Greens'
+    text : string, optional
+        Text to display in hoverinfo
+    year : int, optional
+        Year is required if data is more than one year.
+
+    Returns
+    -------
+    fig : plotly figure
+
+    Examples
+    --------
+
+    .. plot::
+        :context: close-figs
+
+        df = pd.DataFrame({'date': pd.date_range('2020-02-01',
+                                    '2020-12-31',freq='D')})
+        df['value'] = np.random.randint(1,20,size=(len(df)))
+        df.bp.plotly_yearplot('value','date')
+
+    """
+    colorscale = get_plotly_colorscale('Greens',df[val])
+
+    # date is none
+    if date == None:
+        if "date" in df.columns:
+            date = "date"
+
+    # check if index is date
+    if date not in df.columns:
+        if type(df.index) == pd.core.indexes.datetimes.DatetimeIndex:
+            date = df.index.name
+            df = df.reset_index()
+        else:
+            raise "Please pass `date` parameter. Or make sure index is of type datetime "
+
+    # copy data to avoid creating unwanted columns
+    df = df[[date,val]].copy()
+
+    if not text: text = 'text'
+    if text not in df.columns:
+        df[text] = (
+            'Date: ' + df[date].dt.strftime("%Y %b %d %a") + ' ' +
+            '(Value='+ df[val].astype(str) + ')'
+            )
+
+    # make sure data is single year
+    if (df[date].min().year != df[date].max().year) and (year==None):
+        raise """Please specify year if the data spans over multiple years.
+                e.g year=2020"""
+
+    if (df[date].min().year != df[date].max().year) and (year!=None):
+        df = df[df[date].dt.year==year]
+
+    # plotly data
+    data = [
+    go.Heatmap(
+            x = df[date].dt.weekofyear,
+            y = df[date].dt.day_name(),
+            z = df[val],
+            text= df[text],
+            hoverinfo=text,
+            xgap=3, # this
+            ygap=3, # and this is used to make the grid-like apperance
+            showscale=False,
+            colorscale=colorscale
+            )
+    ]
+
+    layout = go.Layout(
+        title='',
+        height=280,
+        yaxis=dict(
+            showline = False, showgrid = False, zeroline = False,
+            tickmode='array',
+            tickvals=[0,1,2,3,4,5,6],
+            ticktext=df[date].head(7).dt.strftime("%a"),
+        ),
+        xaxis=dict(
+            showline=False, showgrid=False, zeroline=False,dtick=4
+
+            ),
+            font={'size':10, 'color':'#9e9e9e'},
+            plot_bgcolor=('#fff'),
+            margin = dict(t=40),
+        )
+
+    fig = go.Figure(data=data, layout=layout)
+    return fig
+
 def plotly_scattergl_plot(
     df:DataFrame,
-    xcol:str,
-    ycol:str,
-    color:str='',
-    colorscale:str='',
+    xcol:SI,
+    ycol:SI,
+    color:SN=None,
+    colorscale:SN=None,
     logx:bool=False,
     logy:bool=False,
     bestfit:bool=False,
-    ofile:str='',
+    ofile:str=None,
     show:bool=True,
-    auto_open:bool=False):
+    auto_open:bool=False
+    ):
     """Scatterplot for large data using webgl.
 
     Parameters
@@ -1070,8 +1389,6 @@ def plotly_scattergl_plot(
         Whether or not to show the rendered html in notebook.
     auto_open: bool
         Whether or not to automatically open the ouput html file.
-
-
     """
     colorcol = df[color] if color in df.columns.values else color
     showscale = True if color in df.columns else False
@@ -1130,17 +1447,17 @@ def plotly_scattergl_plot(
     if show:
         return iplot(fig)
 
-#===================================================================
 def plotly_scattergl_plot_colorcol(
     df:DataFrame,
-    xcol:str,
-    ycol:str,
-    colorcol:str,
+    xcol:SI,
+    ycol:SI,
+    colorcol:SI,
     logx:bool=False,
     logy:bool=False,
-    ofile:str='',
+    ofile:SN=None,
     show:bool=True,
-    auto_open:bool=False):
+    auto_open:bool=False
+    ):
     """Scatterplot using color column.
 
     Parameters
@@ -1202,17 +1519,17 @@ def plotly_scattergl_plot_colorcol(
     if show:
         return iplot(fig)
 
-#============================================================================
 def plotly_scattergl_plot_subplots(
     df:DataFrame,
-    xcol:str,
-    ycol:str,
+    xcol:SI,
+    ycol:SI,
     subplot_cols:ARRN,
     logx:bool=False,
     logy:bool=False,
-    ofile:str='',
+    ofile:SN=None,
     show:bool=True,
-    auto_open:bool=False):
+    auto_open:bool=False
+    ):
     """Plot x vs y scatterplots for all the subplot columns one below another.
 
     Parameters
@@ -1283,17 +1600,17 @@ def plotly_scattergl_plot_subplots(
     if show:
         return iplot(fig)
 
-#==============================================================================
 def plotly_bubbleplot(
     df1:DataFrame,
-    xcol:str,
-    ycol1:str,
-    ycol2:str='',
-    size_col:str='',
+    xcol:SI,
+    ycol1:SI,
+    ycol2:SN=None,
+    size_col:SN=None,
     size_factor:int=5,
-    ofile:str='',
+    ofile:SN=None,
     show:bool=True,
-    auto_open:bool=False):
+    auto_open:bool=False
+    ):
     """Bubble plot of two y-axis columns according to size of size column.
 
     Parameters
@@ -1383,18 +1700,19 @@ def get_mapbox_access_token():
 
 def plotly_mapbox(
     df1:DataFrame,
-    lat_col:str,
-    lon_col:str,
-    color_col:str='',
-    text_col:str='',
+    lat_col:SI,
+    lon_col:SI,
+    color_col:SN=None,
+    text_col:SN=None,
     title:str='My Map',
     marker_size:NUM=4.5,
     zoom:int=9,
     width:int=800,
     height:int=800,
-    ofile:str='',
+    ofile:SN=None,
     show:bool=True,
-    auto_open:bool=False):
+    auto_open:bool=False
+    ):
     """Map plot using mapbox.
 
     Parameters
@@ -1477,292 +1795,3 @@ def plotly_mapbox(
         plot(fig, filename=ofile,auto_open=auto_open)
     if show:
         return iplot(fig)
-
-#============================ Functions needed ========================
-def rgb2hex(color:ARR):
-    """Converts a list or tuple of  an RGB values to HEX string.
-
-    Parameters
-    -----------
-    color: list
-        the list or tuple of integers (e.g. (127, 127, 127))
-
-    Returns
-    -------
-    str:  the rgb string
-    """
-    return f"#{''.join(f'{hex(int(c))[2:].upper():0>2}' for c in color)}"
-
-def hex_to_rgb(h:str):
-    """Convert hexadecimal color codes to rgb
-
-    Parameters
-    -----------
-    h: str
-        Hex string to convert to rgb.
-
-    Examples
-    ---------
-    .. code-block:: python
-
-        h = '#D8BFD8'
-        rgb = 'rgb(216, 191, 216)'
-    """
-    h = h.lstrip('#')
-    rgb = 'rgb' + str(tuple(int(h[i:i+2], 16) for i in (0, 2, 4)))
-    return rgb
-
-def get_distinct_colors(key):
-    """Get distinct colors.
-
-    Parameters
-    -----------
-    key: str or int
-        String or integer to get the key. Look the example below for valid names.
-
-    Examples
-    ---------
-    .. code-block:: python
-
-        '''
-        key is one of the integers: 10 20 30 40 50 75 100
-        key is one of the following strings:
-
-        'reds' 'greens' 'blues' 'grays''yellows'
-        'colors10_names' 'colors10_hex'
-        'colors20_names' 'colors20_hex'
-        'colors30_names' 'colors30_hex'
-        'colors40_names' 'colors40_hex'
-        'colors50_names' 'colors50_hex',
-        'colors75_names' 'colors75_hex'
-        'colors100_names' 'colors100_hex'
-        '''
-
-    """
-    reds = ['#D8BFD8', '#FFC0CB', '#FA8072',
-            '#D2691E', '#BC8F8F', '#A52A2A',
-            '#FF69B4', '#EE82EE', '#FF1493',
-            '#FF00FF', '#DC143C', '#FF0000']
-
-    greens = ['#32CD32', '#006400', '#66CDAA',
-            '#20B2AA', '#9ACD32', '#6B8E23',
-            '#808000', '#7CFC00', '#90EE90', '#8FBC8F']
-
-    blues=  ['#6495ED', '#B0C4DE', '#0000FF',
-            '#00008B', '#6A5ACD', '#800080',
-            '#663399', '#8A2BE2', '#DA70D6']
-
-    grays = ['#D3D3D3', '#D8BFD8', '#708090', '#000000']
-
-    yellows = ['#D2B48C', '#FFD700', '#DAA520',
-            '#B8860B', '#BDB76B', '#FFFF00']
-
-    colors10_names = ['darkgreen', 'darkblue', 'maroon3',
-                    'red', 'yellow', 'lime',
-                    'aqua', 'fuchsia', 'cornflower', 'navajowhite']
-
-    colors10_hex = ['#006400', '#00008b', '#b03060',
-                    '#ff0000', '#ffff00', '#00ff00',
-                    '#00ffff', '#ff00ff', '#6495ed', '#ffdead']
-
-    colors20_names = ['darkslategray', 'maroon', 'darkgreen',
-                    'navy', 'yellowgreen', 'red',
-                    'darkorange', 'gold', 'lime',
-                    'mediumorchid', 'mediumspringgreen', 'aqua',
-                    'blue', 'fuchsia', 'dodgerblue',
-                    'salmon', 'plum', 'deeppink',
-                    'lightskyblue', 'bisque']
-
-    colors20_hex = ['#2f4f4f', '#800000', '#006400',
-                    '#000080', '#9acd32', '#ff0000',
-                    '#ff8c00', '#ffd700', '#00ff00',
-                    '#ba55d3', '#00fa9a', '#00ffff',
-                    '#0000ff', '#ff00ff', '#1e90ff',
-                    '#fa8072', '#dda0dd', '#ff1493',
-                    '#87cefa', '#ffe4c4']
-
-    colors30_names = ['dimgray', 'lightgray', 'saddlebrown',
-                    'forestgreen', 'olive', 'darkslateblue',
-                    'darkcyan', 'steelblue', 'navy',
-                    'darkseagreen', 'darkmagenta', 'maroon3',
-                    'orangered', 'darkorange', 'lime',
-                    'darkviolet', 'springgreen', 'crimson',
-                    'aqua', 'sandybrown', 'blue',
-                    'lightcoral', 'greenyellow', 'dodgerblue',
-                    'khaki', 'laserlemon', 'plum',
-                    'lightgreen', 'deeppink', 'mediumslateblue']
-
-    colors30_hex = ['#696969', '#d3d3d3', '#8b4513',
-                    '#228b22', '#808000', '#483d8b',
-                    '#008b8b', '#4682b4', '#000080',
-                    '#8fbc8f', '#8b008b', '#b03060',
-                    '#ff4500', '#ff8c00', '#00ff00',
-                    '#9400d3', '#00ff7f', '#dc143c',
-                    '#00ffff', '#f4a460', '#0000ff',
-                    '#f08080', '#adff2f', '#1e90ff',
-                    '#f0e68c', '#ffff54', '#dda0dd',
-                    '#90ee90', '#ff1493', '#7b68ee']
-
-    colors40_names = ['darkgray', 'darkslategray', 'darkolivegreen', 'sienna',
-                    'forestgreen', 'maroon2', 'midnightblue', 'olive',
-                    'darkcyan', 'steelblue', 'yellowgreen', 'darkblue',
-                    'limegreen', 'goldenrod', 'darkseagreen', 'purple',
-                    'orangered', 'darkorange', 'gold', 'mediumvioletred',
-                    'lime', 'crimson', 'aqua', 'deepskyblue',
-                    'sandybrown', 'mediumpurple', 'blue', 'purple3',
-                    'greenyellow', 'fuchsia', 'dodgerblue', 'palevioletred',
-                    'khaki', 'salmon', 'plum', 'paleturquoise',
-                    'violet', 'palegreen', 'peachpuff', 'lightpink']
-
-    colors40_hex = ['#a9a9a9', '#2f4f4f', '#556b2f', '#a0522d',
-                    '#228b22', '#7f0000', '#191970', '#808000',
-                    '#008b8b', '#4682b4', '#9acd32', '#00008b',
-                    '#32cd32', '#daa520', '#8fbc8f', '#800080',
-                    '#ff4500', '#ff8c00', '#ffd700', '#c71585',
-                    '#00ff00', '#dc143c', '#00ffff', '#00bfff',
-                    '#f4a460', '#9370db', '#0000ff', '#a020f0',
-                    '#adff2f', '#ff00ff', '#1e90ff', '#db7093',
-                    '#f0e68c', '#fa8072', '#dda0dd', '#afeeee',
-                    '#ee82ee', '#98fb98', '#ffdab9', '#ffb6c1']
-
-    colors50_names = ['darkslategray', 'darkolivegreen', 'olivedrab',
-                    'sienna', 'seagreen', 'forestgreen',
-                    'maroon2', 'slategray', 'darkslateblue',
-                    'rosybrown', 'teal', 'darkgoldenrod',
-                    'darkkhaki', 'steelblue', 'navy',
-                    'chocolate', 'yellowgreen', 'indianred',
-                    'limegreen', 'darkseagreen', 'darkmagenta',
-                    'darkorchid', 'orangered', 'orange',
-                    'gold', 'mediumblue', 'lime',
-                    'mediumspringgreen', 'royalblue', 'crimson',
-                    'aqua', 'blue', 'purple3',
-                    'greenyellow', 'tomato', 'orchid',
-                    'thistle', 'fuchsia', 'palevioletred',
-                    'laserlemon', 'cornflower', 'plum',
-                    'deeppink', 'lightsalmon', 'wheat',
-                    'paleturquoise', 'palegreen', 'lightskyblue',
-                    'aquamarine', 'hotpink']
-
-    colors50_hex = ['#2f4f4f', '#556b2f', '#6b8e23', '#a0522d', '#2e8b57',
-                    '#228b22', '#7f0000', '#708090', '#483d8b', '#bc8f8f',
-                    '#008080', '#b8860b', '#bdb76b', '#4682b4', '#000080',
-                    '#d2691e', '#9acd32', '#cd5c5c', '#32cd32', '#8fbc8f',
-                    '#8b008b', '#9932cc', '#ff4500', '#ffa500', '#ffd700',
-                    '#0000cd', '#00ff00', '#00fa9a', '#4169e1', '#dc143c',
-                    '#00ffff', '#0000ff', '#a020f0', '#adff2f', '#ff6347',
-                    '#da70d6', '#d8bfd8', '#ff00ff', '#db7093', '#ffff54',
-                    '#6495ed', '#dda0dd', '#ff1493', '#ffa07a', '#f5deb3',
-                    '#afeeee', '#98fb98', '#87cefa', '#7fffd4', '#ff69b4']
-
-    colors75_names = ['dimgray', 'darkgray', 'gainsboro',
-                    'darkslategray', 'darkolivegreen', 'saddlebrown',
-                    'olivedrab', 'seagreen', 'forestgreen',
-                    'maroon2', 'midnightblue', 'darkgreen',
-                    'olive', 'darkslateblue', 'firebrick',
-                    'cadetblue', 'lightslategray', 'mediumseagreen',
-                    'rosybrown', 'rebeccapurple', 'teal',
-                    'darkgoldenrod', 'darkkhaki', 'peru',
-                    'steelblue', 'chocolate', 'yellowgreen',
-                    'darkblue', 'indigo', 'limegreen',
-                    'purple2', 'darkseagreen', 'maroon3',
-                    'mediumturquoise', 'mediumaquamarine', 'darkorchid',
-                    'orangered', 'orange', 'gold',
-                    'yellow', 'mediumvioletred', 'mediumblue',
-                    'lawngreen', 'burlywood', 'lime',
-                    'mediumorchid', 'mediumspringgreen', 'springgreen',
-                    'crimson', 'aqua', 'deepskyblue',
-                    'mediumpurple', 'blue', 'purple3',
-                    'lightcoral', 'greenyellow', 'lightsteelblue',
-                    'coral', 'fuchsia', 'palevioletred',
-                    'khaki', 'laserlemon', 'cornflower',
-                    'plum', 'powderblue', 'lightgreen',
-                    'deeppink', 'mediumslateblue', 'lightsalmon',
-                    'violet', 'lightskyblue', 'aquamarine',
-                    'hotpink', 'bisque', 'pink']
-
-    colors75_hex = ['#696969', '#a9a9a9', '#dcdcdc', '#2f4f4f', '#556b2f',
-                    '#8b4513', '#6b8e23', '#2e8b57', '#228b22', '#7f0000',
-                    '#191970', '#006400', '#808000', '#483d8b', '#b22222',
-                    '#5f9ea0', '#778899', '#3cb371', '#bc8f8f', '#663399',
-                    '#008080', '#b8860b', '#bdb76b', '#cd853f', '#4682b4',
-                    '#d2691e', '#9acd32', '#00008b', '#4b0082', '#32cd32',
-                    '#7f007f', '#8fbc8f', '#b03060', '#48d1cc', '#66cdaa',
-                    '#9932cc', '#ff4500', '#ffa500', '#ffd700', '#ffff00',
-                    '#c71585', '#0000cd', '#7cfc00', '#deb887', '#00ff00',
-                    '#ba55d3', '#00fa9a', '#00ff7f', '#dc143c', '#00ffff',
-                    '#00bfff', '#9370db', '#0000ff', '#a020f0', '#f08080',
-                    '#adff2f', '#b0c4de', '#ff7f50', '#ff00ff', '#db7093',
-                    '#f0e68c', '#ffff54', '#6495ed', '#dda0dd', '#b0e0e6',
-                    '#90ee90', '#ff1493', '#7b68ee', '#ffa07a', '#ee82ee',
-                    '#87cefa', '#7fffd4', '#ff69b4', '#ffe4c4', '#ffc0cb']
-
-    colors100_names = ['dimgray', 'darkgray', 'gainsboro',
-                    'darkslategray', 'darkolivegreen', 'saddlebrown',
-                    'olivedrab', 'seagreen', 'forestgreen',
-                    'maroon2', 'midnightblue', 'darkgreen',
-                    'olive', 'darkslateblue', 'firebrick',
-                    'cadetblue', 'lightslategray', 'mediumseagreen',
-                    'rosybrown', 'rebeccapurple', 'teal',
-                    'darkgoldenrod', 'darkkhaki', 'peru',
-                    'steelblue', 'chocolate', 'yellowgreen',
-                    'indianred', 'darkblue', 'indigo',
-                    'limegreen', 'purple2', 'darkseagreen',
-                    'maroon3', 'tan', 'mediumaquamarine',
-                    'darkorchid', 'orangered', 'darkturquoise',
-                    'orange', 'gold', 'yellow',
-                    'mediumvioletred', 'mediumblue', 'chartreuse',
-                    'lime', 'mediumorchid', 'mediumspringgreen',
-                    'springgreen', 'royalblue', 'crimson',
-                    'aqua', 'deepskyblue', 'mediumpurple',
-                    'blue', 'purple3', 'greenyellow',
-                    'thistle', 'coral', 'fuchsia',
-                    'palevioletred', 'palegoldenrod', 'laserlemon',
-                    'cornflower', 'plum', 'lightgreen',
-                    'lightblue', 'deeppink', 'lightsalmon',
-                    'violet', 'lightskyblue', 'aquamarine',
-                    'hotpink', 'bisque', 'pink']
-
-    colors100_hex = ['#696969', '#a9a9a9', '#dcdcdc', '#2f4f4f', '#556b2f',
-                    '#8b4513', '#6b8e23', '#2e8b57', '#228b22', '#7f0000',
-                    '#191970', '#006400', '#808000', '#483d8b', '#b22222',
-                    '#5f9ea0', '#778899', '#3cb371', '#bc8f8f', '#663399',
-                    '#008080', '#b8860b', '#bdb76b', '#cd853f', '#4682b4',
-                    '#d2691e', '#9acd32', '#cd5c5c', '#00008b', '#4b0082',
-                    '#32cd32', '#7f007f', '#8fbc8f', '#b03060', '#d2b48c',
-                    '#66cdaa', '#9932cc', '#ff4500', '#00ced1', '#ffa500',
-                    '#ffd700', '#ffff00', '#c71585', '#0000cd', '#7fff00',
-                    '#00ff00', '#ba55d3', '#00fa9a', '#00ff7f', '#4169e1',
-                    '#dc143c', '#00ffff', '#00bfff', '#9370db', '#0000ff',
-                    '#a020f0', '#adff2f', '#d8bfd8', '#ff7f50', '#ff00ff',
-                    '#db7093', '#eee8aa', '#ffff54', '#6495ed', '#dda0dd',
-                    '#90ee90', '#add8e6', '#ff1493', '#ffa07a', '#ee82ee',
-                    '#87cefa', '#7fffd4', '#ff69b4', '#ffe4c4', '#ffc0cb']
-
-    colors_dict = {'reds': reds,
-                'greens': greens,
-                'blues': blues,
-                'grays': grays,
-                'yellows': yellows,
-                'colors10_names': colors10_names,
-                'colors10_hex': colors10_hex,
-                'colors20_names': colors20_names,
-                'colors20_hex': colors20_hex,
-                'colors30_names': colors30_names,
-                'colors30_hex': colors30_hex,
-                'colors40_names': colors40_names,
-                'colors40_hex': colors40_hex,
-                'colors50_names': colors50_names,
-                'colors50_hex' : colors50_hex,
-                'colors75_names': colors75_names,
-                'colors75_hex': colors75_hex,
-                'colors100_names': colors100_names,
-                'colors100_hex': colors100_hex,
-                10: colors10_hex,
-                20: colors20_hex,
-                30: colors30_hex,
-                40: colors40_hex,
-                50: colors50_hex,
-                75: colors75_hex,
-                100: colors100_hex,
-                }
-    return colors_dict[key]

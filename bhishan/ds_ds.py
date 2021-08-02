@@ -3,13 +3,6 @@ __author__ = 'Bhishan Poudel'
 __doc__ = """
 This module helps fitting various data science tools.
 
-- print_df_eval()
-- freq_count(df,nlargest=None)
-- get_column_descriptions(df, column_list=None,style=True)
-- adjustedR2(r2,nrows,kcols)
-- multiple_linear_regression(df,features,target,model,cv=5)
-- get_high_correlated_features_df(df,print_=False,thresh=0.5)
-
 Usage
 -------
 .. code-block:: python
@@ -22,20 +15,33 @@ Usage
 
 """
 
-__all__ = ['print_df_eval','freq_count',
-        'get_column_descriptions',
-        'adjustedR2','multiple_linear_regression',
-        'get_high_correlated_features_df']
+__all__ = [
+    'freq_count',
+    'get_column_descriptions',
+    'report_cat_binn',
+    'compare_kde_binn',
+    'compare_kde2'
+    ]
 
-# Imports
+# type hints
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
-from pandas import DataFrame,Series
+from typing import Optional, Sequence, Type, TypeVar
+import numpy as np
+import pandas as pd
+from pandas.core.frame import DataFrame, Series
 from pandas.io.formats.style import Styler
-
-DS = Union[DataFrame,Series]
-DSt = Union[DataFrame,Styler]
-NUM = Union[int,float]
-SI = Union[str,int]
+try:
+    from .mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
+except:
+    from mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 
 import numpy as np
 import pandas as pd
@@ -60,27 +66,16 @@ mpl.rcParams['ytick.labelsize'] = fontsize
 mpl.rcParams['axes.titlesize'] = fontsize + 2
 mpl.rcParams['axes.labelsize'] = fontsize
 
-# it was .plot_utils I changed only plot_utils
-from .plot_utils import (add_text_barplot, magnify,
+# local functions
+try:
+    from .util_plots import (add_text_barplot, magnify,
+                        get_mpl_style, get_plotly_colorscale)
+except:
+    from util_plots import (add_text_barplot, magnify,
                         get_mpl_style, get_plotly_colorscale)
 
-from typing import Tuple, List, Dict
-from typing import Any, Optional, Sequence, Union, Type, TypeVar
-
-def print_df_eval():
-    """Print a data frame to store the model evalution.
-    """
-    ans = """df_eval = pd.DataFrame({'Model': [],
-                        'Details':[],
-                        'Root Mean Squared Error (RMSE)':[],
-                        'R-squared (training)':[],
-                        'Adjusted R-squared (training)':[],
-                        'R-squared (test)':[],
-                        'Adjusted R-squared (test)':[],
-                        '5-Fold Cross Validation':[]})"""
-    print(ans)
-
-def freq_count(df: DataFrame,
+def freq_count(
+    df: DataFrame,
     nlargest: Union[int,None]=None
     )-> DataFrame:
     """ Return the item frequency tuple for each unique elements of columns.
@@ -112,7 +107,8 @@ def freq_count(df: DataFrame,
                             index=df.columns)
     return df_freq
 
-def get_column_descriptions(df: DataFrame,
+def get_column_descriptions(
+    df: DataFrame,
     column_list: Union[Iterable,None]=None,
     style:bool=False
     )->DSt:
@@ -161,126 +157,13 @@ def get_column_descriptions(df: DataFrame,
 
     return df_desc
 
-def adjustedR2(r2:NUM,
-    nrows:int,
-    kcols:int
-    )-> NUM:
-    """Function to calculate adjusted R-squared.
-
-    R-squared metric increases with number of features used.
-    To get more robust model comparison metric, we can use
-    adjusted R-squared metric which penalizes larger number of featrues.
-
-    (R-adj)^2 = R^2 - (k-1)/(n-k) * (1-R^2)
-
-    Parameters
-    ----------
-    r2: float
-        The r-squared value.
-    nrows: int
-        Total number of observations.
-    kcols: int
-        Total number of parameters.
-
-    """
-    return r2-(kcols-1)/(nrows-kcols)*(1-r2)
-
-def multiple_linear_regression(df: DataFrame,
-    features: Iterable,
-    target:str,
-    model:Any,
-    cv:int=5)->Tuple:
-    """ Multiple Linear Regression Modelling using given model.
-
-    Parameters
-    ----------
-    df: pandas.DataFrame
-        Input dataframe.
-    features: list
-        list of feature names
-    target: string
-        target name.
-    model: model
-        sklearn model e.g. sklearn.ensemble.RandomForestRegressor
-    cv: int
-        cross-validation
-
-    """
-    # train test values
-    X = df[features].values
-    y = df[target].values.reshape(-1,1)
-
-    Xtrain = train[features].values
-    ytrain = train[target].values.reshape(-1,1)
-
-    Xtest = test[features].values
-    ytest = test[target].values.reshape(-1,1)
-
-    # random forest regressor wants 0d scalar not 1d vector
-    if isinstance(model, sklearn.ensemble.RandomForestRegressor):
-        ytrain = train[target].values.ravel()
-
-    # fitting
-    model.fit(Xtrain,ytrain)
-
-    # prediction
-    ypreds = model.predict(Xtest)
-
-    # metrics
-    rmse = np.sqrt(mean_squared_error(ytest,ypreds)).round(3)
-    r2_train = model.score(Xtrain, ytrain).round(3)
-    r2_test = model.score(Xtest, ytest).round(3)
-
-    cv = cross_val_score(model, X, y, cv=5,n_jobs=-1,verbose=1).mean().round(3)
-
-    ar2_train = adjustedR2(model.score(Xtrain,ytrain),
-                            Xtrain.shape[0],
-                            len(features)).round(3)
-    ar2_test  = adjustedR2(model.score(Xtest,ytest),
-                            Xtest.shape[0] ,
-                            len(features)).round(3)
-
-    return (rmse, r2_train, ar2_train, r2_test, ar2_test, cv)
-
-def get_high_correlated_features_df(df: DataFrame,
-    print_: bool=False,
-    thr: float=0.5
-    )-> DataFrame:
-    """Get the most correlated features above given threshold.
-
-    Note:
-    1. Only numerical features have correlation.
-    2. Here we only get absolute correlation.
-
-    """
-
-    df1 = (df.corr()
-    .abs()
-    .unstack()
-    .sort_values(ascending=False)
-    .reset_index()
-    .rename(columns={'level_0':'feature1',
-                        'level_1':'feature2',
-                        0:'corr'})
-    .query('feature1 != feature2')
-    .assign(
-    tmp = lambda dfx: dfx[['feature1', 'feature2']]\
-                .apply(lambda x: '_'.join(sorted(tuple(x))),
-                    axis=1)
-        )
-    .drop_duplicates('tmp')
-    .drop('tmp',axis=1)
-    .query('corr > @thr')
-    )
-    if print_:
-        print(df1)
-    return df1
-
-def report_cat_binn(df: DataFrame,
+def report_cat_binn(
+    df: DataFrame,
     cat: SI,
     binn: SI,
     one: SI,
-    name: SI)->None:
+    name: SI
+    )->None:
     """Analysis of categorical feature with binary column.
 
     Parameters
@@ -340,3 +223,217 @@ def report_cat_binn(df: DataFrame,
 {cat_yes_pct_totalyes[i]:5.2f}% of {cat_yes_values.sum():<5d} total {name} and
 {empty:{empty_len}s}{cat_yes_pct_group[i]:5.2f}% of {cat_values[i]:<5d} group {cat_types[i]}\
 )""")
+
+def compare_kde_binn(
+    df:DataFrame,
+    cols:ARR,
+    binn:ARR,
+    m:int=1,
+    n:int=1,
+    bw_adjust:NUM=0.5,
+    figsize:LIMIT=(12,8),
+    fontsize:int=14,
+    loc:str='best',
+    ms:SIN=None,
+    odir:str='images',
+    ofile:SN=None,
+    save:bool=True,
+    show:bool=False,
+    dpi:int=300
+    ):
+    """Compare the KDE plots of two numerical features against binary target.
+
+    Parameters
+    -----------
+    df: pandas.DataFrame
+        Input data.
+    cols: list
+        List of numerical columns.
+    binn: str
+        Binary target feature.
+    m: int
+        Number of plot rows
+    n: int
+        Number of plot columns.
+    bw_adjust: float
+        Bandwidth of kde plot.
+    figsize: (int,int)
+        Figure size.
+    fontsize: int
+        Size of x and y ticklabels.
+    loc: str or int
+        Location of legend. eg. 'best', 'lower left', 'upper left'
+    ms: int or string
+        mpl style name. eg. ggplot, seaborn_darkgrid, -1-3,-100,-300,538,5
+    odir: str
+        Name of output directory.
+        This directory will be created if it does not exist.
+    ofile: str
+        Base name of output image.
+    save: bool
+        Whether or not to save the image.
+    show: bool
+        Whether or not to show the image.
+    dpi: int
+        Dot per inch saved figure.
+
+    Examples
+    ---------
+    .. code-block:: python
+
+        df = sns.load_dataset('titanic')
+        df.bp.compare_kde(['age','fare'],'survived',1,2)
+
+    """
+    if isinstance(cols,str) or isinstance(cols,int):
+        cols = [cols]
+    df = df[cols+[binn]].dropna(how='any')
+    plt.style.use(get_mpl_style(ms))
+    assert sorted(df[binn].unique().tolist()) == [0,1], 'Binary target must have values 0 and 1'
+
+    t0 = df.loc[df[binn] == 0]
+    t1 = df.loc[df[binn] == 1]
+
+    fig, ax = plt.subplots(m,n,figsize=figsize)
+
+    for i,col in enumerate(cols):
+        plt.subplot(m,n,i+1)
+        sns.kdeplot(t0[col], bw_adjust=bw_adjust,label=f"{binn} = 0")
+        sns.kdeplot(t1[col], bw_adjust=bw_adjust,label=f"{binn} = 1")
+        plt.ylabel('')
+        plt.xlabel(col, fontsize=fontsize)
+        locs, labels = plt.xticks()
+        plt.tick_params(axis='both', which='major', labelsize=fontsize)
+        plt.legend(prop=dict(size=fontsize),loc=loc)
+
+    # remove empty subplots
+    for i in range(m*n-len(cols)):
+        ax.flat[-(i+1)].set_visible(False)
+
+    # title
+    plt.title(f'Compare kde plots')
+    plt.tight_layout()
+
+    if ofile:
+        # make sure this is base name
+        assert ofile == os.path.basename(ofile)
+        if not os.path.isdir(odir): os.makedirs(odir)
+        ofile = os.path.join(odir,ofile)
+    else:
+        if not os.path.isdir(odir): os.makedirs(odir)
+        ofile = os.path.join(odir,f'compare_kde_cats_vs_{binn}.png')
+
+    if save: plt.savefig(ofile,dpi=dpi)
+    if show: plt.show(); plt.close()
+
+def compare_kde2(
+    df:DataFrame,
+    num:SI,
+    binn:SI,
+    figsize:LIMIT=(12,8),
+    fontsize:int=14,
+    ms:SIN=None,
+    odir:str='images',
+    ofile:SN=None,
+    save:bool=True,
+    show:bool=False,
+    dpi:int=300
+    ):
+    """Compare the KDE plots of two numerical features against binary target.
+
+    Parameters
+    -----------
+    df: pandas.DataFrame
+        Input data.
+    num: str
+        Numerical feature.
+    binn: str
+        Binary feature.
+    figsize: (int,int)
+        Figure size.
+    fontsize: int
+        Size of x and y ticklabels.
+    ms: int or string
+        mpl style name. eg. ggplot, seaborn_darkgrid, -1-3,-100,-300,538,5
+    odir: str
+        Name of output directory.
+        This directory will be created if it does not exist.
+    ofile: str
+        Base name of output image.
+    save: bool
+        Whether or not to save the image.
+    show: bool
+        Whether or not to show the image.
+    dpi: int
+        Dot per inch saved figure.
+
+    Examples
+    ---------
+    .. code-block:: python
+
+        df = sns.load_dataset('titanic')
+        df.bp.compare_kde('fare','survived')
+
+    References
+    -----------
+
+    `stackoverflow <https://stackoverflow.com/questions/62375034/find-non-overlapping-area-between-two-kde-plots-in-python>`_
+    """
+    note = """I assume this is not working. When I compared it with sns.kde
+            with binary target "Response8" and "risk_Age_medium_bool"
+            variable of Prudential Life Insurance data, it gave me
+            bimodal distribution, but clearly it is unimodel.
+            So this function does not work properly.
+    """
+    if note:
+        return "Currently not available."
+
+    df = df[[num,binn]].dropna(how='any')
+    plt.style.use(get_mpl_style(ms))
+    assert sorted(df[binn].unique().tolist()) == [0,1], 'Binary target must have values 0 and 1'
+
+    x0 = df.loc[df[binn] == 0, num]
+    x1 = df.loc[df[binn] == 1, num]
+
+    kde0 = stats.gaussian_kde(x0, bw_method=0.3)
+    kde1 = stats.gaussian_kde(x1, bw_method=0.3)
+
+    xmin = min(x0.min(), x1.min())
+    xmax = min(x0.max(), x1.max())
+    dx = 0.2 * (xmax - xmin)    # add a 20% margin,
+                                # as the kde is wider than the data
+    xmin -= dx
+    xmax += dx
+
+    x = np.linspace(xmin, xmax, 500)
+    kde0_x = kde0(x)
+    kde1_x = kde1(x)
+    inters_x = np.minimum(kde0_x, kde1_x)
+
+    plt.plot(x, kde0_x, color='b', label='No')
+    plt.fill_between(x, kde0_x, 0, color='b', alpha=0.2)
+    plt.plot(x, kde1_x, color='orange', label='Yes')
+    plt.fill_between(x, kde1_x, 0, color='orange', alpha=0.2)
+    plt.plot(x, inters_x, color='r')
+    plt.fill_between(x, inters_x, 0, facecolor='none',
+                    edgecolor='r', hatch='xx', label='intersection')
+
+    area_inters_x = np.trapz(inters_x, x)
+
+    handles, labels = plt.gca().get_legend_handles_labels()
+    labels[2] += f': {area_inters_x * 100:.1f} %'
+    plt.legend(handles, labels, title=binn)
+    plt.title(f'{num} vs {binn}')
+    plt.tight_layout()
+
+    if ofile:
+        # make sure this is base name
+        assert ofile == os.path.basename(ofile)
+        if not os.path.isdir(odir): os.makedirs(odir)
+        ofile = os.path.join(odir,ofile)
+    else:
+        if not os.path.isdir(odir): os.makedirs(odir)
+        ofile = os.path.join(odir,f'compare_kde_{num}_vs_{binn}.png')
+
+    if save: plt.savefig(ofile,dpi=dpi)
+    if show: plt.show(); plt.close()

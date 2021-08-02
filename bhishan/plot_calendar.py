@@ -25,20 +25,25 @@ __all__ = [
     'display_calendar_month_cmap'
     ]
 
-# Imports
-from typing import List,Tuple,Dict,Callable,Iterable,Any,Union,Optional
+# type hints
+from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from typing import Optional, Sequence, Type, TypeVar
+import numpy as np
+import pandas as pd
 from pandas.core.frame import DataFrame, Series
-
+from pandas.io.formats.style import Styler
 try:
-    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from .mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 except:
-    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 
 import numpy as np
 import pandas as pd
@@ -47,7 +52,11 @@ import datetime
 import matplotlib
 from IPython.display import display,HTML
 
-def print_calendar_month(y:int,m:int,d:int):
+def print_calendar_month(
+    y:int,
+    m:int,
+    d:int
+    ):
     """Print the calendar from year month day."""
     cal = calendar.TextCalendar(calendar.MONDAY)
     s = cal.formatmonth(y,m,d)
@@ -57,7 +66,8 @@ def display_calendar_month(
     y:int,
     m:int,
     d:Optional[int]=1,
-    color: Union[str,bool,None] =None):
+    color: Union[str,bool,None] =None
+    ):
     """Display the calendar month.
 
     Parameters

@@ -24,23 +24,33 @@ Usage
     bp.ml_statsmodels?
 
 """
-__all__ = ["regression_residual_plots","print_statsmodels_summary",
-        "lm_stats","lm_plot","lm_residual_corr_plot"]
+__all__ = [
+    "regression_residual_plots",
+    "print_statsmodels_summary",
+    "lm_stats",
+    "lm_plot",
+    "lm_residual_corr_plot"
+    ]
 
-# Imports
+# type hints
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from typing import Optional, Sequence, Type, TypeVar
+import numpy as np
+import pandas as pd
 from pandas.core.frame import DataFrame, Series
-
+from pandas.io.formats.style import Styler
 try:
-    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from .mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 except:
-    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 
 import numpy as np
 import pandas as pd
@@ -274,7 +284,10 @@ def regression_residual_plots(
     plt.show()
     plt.close()
 
-def print_statsmodels_summary(summary:Any,verbose:bool=True):
+def print_statsmodels_summary(
+    summary:Any,
+    verbose:bool=True
+    ):
     """Print statsmodels fitted model summary with some color hightlights.
 
     Parameters
@@ -473,7 +486,11 @@ def print_statsmodels_summary(summary:Any,verbose:bool=True):
 ################################
 # Functions to emulate R's lm().plot() functionality
 
-def lm_stats(X:ARR, y:ARR, y_pred:ARR):
+def lm_stats(
+    X:ARR,
+    y:ARR,
+    y_pred:ARR
+    ):
     """Get leverage and studentised residuals.
 
     Parameters
@@ -533,11 +550,13 @@ def lm_stats(X:ARR, y:ARR, y_pred:ARR):
                         'y_pred': y_pred})
 
 
-def lm_plot(df_X1train:DataFrame,
+def lm_plot(
+    df_X1train:DataFrame,
     df_ytrain:Series,
     df_ypreds_train:ARR,
     verbose:bool=True,
-    ofile:str=''):
+    ofile:str=''
+    ):
     """Provides R style residual plots based on results from lm_stats
 
     Parameters
@@ -628,7 +647,8 @@ def lm_residual_corr_plot(
     df_ytrain:ARR,
     df_ypreds_train:ARR,
     verbose:bool=True,
-    ofile:str=''):
+    ofile:str=''
+    ):
     """Linear models residual correlation plots.
 
     Parameters

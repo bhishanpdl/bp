@@ -20,23 +20,31 @@ Usage
 
 """
 
-__all__ = ['show_methods','parallelize_dataframe','ifnone']
+__all__ = [
+    'show_methods',
+    'parallelize_dataframe',
+    'ifnone'
+    ]
 
-# Imports
+# type hints
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from typing import Optional, Sequence, Type, TypeVar
+import numpy as np
+import pandas as pd
 from pandas.core.frame import DataFrame, Series
-
-
+from pandas.io.formats.style import Styler
 try:
-    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from .mytyping import (IN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 except:
-    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from mytyping import (IN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 
 import numpy as np
 import pandas as pd
@@ -48,7 +56,8 @@ def ifnone(a,b):
     """ Return if a is None, otherwise return b. """
     return b if a is None else a
 
-def show_methods(obj: Any,
+def show_methods(
+    obj: Any,
     ncols: int =3,
     starts: str =None,
     contains: SARRN = None,
@@ -57,7 +66,8 @@ def show_methods(obj: Any,
     exclude_starts: SARRN = None,
     caps_only: bool =False,
     lower_only: bool =False,
-    printt: bool=False) -> Dataframe:
+    print_: bool=False
+    ) -> Dataframe:
 
     """ Show all the attributes of a given method.
 
@@ -81,7 +91,7 @@ def show_methods(obj: Any,
         Show only Title case words
     lower_only: bool
         Show only lowercase case words
-    printt: bool
+    print_: bool
         Print the dataframe or not.
 
     """
@@ -144,13 +154,16 @@ def show_methods(obj: Any,
     df = pd.DataFrame(np.array_split(lst,ncols)).T.fillna('')
 
     # for terminal sometimes we need to print
-    if printt:
+    if print_:
         print(df)
 
     return df
 
-def parallelize_dataframe(df: DataFrame,func: Callable) -> DataFrame:
-    """ Parallize  df.appy(func) operation to a pandas dataframe.
+def parallelize_dataframe(
+    df: DataFrame,
+    func: Callable
+    ) -> DataFrame:
+    """ Parallelize  df.apply(func) operation to a pandas dataframe.
 
     Example:
     ========

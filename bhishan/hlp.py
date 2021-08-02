@@ -18,6 +18,8 @@ Usage
 """
 
 __all__ = ["hlp"]
+
+# type hints
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
 import os
 import sys
@@ -33,7 +35,6 @@ help_html_bases = [ i.rstrip('.html').split('/')[-1] for i in help_htmls]
 
 help_mds = glob.glob(help_dir + '*.md')
 help_md_bases = [ i.rstrip('.md').split('/')[-1] for i in help_mds]
-
 
 def hlp(q:str):
     """Display help htmls in Jupyter notebook from Dropbox help folder.

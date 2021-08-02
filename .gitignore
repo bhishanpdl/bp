@@ -1,6 +1,8 @@
 ## Specific
 *.egg-info
 *.pyc
+*/*.pyc
+*/*/*.pyc
 
 ## ipython
 .ipynb_checkpoints

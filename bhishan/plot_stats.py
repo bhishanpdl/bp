@@ -3,12 +3,6 @@ __author__ = 'Bhishan Poudel'
 __doc__ = """
 This module contains various statistical plotting tools.
 
-- plot_statistics(df,cols,statistic,color,figsize,ylim)
-- get_yprobs_sorted_proportions(df_ytest,col_ytrue,col_yprobs)
-- plot_gini(df_ytest_proportions,col_ytrue,col_yprobs)
-- plot_ks(df_ytest_proportions,col_yprobs,
-            col_cum_perc_good,col_cum_perc_bad)
-
 Usage
 -------
 .. code-block:: python
@@ -23,30 +17,30 @@ Usage
 __all__ = [
     "plot_statistics",
     "plot_ecdf",
-    "get_yprobs_sorted_proportions",
     "plot_gini",
-    "plot_ks"
+    "plot_ks",
+    "get_yprobs_sorted_proportions",
     ]
 
-# Imports
+# type hints
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from typing import Optional, Sequence, Type, TypeVar
+import numpy as np
+import pandas as pd
 from pandas.core.frame import DataFrame, Series
-
+from pandas.io.formats.style import Styler
 try:
-    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from .mytyping import (IN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 except:
-    pass
-
-try:
-    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
-except:
-    pass
+    from mytyping import (IN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 
 import numpy as np
 import pandas as pd
@@ -62,13 +56,16 @@ import time
 import calendar
 from IPython.display import display
 
-try:
-    from .plot_utils import magnify,add_text_barplot
-except:
-    from plot_utils import magnify,add_text_barplot
-
 sns.set(color_codes=True)
 plt.style.use('ggplot') # better than sns styles.
+
+# local fuctions
+try:
+    from .util_plots import magnify, add_text_barplot
+except:
+    from util_plots import magnify, add_text_barplot
+
+
 
 def plot_statistics(
     df:DataFrame,
@@ -141,13 +138,14 @@ def plot_statistics(
 def plot_ecdf(
     df:DataFrame,
     col:SI,
-    cross:NUMN=None,
+    cross:SIN=None,
     bins:IN=None,
     color:str='b',
     figsize:LIMIT=(12,4),
     xlim:LIMITN=None,
     ylim:LIMITN=None,
-    fontsize:int=12
+    fontsize:int=12,
+    dpi:int=300
     ):
     """Plot empirical cumulative distribution function and histogram.
 
@@ -171,6 +169,8 @@ def plot_ecdf(
         X-axis limit for plots.
     fontsize: int
         Fontsize of the subplot titles.
+    dpi: int
+        Dot per inch saved figure.
 
     Examples
     ---------
@@ -180,7 +180,7 @@ def plot_ecdf(
         df.bp.plot_ecdf(['age'])
 
     """
-    fig = plt.figure(figsize=(12, 8))
+    fig = plt.figure(figsize=figsize)
     ax_ecdf = fig.add_subplot(121)
     ax_hist = fig.add_subplot(122)
     ax_hist.set_title('Histogram',fontsize=fontsize)
@@ -215,43 +215,9 @@ def plot_ecdf(
 
     if not os.path.exists('images'):
         os.makedirs('images')
-    plt.savefig(f'images/{col}_ecdf.png',dpi=300)
+    plt.savefig(f'images/{col}_ecdf.png',dpi=dpi)
     plt.show()
     plt.close()
-
-def get_yprobs_sorted_proportions(
-    df_ytest:DataFrame,
-    col_ytrue:SI,
-    col_yprobs:SI
-    ):
-    """Sort the df_ytest by predicted probabilities and return
-        dataframe with various proportions.
-
-    Parameters:
-    ------------
-    df_ytest: pd.core.frame.DataFrame
-        Test dataframe
-    col_ytrue: str
-        Name of column for true label.
-    col_yprobs: str
-        Name of column for predicted probabilities
-    """
-
-    df_ytest = df_ytest.sort_values(col_yprobs)
-    n_test = len(df_ytest)
-    sum_test = df_ytest[col_ytrue].sum()
-
-    df_ytest['cum_n_pop'] = range(1,n_test+1)
-    df_ytest['cum_n_good'] = df_ytest['good_bad'].cumsum()
-    df_ytest['cum_n_bad'] = (df_ytest['cum_n_pop']
-                            - df_ytest['cum_n_good'])
-
-    df_ytest['cum_perc_pop'] = df_ytest['cum_n_pop'] / n_test
-    df_ytest['cum_perc_good'] = df_ytest['cum_n_good'] / sum_test
-    df_ytest['cum_perc_bad'] = (df_ytest['cum_n_bad']
-                                / (n_test - sum_test))
-
-    return df_ytest
 
 def plot_gini(
     df_ytest_proportions:DataFrame,
@@ -343,3 +309,36 @@ def plot_ks(
     plt.legend(loc=2)
     plt.show()
 
+def get_yprobs_sorted_proportions(
+    df_ytest:DataFrame,
+    col_ytrue:SI,
+    col_yprobs:SI
+    ):
+    """Sort the df_ytest by predicted probabilities and return
+        dataframe with various proportions.
+
+    Parameters:
+    ------------
+    df_ytest: pd.core.frame.DataFrame
+        Test dataframe
+    col_ytrue: str
+        Name of column for true label.
+    col_yprobs: str
+        Name of column for predicted probabilities
+    """
+
+    df_ytest = df_ytest.sort_values(col_yprobs)
+    n_test = len(df_ytest)
+    sum_test = df_ytest[col_ytrue].sum()
+
+    df_ytest['cum_n_pop'] = range(1,n_test+1)
+    df_ytest['cum_n_good'] = df_ytest['good_bad'].cumsum()
+    df_ytest['cum_n_bad'] = (df_ytest['cum_n_pop']
+                            - df_ytest['cum_n_good'])
+
+    df_ytest['cum_perc_pop'] = df_ytest['cum_n_pop'] / n_test
+    df_ytest['cum_perc_good'] = df_ytest['cum_n_good'] / sum_test
+    df_ytest['cum_perc_bad'] = (df_ytest['cum_n_bad']
+                                / (n_test - sum_test))
+
+    return df_ytest

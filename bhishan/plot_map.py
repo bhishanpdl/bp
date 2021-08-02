@@ -22,29 +22,35 @@ Usage
     bp.plot_map?
 
 """
-__all__ = ["plotly_usa_map",
-        "plotly_usa_map2",
-        "plotly_agg_usa_plot",
-        "plotly_usa_bubble_map",
-        "plotly_country_plot",
-        "plotly_agg_country_plot",
-        "plotly_mapbox"
-        ]
+__all__ = [
+    "plotly_usa_map",
+    "plotly_usa_map2",
+    "plotly_agg_usa_plot",
+    "plotly_usa_bubble_map",
+    "plotly_country_plot",
+    "plotly_agg_country_plot",
+    "plotly_mapbox"
+    ]
 
-# Imports
+# type hints
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from typing import Optional, Sequence, Type, TypeVar
+import numpy as np
+import pandas as pd
 from pandas.core.frame import DataFrame, Series
-
+from pandas.io.formats.style import Styler
 try:
-    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from .mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 except:
-    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 
 import numpy as np
 import pandas as pd
@@ -250,7 +256,8 @@ def plotly_agg_usa_plot(
     height: int=800,
     ofile: str='',
     show: bool=True,
-    auto_open: bool=False):
+    auto_open: bool=False
+    ):
     """Plotly map plot for different states in USA.
 
     Parameters
@@ -804,7 +811,7 @@ def plotly_mapbox(
         text = df1[text_col]
     elif (color_col and 1):
         text = '(' + df1[lat_col].astype(str) + ',' + df1[lon_col].astype(str) +\
-               ') ' + color_col.title() + ': ' + df1[color_col].astype(str)
+                ') ' + color_col.title() + ': ' + df1[color_col].astype(str)
     else:
         text = df1[lat_col].astype(str) + ',' + df1[lon_col].astype(str)
 

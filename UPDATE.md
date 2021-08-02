@@ -7,6 +7,10 @@
 
 # History
 
+## Jul 31, 2021
+- Renamed `ds_datetime.py` to `plot_calendar.py`
+- Added functions `display_calendar_month_red_green` and `display_calendar_month_cmap`.
+
 ## Jul 27, 2021
 - Added type hints for utils.py and util_pd.py files.
 - Made functions of util_pd.py available in "bp".

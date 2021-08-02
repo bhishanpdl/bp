@@ -18,22 +18,30 @@ Usage
     ytest,ypreds,y_score,df_train)
 
 """
-__all__ = ["plotly_binary_clf_evaluation"]
+__all__ = [
+    "plot_simple_linear_regression",
+    "plotly_binary_clf_evaluation"
+    ]
 
-# Imports
+# type hints
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from typing import Optional, Sequence, Type, TypeVar
+import numpy as np
+import pandas as pd
 from pandas.core.frame import DataFrame, Series
-
+from pandas.io.formats.style import Styler
 try:
-    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from .mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 except:
-    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from mytyping import (IN, SN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 
 import numpy as np
 import pandas as pd
@@ -47,6 +55,31 @@ import time
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_auc_score, roc_curve,precision_recall_curve
 
+def plot_simple_linear_regression(
+    X_test:ARR,
+    y_test:ARR,
+    model:Any,
+    xlabel:str,
+    ylabel:str,
+    figsize:LIMIT=(6,5),
+    data_color:str='salmon',
+    pred_color:str='seagreen'
+    ):
+    plt.figure(figsize=figsize)
+
+    plt.scatter(X_test, y_test, color=data_color, label="Data", alpha=.1)
+    plt.plot(X_test, model.predict(X_test),color=pred_color,
+            label="Predicted Regression Line")
+
+    plt.xlabel(xlabel, fontsize=15)
+    plt.ylabel(ylabel, fontsize=15)
+
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
+    plt.legend()
+
+    plt.show()
+
 def plotly_binary_clf_evaluation(
     model_name:str,
     model:Any,
@@ -57,7 +90,7 @@ def plotly_binary_clf_evaluation(
     ofile: str='',
     show: bool=True,
     auto_open: bool=False
-    ) :
+    ):
     """Plot the binary classification model evaluation.
 
     Parameters
@@ -79,7 +112,7 @@ def plotly_binary_clf_evaluation(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
     Examples
     ---------
@@ -224,7 +257,6 @@ def plotly_binary_clf_evaluation(
     fig.append_trace(trace6,3,1)
     if hasattr(model, 'feature_importances_'):
         fig.append_trace(trace7,4,1)
-
 
     fig['layout'].update(showlegend = False, title = '<b>Model Performance Report</b><br>('+str(model_name)+')',
                         autosize = False, height = 1500,width = 830,

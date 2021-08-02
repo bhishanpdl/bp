@@ -8,14 +8,6 @@ Reference: https://github.com/fastai/fastai2/blob/master/fastai2/tabular/core.py
 __author__ = "Bhishan Poudel"
 
 __all__ = [
-    "highlight_row",
-    "highlight_col",
-    "highlight_diag",
-    "highlight_rowf",
-    "highlight_rowsf",
-    "highlight_colf",
-    "highlight_diagf",
-    "highlight_rcd",
     "describe",
     "make_date",
     "add_datepart",
@@ -25,143 +17,39 @@ __all__ = [
     "df_shrink",
 ]
 
-# Imports
+# type hints
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from typing import Optional, Sequence, Type, TypeVar
+import numpy as np
+import pandas as pd
 from pandas.core.frame import DataFrame, Series
-
+from pandas.io.formats.style import Styler
 try:
-    from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from .mytyping import (IN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 except:
-    from mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
-                        LTii,LTff,LTss,LTsi
-                        )
+    from mytyping import (IN, SI, SIN, TL, LD, TLN, LDN,
+    DS, DSt, NUM, NUMN, AD, AS, DN,
+    ARR, ARRN, SARR, SARRN, LIMIT, LIMITN,
+    LTii,LTss,LTff,LTsi,
+    )
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import re
 
+# local functions
 try:
     from .utils import ifnone
 except:
     from utils import ifnone
 
-"""
-Built-in functions:
-
-df.style.highlight_max(color='darkorange', axis=None) # axis=None is max of whole dataframe
-df.style.highlight_min(subset=['B'], axis=0) # axis=0 columnwise (default) and axis=1 for row wise
-df.style.highlight_null('salmon') # null_color='red' is too bad
-df.style.background_gradient(cmap='viridis',low=.5, high=0)
-df.style.highlight_max(subset= pd.IndexSlice[1:3, ['B', 'D']]) # only max from given index range
-df.style.bar(subset=['A', 'B'], align='mid', color=['#d65f5f', '#5fba7d'])
-df.style.hide_columns(['C','D'])
-df.style.hide_index()
-df.style.set_caption('caption.')
-
-"""
-
-def highlight_row(ser: Series,
-    color: str ="lightblue",
-    row: SIN=None) -> List:
-    if row is None:
-        row = ser.index[-1]
-    bkg = f"background-color: {color}"
-    return [bkg if ser.name == row else "" for _ in ser]
-
-def highlight_col(ser: Series,
-    color: str ="salmon",
-    col: SIN=None
-    ) -> List:
-    if col is None:
-        col = ser.index[-1]
-    bkg = f"background-color: {color}"
-    return [bkg if ser.name == col else "" for _ in ser]
-
-def highlight_diag(dfx: DataFrame, color: str ="khaki") -> DataFrame:
-    a = np.full(dfx.shape, "", dtype="<U24")
-    np.fill_diagonal(a, f"background-color: {color}")
-    df1 = pd.DataFrame(a, index=dfx.index, columns=dfx.columns)
-    return df1
-
-def highlight_rowf(dfx : Dataframe,
-    color :str ="lightblue",
-    row: SIN =None
-    ) -> Any:
-    if row is None:
-        row = dfx.index[-1]
-
-    def highlight_row(ser: Series,
-        row: SIN,
-        color: str="salmon") -> List:
-        bkg = f"background-color: {color}"
-        return [bkg if ser.name == row else "" for _ in ser]
-
-    return dfx.style.apply(highlight_row, axis=1, row=row)
-
-def highlight_rowsf(dfx: DataFrame,
-    color: str ="lightblue",
-    rows: SIN =None
-    ) -> Any:
-    if rows is None:
-        rows = [dfx.index[-1]]
-
-    def highlight_row(ser: Series,
-        row: SI,
-        color: str ="salmon"
-        ) -> List:
-        bkg = f"background-color: {color}"
-        return [bkg if ser.name == row else "" for _ in ser]
-
-    dfxs = dfx.copy()
-    dfxs = dfxs.style.apply(highlight_row, axis=1, row=rows[0])
-
-    for row in rows[1:]:
-        dfxs = dfxs.apply(highlight_row, axis=1, row=row)
-
-    return dfxs
-
-def highlight_colf(dfx: DataFrame,
-    color: str ="salmon",
-    col: SI =-1) -> Any:
-    if not isinstance(col, str):
-        col = dfx.columns[col]
-
-    def highlight_col(dfy: DataFrame) -> DataFrame:  # axis=None needs dataframe
-        bkg = f"background-color: {color}"
-        df1 = pd.DataFrame("", index=dfy.index, columns=dfy.columns)
-        df1.loc[:, col] = bkg
-        return df1
-
-    return dfx.style.apply(highlight_col, axis=None)
-
-def highlight_diagf(dfx: DataFrame,
-    color: str ="khaki"):
-    def highlight_diag(dfy:DataFrame)->DataFrame:
-        a = np.full(dfy.shape, "", dtype="<U24")
-        np.fill_diagonal(a, f"background-color: {color}")
-        df1 = pd.DataFrame(a, index=dfy.index, columns=dfy.columns)
-        return df1
-
-    return dfx.style.apply(highlight_diag, axis=None)
-
-def highlight_rcd(dfx,
-    row: SIN =None,
-    col: SIN =None,
-    c1: str ="lightblue",
-    c2: str ="salmon",
-    c3: str ="khaki"):
-    return (
-        dfx.style.apply(highlight_diag, axis=None, color=c3)
-        .apply(highlight_row, axis=1, color=c1, row=row)
-        .apply(highlight_col, axis=0, color=c2, col=col)
-    )
-
-def describe(df: DataFrame,
+def describe(
+    df: DataFrame,
     cols: SIN =None,
     style: bool =True,
     print_: bool =False,
@@ -169,7 +57,7 @@ def describe(df: DataFrame,
     transpose: bool =False,
     round_: int =2,
     fmt: SN =None
-    ):
+    )-> DSt:
     """Get nice table of columns description of given dataframe.
 
     Parameters
@@ -199,7 +87,6 @@ def describe(df: DataFrame,
         df.bp.describe(style=True)
 
     """
-    # df = self._obj
     if cols is None:
         cols = df.columns
     df = df[cols]
@@ -295,7 +182,10 @@ def describe(df: DataFrame,
 #============= Obtained from fastai.tabular.core
 # https://github.com/fastai/fastai2/blob/master/fastai2/tabular/core.py
 
-def make_date(df: DataFrame, date_field: SI):
+def make_date(
+    df: DataFrame,
+    date_field: SI
+    ):
     "Make sure `df[date_field]` is of the right date type."
     field_dtype = df[date_field].dtype
     if isinstance(field_dtype, pd.core.dtypes.dtypes.DatetimeTZDtype):
@@ -303,7 +193,8 @@ def make_date(df: DataFrame, date_field: SI):
     if not np.issubdtype(field_dtype, np.datetime64):
         df[date_field] = pd.to_datetime(df[date_field], infer_datetime_format=True)
 
-def add_datepart(dfx: DataFrame,
+def add_datepart(
+    dfx: DataFrame,
     col: SI,
     prefix: SN =None,
     drop: bool =True,
@@ -338,11 +229,13 @@ def add_datepart(dfx: DataFrame,
         df.drop(col, axis=1, inplace=True)
     return df
 
-def _get_elapsed(df: DataFrame,
+def _get_elapsed(
+    df: DataFrame,
     cols: ARR,
     date_field: SI,
     base_field: SI,
-    prefix: SI) -> DataFrame:
+    prefix: SI
+    ) -> DataFrame:
     for f in cols:
         day1 = np.timedelta64(1, "D")
         last_date, last_base, res = np.datetime64(), None, []
@@ -355,7 +248,8 @@ def _get_elapsed(df: DataFrame,
         df[prefix + f] = res
     return df
 
-def add_elapsed_times(df: DataFrame,
+def add_elapsed_times(
+    df: DataFrame,
     cols: SARR,
     date_field: SI,
     base_field: SI,
@@ -391,7 +285,8 @@ def add_elapsed_times(df: DataFrame,
     work_df.drop(cols, 1, inplace=True)
     return df.merge(work_df, how="left", on=[date_field, base_field])
 
-def cont_cat_split(df: DataFrame,
+def cont_cat_split(
+    df: DataFrame,
     max_card: int =20,
     dep_var: SIN=None
     ) -> Tuple:
@@ -410,7 +305,8 @@ def cont_cat_split(df: DataFrame,
             cat_names.append(label)
     return cont_names, cat_names
 
-def df_shrink_dtypes(df: DataFrame,
+def df_shrink_dtypes(
+    df: DataFrame,
     skip: List =[],
     obj2cat: bool =True,
     int2uint: bool =False
@@ -462,7 +358,8 @@ def df_shrink_dtypes(df: DataFrame,
             new_dtypes[c] = new_t
     return new_dtypes
 
-def df_shrink(df: DataFrame,
+def df_shrink(
+    df: DataFrame,
     skip: List =[],
     obj2cat: bool =True,
     int2uint: bool =False
