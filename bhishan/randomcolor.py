@@ -8,8 +8,10 @@ import pandas as pd
 from pandas import DataFrame,Series
 
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
-from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
 
 class RandomColor(object):
     def __init__(self, seed:int=None):

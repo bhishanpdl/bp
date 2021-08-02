@@ -37,9 +37,10 @@ __all__ = ["get_binary_classification_scalar_metrics",
 # Imports
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
 from pandas.core.frame import DataFrame, Series
-from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
-
+from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
 
 from IPython.display import display
 import matplotlib.pyplot as plt
@@ -761,7 +762,7 @@ def plot_roc_skf(clf:Any,
     y:AS,
     skf:IN=None,
     random_state:IN=None,
-    ofile:SN=None
+    ofile:str=''
     ):
     """Plot the ROC Curve for the whole data X,y using stratified k-fold.
 

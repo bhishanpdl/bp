@@ -21,7 +21,7 @@ setup(
     author='Bhishan Poudel',
     author_email='bhishanpdl@gmail.com',
     name='bhishan',
-    version='0.4',
+    version='0.6',
     install_requires=requirements,
     description='Bhishans personal module',
     packages=find_packages(),

@@ -29,14 +29,13 @@ __all__ = ['print_df_eval','freq_count',
 
 # Imports
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
-import pandas
 from pandas import DataFrame,Series
 from pandas.io.formats.style import Styler
 
 DS = Union[DataFrame,Series]
 DSt = Union[DataFrame,Styler]
 NUM = Union[int,float]
-IS = Union[int,str]
+SI = Union[str,int]
 
 import numpy as np
 import pandas as pd
@@ -62,7 +61,7 @@ mpl.rcParams['axes.titlesize'] = fontsize + 2
 mpl.rcParams['axes.labelsize'] = fontsize
 
 # it was .plot_utils I changed only plot_utils
-from plot_utils import (add_text_barplot, magnify,
+from .plot_utils import (add_text_barplot, magnify,
                         get_mpl_style, get_plotly_colorscale)
 
 from typing import Tuple, List, Dict

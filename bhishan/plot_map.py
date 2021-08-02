@@ -34,8 +34,10 @@ __all__ = ["plotly_usa_map",
 # Imports
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
 from pandas.core.frame import DataFrame, Series
-from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
 
 import numpy as np
 import pandas as pd
@@ -76,8 +78,8 @@ def plotly_usa_map2(
     df:DataFrame,
     col_state:SI,
     col_value:SI,
-    title:SN=None,
-    ofile:SN=None,
+    title:str='',
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False
     ):
@@ -136,10 +138,10 @@ def plotly_usa_map(
     col_text:SIN=None,
     colorscale:str='Viridis',
     reversescale:bool=False,
-    title:SN=None,
+    title:str='',
     width:int=800,
     height:int=800,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=True,
     auto_open:bool=False
     ):
@@ -236,10 +238,10 @@ def plotly_agg_usa_plot(
     ylim:LIMITN=None,
     colorscale: str= 'Portland',
     reversescale: str=False,
-    title: SN=None,
+    title:str='',
     width: int=800,
     height: int=800,
-    ofile: SN=None,
+    ofile: str='',
     show: bool=True,
     auto_open: bool=False):
     """Plotly map plot for different states in USA.
@@ -372,10 +374,10 @@ def plotly_usa_bubble_map(
     colors:ARR,
     scale: int=5000,
     col_text: SIN=None,
-    title: SN=None,
+    title: str='',
     width: int=800,
     height: int=800,
-    ofile: SN=None,
+    ofile: str='',
     show: bool=True,
     auto_open: bool=False
     ):
@@ -488,10 +490,10 @@ def plotly_country_plot(
     ylim:LIMITN=None,
     colorscale: str='Portland',
     reversescale: bool=False,
-    title: SN=None,
+    title: str='',
     width: int=800,
     height: int=800,
-    ofile: SN=None,
+    ofile: str='',
     show: bool=True,
     auto_open: bool=False
     ):
@@ -609,10 +611,10 @@ def plotly_agg_country_plot(
     ylim: LIMITN=None,
     colorscale: str='Portland',
     reversescale: bool=False,
-    title: SN=None,
+    title: str='',
     width: int=800,
     height: int=800,
-    ofile: SN=None,
+    ofile: str='',
     show: bool=True,
     auto_open: bool=False
     ):
@@ -744,7 +746,7 @@ def plotly_mapbox(
     zoom: int=9,
     width: int=800,
     height: int=800,
-    ofile: SN=None,
+    ofile: str='',
     show: bool=True,
     auto_open: bool=False
     ):

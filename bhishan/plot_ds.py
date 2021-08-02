@@ -49,8 +49,10 @@ __all__ = [
 # Imports
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
 from pandas.core.frame import DataFrame, Series
-from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
@@ -66,10 +68,8 @@ import time
 import calendar
 from IPython.display import display
 
-from plot_utils import magnify
-from plot_utils import add_text_barplot
-from plot_utils import get_mpl_style
-from plot_utils import get_plotly_colorscale
+from .plot_utils import (add_text_barplot, magnify,
+                        get_mpl_style, get_plotly_colorscale)
 
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA, TruncatedSVD
@@ -88,7 +88,7 @@ def plot_num(
     disp:bool=False,
     print_:bool=False,
     save:bool=False,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=False):
     """Plot numerical column.
 
@@ -155,7 +155,7 @@ def plot_cat(
     cat:str,
     comma:str=True,
     save:bool=False,
-    ofile:SN=None,
+    ofile:str='',
     show:bool=False):
     """Plot the categorical feature.
 
@@ -204,11 +204,11 @@ def plot_cat(
 
 def plot_num_num(
     df:DataFrame,
-    num1:IS,
-    num2:IS,
+    num1:SI,
+    num2:SI,
     figsize:LIMIT=(12,8),
     fontsize:int=12,
-    ofile:SN=None,
+    ofile:str='',
     save:bool=False,
     show:bool=False):
     """Plot the numeric feature.
@@ -252,15 +252,15 @@ def plot_num_num(
         plt.show()
 
 def plot_num_cat(
-    df:DataFrame, 
-    num:IS,
-    cat:IS,
+    df:DataFrame,
+    num:SI,
+    cat:SI,
     figsize:LIMIT=(24,18),
     ms:SIN=None,
     bins:int=100,
     fontsize:int=34,
     odir:str='images',
-    ofile:SN=None,
+    ofile:str='',
     save:bool=True,
     show:bool=False,
     print_:bool=False,
@@ -488,7 +488,7 @@ def plot_cat_cat(
     loc:SI='upper left',
     hide_xticks:bool=False,
     odir:str='images',
-    ofile:SN=None,
+    ofile:str='',
     save:bool=True,
     show:bool=False,
     print_:bool=True):
@@ -952,7 +952,7 @@ def plot_multiple_jointplots_with_pearsonr(
     df:DataFrame,
     cols:ARR,
     target:SI,
-    ofile:SN):
+    ofile:str):
     """Plot multiple jointplots with pearsonr correlation.
 
     Parameters
@@ -981,7 +981,7 @@ def plot_multiple_jointplots_with_pearsonr(
 def plot_corrplot_with_pearsonr(
     df:DataFrame,
     cols:ARR,
-    ofile:SN=None):
+    ofile:str=''):
     """Correlation plot with Pearson correlation coefficient.
     Diagonals are distplots, right are scatterplots and left are kde.
 
@@ -1154,8 +1154,8 @@ def plot_corr(
     ytitle:NUM=1.05,
     mask:bool=True,
     ms:SIN=None,
-    odir:SN='images',
-    ofile:SN=None,
+    odir:str='images',
+    ofile:str='',
     save:bool=True,
     show:bool=False):
     """Correlation plot.
@@ -1301,7 +1301,7 @@ def plot_cat_cat2(
     target_cat:SI,
     figsize:LIMIT=(12,8),
     ylim2:LIMITN=None,
-    ofile:SN=None,
+    ofile:str='',
     save:bool=False,
     show:bool=False):
     """Plot 2*2 plot for categorical feature vs target-cateogoical feature.
@@ -1447,8 +1447,8 @@ def plot_cat_binn(
     figsize:LIMIT=(14,5),
     rot:int=0,
     fontsize:int=14,
-    palette:SN=None,
-    ofile:SN=None,
+    palette:str='',
+    ofile:str='',
     save:bool=False,
     show:bool=True
     ):
@@ -1685,7 +1685,7 @@ def plot_cat_cat_pct(
     col_cat:SI,
     col_cat2:SI,
     figsize:LIMIT=(12,8),
-    odir:SN=None
+    odir:str=''
     ):
     """Plot of categorical vs binary columns such as class vs survived.
 
@@ -1725,8 +1725,8 @@ def plot_donut_binn(
     df:DataFrame,
     col:SI,
     text:str='',
-    colors:ARR=['crimson', 'navy'],
-    labels:ARR=['Boring', 'Interesting'],
+    colors:LTss=['crimson', 'navy'],
+    labels:LTss=['Boring', 'Interesting'],
     figsize:LIMIT=(7,7),
     autopct:str='%1.2f%%'
     ):
@@ -1772,7 +1772,7 @@ def plot_two_clusters(
     target:SI,
     figsize:LIMIT=(24,12),
     fontsize:int=24,
-    labels:List[str,str]=['Boring','Interesting']
+    labels:LTss=['Boring','Interesting']
     ):
     """Plot two clusters using dimensionality reduction methods.
 

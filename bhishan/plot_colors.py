@@ -29,8 +29,10 @@ __all__ = [ "rgb2hex",
 # Imports
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
 from pandas.core.frame import DataFrame, Series
-from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
 
 import numpy as np
 import pandas as pd
@@ -69,7 +71,7 @@ def hex_to_rgb(h:str)->str:
     rgb = 'rgb' + str(tuple(int(h[i:i+2], 16) for i in (0, 2, 4)))
     return rgb
 
-def get_distinct_colors(key:IS)-> LD:
+def get_distinct_colors(key:SI)-> LD:
     """Get distinct colors.
 
     Parameters
@@ -325,7 +327,7 @@ def get_distinct_colors(key:IS)-> LD:
     return colors_dict[key]
 
 def discrete_cmap(N:int,
-    base_cmap:ANY=None)-> ANY:
+    base_cmap:Any=None)-> Any:
     """Create an N-bin discrete colormap from the specified input map
     Reference: https://gist.github.com/jakevdp/91077b0cae40f8f8244a
 
@@ -367,15 +369,3 @@ def get_colornames_from_cmap(cmap_name:str,n:int=10)-> List:
     color_names = [matplotlib.colors.rgb2hex(cmap(i))
                     for i in range(cmap.N)]
     return color_names
-
-if __name__ == '__main__':
-    N = 5
-    x = np.random.randn(40)
-    y = np.random.randn(40)
-    c = np.random.randint(N, size=40)
-
-    # Edit: don't use the default ('jet') because it makes @mwaskom mad...
-    plt.scatter(x, y, c=c, s=50, cmap=discrete_cmap(N, 'cubehelix'))
-    plt.colorbar(ticks=range(N))
-    plt.clim(-0.5, N - 0.5)
-    plt.show()

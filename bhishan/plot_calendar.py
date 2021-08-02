@@ -28,8 +28,11 @@ __all__ = [
 # Imports
 from typing import List,Tuple,Dict,Callable,Iterable,Any,Union,Optional
 from pandas.core.frame import DataFrame, Series
-from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
+
 import numpy as np
 import pandas as pd
 import calendar

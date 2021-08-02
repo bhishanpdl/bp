@@ -14,10 +14,9 @@ References
 ----------
 
 .. [1] Li, L., Jamieson, K., DeSalvo, G., Rostamizadeh, A. and Talwalkar, A.,
-   2017. Hyperband: A novel bandit-based approach to hyperparameter
-   optimization. The Journal of Machine Learning Research, 18(1),
-   pp.6765-6816.
-
+    2017. Hyperband: A novel bandit-based approach to hyperparameter
+    optimization. The Journal of Machine Learning Research, 18(1),
+    pp.6765-6816.
 """
 import copy
 

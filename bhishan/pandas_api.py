@@ -21,9 +21,12 @@ __all__ = ["BPAccessor"]
 
 #===================================================================
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from typing import Optional, Sequence, Type, TypeVar
 from pandas.core.frame import DataFrame, Series
-from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
 import numpy as np
 import pandas as pd
 
@@ -59,12 +62,9 @@ mpl.rcParams['ytick.labelsize'] = fontsize
 mpl.rcParams['axes.titlesize'] = fontsize + 2
 mpl.rcParams['axes.labelsize'] = fontsize
 
-# it was .plot_utils I changed only plot_utils
-from plot_utils import (add_text_barplot, magnify,
+# to use inside bhishan.bp we need to make it from .plot_utils instead of plot_utils.
+from .plot_utils import (add_text_barplot, magnify,
                         get_mpl_style, get_plotly_colorscale)
-
-from typing import Tuple, List, Dict
-from typing import Any, Optional, Sequence, Union, Type, TypeVar
 
 @pd.api.extensions.register_dataframe_accessor("bp")
 class BPAccessor:

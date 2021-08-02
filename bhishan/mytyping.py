@@ -4,6 +4,7 @@ __author__ = 'Bhishan Poudel'
 
 # Imports
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
+from typing import Optional, Sequence, Type, TypeVar
 import numpy as np
 import pandas as pd
 from pandas.core.frame import DataFrame, Series
@@ -13,7 +14,6 @@ from pandas.io.formats.style import Styler
 #                         AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
 
 IN = Union[int,None]
-SN = Union[str,None]
 SI = Union[str,int]
 SIN = Union[str,int,None]
 
@@ -37,5 +37,22 @@ ARRN = Union[Tuple,List,np.array,Series,None]
 SARR = Union[str,Tuple,List,np.array,Series]
 SARRN = Union[str,Tuple,List,np.array,Series]
 
-LIMIT = Union[Tuple[int,int],Tuple[float,float]]
-LIMITN = Union[Tuple[int,int],Tuple[float,float],None]
+# list and tuples
+Lii = List[Union[int, int]]
+Lff = List[Union[float, float]]
+Lsi = List[Union[str, int]]
+Lss = List[Union[str, str]]
+
+Tii = Tuple[Union[int, int]]
+Tff = Tuple[Union[float, float]]
+Tsi = Tuple[Union[str, int]]
+Tss = Tuple[Union[str, str]]
+
+LTii = Union[Lii,Tii]
+LTff = Union[Lff,Tff]
+LTsi = Union[Lsi,Tsi]
+LTss = Union[Lss,Tss]
+
+# limits
+LIMIT = Union[Tii,Lii]
+LIMITN = Union[Tii,Lii,None]

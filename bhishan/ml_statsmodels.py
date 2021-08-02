@@ -30,8 +30,10 @@ __all__ = ["regression_residual_plots","print_statsmodels_summary",
 # Imports
 from typing import List,Tuple,Dict,Any,Callable,Iterable,Union
 from pandas.core.frame import DataFrame, Series
-from mytyping import (IN, SN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
-                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN)
+from .mytyping import (IN, SI, SIN, TL, LD, DS, DSt, NUM, NUMN,
+                        AD, AS, DN, ARR, ARRN, SARR, LIMIT, LIMITN,
+                        LTii,LTff,LTss,LTsi
+                        )
 
 import numpy as np
 import pandas as pd
@@ -51,15 +53,15 @@ def regression_residual_plots(
     model_fit:Any,
     dependent_var:str,
     data:ARR,
-    size:List[int,int] = [10,10],
+    size:Lii = [10,10],
     cook_xlim: LIMIT=None,
     cook_ylim: LIMIT=None,
     annotate_outliers: bool=True,
     verbose: bool=True,
-    title: SN=None,
-    loc: SI='upper right',
-    ofile: SN=None
-    ):
+    title: str='',
+    loc: str='upper right',
+    ofile: str='',
+    )->Any:
     """
     Parameters
     -----------
@@ -86,7 +88,7 @@ def regression_residual_plots(
 
     NOTE:
     -------
-    Ive only run it on simple, non-robust, ordinary least squares models,
+    I've only run it on simple, non-robust, ordinary least squares models,
     but these metrics are standard for linear models.
     Ref: https://www.kaggle.com/nicapotato/in-depth-simple-linear-regression
     """
@@ -528,7 +530,7 @@ def lm_plot(df_X1train:DataFrame,
     df_ytrain:Series,
     df_ypreds_train:ARR,
     verbose:bool=True,
-    ofile:SN=None):
+    ofile:str=''):
     """Provides R style residual plots based on results from lm_stats
 
     Parameters
@@ -538,7 +540,7 @@ def lm_plot(df_X1train:DataFrame,
     df_ytrain: pandas.Series
         Pandas series with response variable.
     df_ypreds_train: pandas.Series
-        Pandas series of reponse variable predictions.
+        Pandas series of response variable predictions.
     verbose: bool
         Boolean to show whether to print description of stats or not.
     ofile: string
@@ -619,7 +621,7 @@ def lm_residual_corr_plot(
     df_ytrain:ARR,
     df_ypreds_train:ARR,
     verbose:bool=True,
-    ofile:SN=None):
+    ofile:str=''):
     """Linear models residual correlation plots.
 
     Parameters
@@ -629,7 +631,7 @@ def lm_residual_corr_plot(
     df_ytrain: pandas.Series
         Pandas series with response variable.
     df_ypreds_train: pandas.Series
-        Pandas series of reponse variable predictions.
+        Pandas series of response variable predictions.
     verbose: bool
         Boolean to show whether to print description of stats or not.
     ofile: string

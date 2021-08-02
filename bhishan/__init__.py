@@ -9,7 +9,7 @@ data visualization.
 
 __author__ = """Bhishan Poudel"""
 __email__ = 'bhishanpdl@gmail.com'
-__version__ = '0.6'
+__version__ = '0.6' # also update the version in setup.py
 
 from .pandas_api import BPAccessor
 
