@@ -27,9 +27,10 @@ __all__ = [
     "plot_num_cat",
     "plot_cat_num",
     "plot_cat_cat",
+    "plot_cat_cat2",
+    "plot_cat_stacked",
     "plot_boxplot_cats_num",
     "plot_count_cat",
-    "plot_cat_cat2",
     "plot_num_cat2",
     "plot_cat_binn",
     "plot_cat_cat_pct",
@@ -140,6 +141,14 @@ def plot_num(
         Display output dataframe or not.
     dpi: int
         Dot per inch saved figure.
+
+    Example
+    ---------
+    .. code-block:: python
+
+        df = sns.load_dataset('titanic')
+        bp.plot_num(df,'age',xlim=[0,100],ms='seaborn-whitegrid')
+        df.bp.plot_num('age',xlim=[0,100],ms='seaborn-whitegrid')
     """
     mpl_style = get_mpl_style(ms)
     plt.style.use(mpl_style)
@@ -263,6 +272,13 @@ def plot_cat(
     dpi: int
         Dot per inch saved figure.
 
+    Example
+    ---------
+    .. code-block:: python
+
+        df = sns.load_dataset('titanic')
+        bp.plot_cat(df,'pclass',xlim=[0,100],ms='seaborn-whitegrid')
+        df.bp.plot_cat('pclass',xlim=[0,100],ms='seaborn-whitegrid')
     """
     # get plot data
     df1 = df[cat].value_counts()
@@ -367,6 +383,14 @@ def plot_num_num(
         Whether or not to show the image.
     dpi: int
         Dot per inch saved figure.
+
+    Example
+    ---------
+    .. code-block:: python
+
+        df = sns.load_dataset('titanic')
+        bp.plot_num(df,'age','fare')
+        df.bp.plot_num('age','fare')
     """
     mpl_style = get_mpl_style(ms)
     plt.style.use(mpl_style)
@@ -762,6 +786,7 @@ def plot_cat_cat(
     .. code-block:: python
 
         df = sns.load_dataset('titanic')
+        bp.plot_cat_cat(df,'pclass','survived')
         df.bp.plot_cat_cat('pclass','survived')
     """
     mpl_style = get_mpl_style(ms)
@@ -895,105 +920,9 @@ def plot_cat_cat(
         for i,v in df1_per_cat_sorted[rare].items():
             print(f'    {i}: {v}%')
 
-def plot_cat_cat2(
-    df:DataFrame,
-    cat:SI,
-    target_cat:SI,
-    figsize:LIMIT=(12,8),
-    ylim2:LIMITN=None,
-    ms:SIN=None,
-    odir:str='images',
-    ofile:SN=None,
-    save:bool=True,
-    show:bool=False,
-    dpi:int=300
-    ):
-    """Plot 2*2 plot for categorical feature vs target-cateogoical feature.
-
-    Parameters
-    ----------
-    df: pandas.DataFrame
-        Input data.
-    cat: str
-        Categorical feature.
-    cat: str
-        Categorical target feature.
-    figsize: (int, int)
-        Figure size.
-    ylim2: int
-        Upper limit of yaxis.
-    ms: int or string
-        mpl style name. eg. ggplot, seaborn_darkgrid, -1-3,-100,-300,538,5
-    odir: str
-        Name of output directory.
-        This directory will be created if it does not exist.
-    ofile: str
-        Base name of output image.
-    save: bool
-        Whether or not to save the image.
-    show: bool
-        Whether or not to show the image.
-    dpi: int
-        Dot per inch saved figure.
-
-    Examples
-    ---------
-    .. code-block:: python
-
-        df = sns.load_dataset('titanic')
-        df.bp.plot_cat_cat('pclass','survived')
-
-    """
-    plt.style.use(get_mpl_style(ms))
-    fig, ax = plt.subplots(2,2,figsize=figsize)
-
-    # single count plot
-    df[cat].value_counts(ascending=True).plot.bar(
-    color=sns.color_palette('magma',df[cat].nunique()),ax=ax[0][0])
-
-    # single percent plot
-    df[cat].value_counts(ascending=True,normalize=True).mul(100).round(2)\
-        .plot.bar(color=sns.color_palette('magma',df[cat].nunique()),
-                    ax=ax[0][1])
-
-    # double count  plot
-    column0 = pd.crosstab(df[cat],df[target_cat]).columns.min()
-    pd.crosstab(df[cat],df[target_cat]).sort_values(column0).plot.bar(ax=ax[1][0])
-
-    # double percent plot
-    pd.crosstab(df[cat],df[target_cat],normalize='index')\
-    .sort_values(column0).mul(100).round(2).plot.bar(ax=ax[1][1])
-
-    if ylim2:
-        ax[1][1].set_ylim(0,ylim2)
-
-    plt.suptitle(f'Count and Percent plot for {cat} vs {target_cat}',
-            fontsize=14,color='blue')
-
-    add_text_barplot(ax[0][0])
-    add_text_barplot(ax[0][1], percent=True)
-    add_text_barplot(ax[1][0])
-    add_text_barplot(ax[1][1], percent=True)
-
-    ax[0][0].legend()
-    ax[0][1].legend()
-    plt.tight_layout()
-
-    if ofile:
-        # make sure this is base name
-        assert ofile == os.path.basename(ofile)
-        if not os.path.isdir(odir): os.makedirs(odir)
-        ofile = os.path.join(odir,ofile)
-    else:
-        if not os.path.isdir(odir): os.makedirs(odir)
-        ofile = os.path.join(odir,f'{cat}_vs_{target_cat}.png')
-
-    if save: plt.savefig(ofile,dpi=dpi)
-    if show: plt.show()
-
 def plot_cat_stacked(
     df:DataFrame,
-    cols:ARR,
+    cols:SARR,
     figsize:LIMIT=(12,8),
     fontsize:int=14,
     ms:SIN=None,
@@ -1008,7 +937,9 @@ def plot_cat_stacked(
 
     Parameters
     -----------
-    cols: list
+    df: pandas.DataFrame
+        Input data.
+    cols: str or list
         List of the categorical column.
     figsize: (int,int)
         figure size. e.g. (12,8)
@@ -1030,9 +961,20 @@ def plot_cat_stacked(
         e.g. kws = {'rot':90}
     dpi: int
         Dot per inch saved figure.
+
+    Example
+    ---------
+    .. code-block:: python
+
+        df = sns.load_dataset('titanic')
+        bp.plot_cat_stacked(df,'pclass')
+        df.bp.plot_cat_stacked('pclass')
     """
     mpl_style = get_mpl_style(ms)
     plt.style.use(mpl_style)
+
+    # if cols is single string, convert to list
+    if isinstance(cols,str): cols = [cols]
 
     (df[cols]
     .apply(lambda x: x.value_counts(normalize=True))
@@ -1227,6 +1169,102 @@ def plot_count_cat(
 
     if save: plt.savefig(ofile,dpi=dpi)
     if show: plt.show(); plt.close()
+
+def plot_cat_cat2(
+    df:DataFrame,
+    cat:SI,
+    target_cat:SI,
+    figsize:LIMIT=(12,8),
+    ylim2:LIMITN=None,
+    ms:SIN=None,
+    odir:str='images',
+    ofile:SN=None,
+    save:bool=True,
+    show:bool=False,
+    dpi:int=300
+    ):
+    """Plot 2*2 plot for categorical feature vs target-cateogoical feature.
+
+    Parameters
+    ----------
+    df: pandas.DataFrame
+        Input data.
+    cat: str
+        Categorical feature.
+    cat: str
+        Categorical target feature.
+    figsize: (int, int)
+        Figure size.
+    ylim2: int
+        Upper limit of yaxis.
+    ms: int or string
+        mpl style name. eg. ggplot, seaborn_darkgrid, -1-3,-100,-300,538,5
+    odir: str
+        Name of output directory.
+        This directory will be created if it does not exist.
+    ofile: str
+        Base name of output image.
+    save: bool
+        Whether or not to save the image.
+    show: bool
+        Whether or not to show the image.
+    dpi: int
+        Dot per inch saved figure.
+
+    Examples
+    ---------
+    .. code-block:: python
+
+        df = sns.load_dataset('titanic')
+        df.bp.plot_cat_cat2('pclass','survived')
+
+    """
+    plt.style.use(get_mpl_style(ms))
+    fig, ax = plt.subplots(2,2,figsize=figsize)
+
+    # single count plot
+    df[cat].value_counts(ascending=True).plot.bar(
+    color=sns.color_palette('magma',df[cat].nunique()),ax=ax[0][0])
+
+    # single percent plot
+    df[cat].value_counts(ascending=True,normalize=True).mul(100).round(2)\
+        .plot.bar(color=sns.color_palette('magma',df[cat].nunique()),
+                    ax=ax[0][1])
+
+    # double count  plot
+    column0 = pd.crosstab(df[cat],df[target_cat]).columns.min()
+    pd.crosstab(df[cat],df[target_cat]).sort_values(column0).plot.bar(ax=ax[1][0])
+
+    # double percent plot
+    pd.crosstab(df[cat],df[target_cat],normalize='index')\
+    .sort_values(column0).mul(100).round(2).plot.bar(ax=ax[1][1])
+
+    if ylim2:
+        ax[1][1].set_ylim(0,ylim2)
+
+    plt.suptitle(f'Count and Percent plot for {cat} vs {target_cat}',
+            fontsize=14,color='blue')
+
+    add_text_barplot(ax[0][0])
+    add_text_barplot(ax[0][1], percent=True)
+    add_text_barplot(ax[1][0])
+    add_text_barplot(ax[1][1], percent=True)
+
+    ax[0][0].legend()
+    ax[0][1].legend()
+    plt.tight_layout()
+
+    if ofile:
+        # make sure this is base name
+        assert ofile == os.path.basename(ofile)
+        if not os.path.isdir(odir): os.makedirs(odir)
+        ofile = os.path.join(odir,ofile)
+    else:
+        if not os.path.isdir(odir): os.makedirs(odir)
+        ofile = os.path.join(odir,f'{cat}_vs_{target_cat}.png')
+
+    if save: plt.savefig(ofile,dpi=dpi)
+    if show: plt.show()
 
 def plot_num_cat2(
     df:DataFrame,

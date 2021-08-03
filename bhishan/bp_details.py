@@ -22,7 +22,7 @@ Usage
 
 """
 all_ds_corr_outliers = [
-    'corr',
+    'corrwith',
     'corr_high',
     'corr_high_lst',
     'partial_corr',
@@ -50,6 +50,7 @@ all_hlp = ["hlp"]
 
 all_ml_data_proc = [
     "get_outliers",
+    "get_outliers_iqr",
     "get_outliers_tukey",
     "get_outliers_kde",
     "remove_outliers",
@@ -109,10 +110,10 @@ all_plot_ds = [
 all_plot_map = [
     "plotly_usa_map",
     "plotly_usa_map2",
-    "plotly_agg_usa_plot",
-    "plotly_usa_bubble_map",
-    "plotly_country_plot",
-    "plotly_agg_country_plot",
+    "plotly_usa_map_agg",
+    "plotly_usa_map_bubble",
+    "plotly_country_map",
+    "plotly_country_map_agg",
     "plotly_mapbox"
     ]
 
@@ -128,6 +129,7 @@ all_plot_num_cat = [
     "plot_num_cat",
     "plot_cat_num",
     "plot_cat_cat",
+    "plot_cat_stacked",
     "plot_boxplot_cats_num",
     "plot_count_cat",
     "plot_cat_cat2",

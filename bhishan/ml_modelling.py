@@ -350,7 +350,8 @@ def get_binary_classification_scalar_metrics(
 
     return df_eval
 
-def get_binary_classification_scalar_metrics2(model_name:str,
+def get_binary_classification_scalar_metrics2(
+    model_name:str,
     ytest:AS,
     ypreds:AS,
     desc:str='',

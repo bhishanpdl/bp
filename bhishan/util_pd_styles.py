@@ -1,21 +1,16 @@
 from __future__ import annotations
 
-__doc__ = "Pandas utility"
+__doc__ = "Pandas Styler"
 __note__ = """
-Reference: https://github.com/fastai/fastai2/blob/master/fastai2/tabular/core.py
+
 
 """
 __author__ = "Bhishan Poudel"
 
 __all__ = [
-    "highlight_row",
-    "highlight_col",
-    "highlight_diag",
-    "highlight_rowf",
-    "highlight_rowsf",
-    "highlight_colf",
-    "highlight_diagf",
-    "highlight_rcd"
+    "style_row",
+    "style_col",
+    "style_diag",
 ]
 
 # type hints
@@ -49,7 +44,7 @@ try:
 except:
     from utils import ifnone
 
-"""
+info = """
 Built-in functions:
 
 df.style.highlight_max(color='darkorange', axis=None) # axis=None is max of whole dataframe
@@ -61,10 +56,13 @@ df.style.bar(subset=['A', 'B'], align='mid', color=['#d65f5f', '#5fba7d'])
 df.style.hide_columns(['C','D'])
 df.style.hide_index()
 df.style.set_caption('caption.')
-
 """
 
-def highlight_row(
+def df_style_info():
+    print(info)
+
+#===== Helper functions =====
+def _style_row(
     ser: Series,
     color: str ="lightblue",
     row: SIN=None
@@ -74,7 +72,7 @@ def highlight_row(
     bkg = f"background-color: {color}"
     return [bkg if ser.name == row else "" for _ in ser]
 
-def highlight_col(
+def _style_col(
     ser: Series,
     color: str ="salmon",
     col: SIN=None
@@ -84,7 +82,7 @@ def highlight_col(
     bkg = f"background-color: {color}"
     return [bkg if ser.name == col else "" for _ in ser]
 
-def highlight_diag(
+def _style_diag(
     dfx: DataFrame,
     color: str ="khaki"
     ) -> DataFrame:
@@ -93,76 +91,93 @@ def highlight_diag(
     df1 = pd.DataFrame(a, index=dfx.index, columns=dfx.columns)
     return df1
 
-def highlight_rowf(
-    dfx : Dataframe,
-    color :str ="lightblue",
-    row: SIN =None
-    ) -> Any:
-    if row is None:
-        row = dfx.index[-1]
-
-    def highlight_row(
-        ser: Series,
-        row: SIN,
-        color: str="salmon"
-        ) -> List:
-        bkg = f"background-color: {color}"
-        return [bkg if ser.name == row else "" for _ in ser]
-
-    return dfx.style.apply(highlight_row, axis=1, row=row)
-
-def highlight_rowsf(
+#===== Style pandas dataframe =====
+def style_row(
     dfx: DataFrame,
+    rows: Union[str,int,List,Tuple] =[-1],
     color: str ="lightblue",
-    rows: SIN =None
-    ) -> Styler:
-    if rows is None:
-        rows = [dfx.index[-1]]
+    ):
+    """Highlight rows in a dataframe.
 
-    def highlight_row(ser: Series,
-        row: SI,
-        color: str ="salmon"
-        ) -> List:
-        bkg = f"background-color: {color}"
-        return [bkg if ser.name == row else "" for _ in ser]
+    Parameters
+    -----------
+    dfx : DataFrame
+        Pandas dataframe.
+    rows : str or list of str
+        Rows to highlight.
+    color : str
+        Color of highlighted row.
+
+    Examples
+    ---------
+    .. code-block:: python
+
+        df = pd.DataFrame({'A':[10,20,30],
+                    'B':['USA','Canada','Mexico'],
+                    'C': [100,200,300]})
+        bp.style_row(df,1)
+
+    """
+    # if rows is integer, make it a list
+    if isinstance(rows, int):
+        rows = [rows]
 
     df_style = dfx.copy()
-    df_style = df_style.style.apply(highlight_row, axis=1, row=rows[0])
+    df_style = df_style.style.apply(_style_row, axis=1, row=rows[0])
 
-    for row in rows[1:]:
-        df_style = df_style.apply(highlight_row, axis=1, row=row)
+    # if multiple rows are given, then style each row
+    if len(rows) > 1:
+        for row in rows[1:]:
+            df_style = df_style.apply(_style_row, axis=1, row=row)
 
-    return df_style
+    display(df_style)
 
-def highlight_colf(
-    dfx: DataFrame,
+def style_col(
+    df: DataFrame,
+    cols: Union[str,int,List,Tuple] =[-1],
     color: str ="salmon",
-    col: SI =-1
-    ) -> Styler:
-    if not isinstance(col, str):
-        col = dfx.columns[col]
+    ):
+    """Highlight columns in a dataframe.
 
-    def highlight_col(dfy: DataFrame) -> DataFrame:  # axis=None needs dataframe
+    Parameters
+    -----------
+    df : DataFrame
+        Pandas dataframe.
+    cols : str or list of str
+        Columns to highlight.
+    color : str
+        Color of highlighted column.
+
+    Examples
+    ---------
+    .. code-block:: python
+
+        df = pd.DataFrame({'A':[10,20,30],
+                    'B':['USA','Canada','Mexico'],
+                    'C': [100,200,300]})
+        bp.style_col(df,1)
+
+    """
+    # if cols is integer or str, make it list
+    if type(cols) in [int,str]:
+        cols = [cols]
+
+    # if column name is not integer, use integer to get nth column
+    if not isinstance(df.columns[0],int):
+        if isinstance(cols[0], int):
+            cols = list(df.columns[cols])
+
+    def _style_col(df):
         bkg = f"background-color: {color}"
-        df1 = pd.DataFrame("", index=dfy.index, columns=dfy.columns)
-        df1.loc[:, col] = bkg
+        df1 = pd.DataFrame("", index=df.index, columns=df.columns)
+        for col in cols:
+            df1.loc[:, col] = bkg
         return df1
 
-    return dfx.style.apply(highlight_col, axis=None)
+    df_style = df.style.apply(_style_col, axis=None)
+    display(df_style)
 
-def highlight_diagf(
-    dfx: DataFrame,
-    color: str ="khaki"
-    )-> Styler:
-    def highlight_diag(dfy:DataFrame)->DataFrame:
-        a = np.full(dfy.shape, "", dtype="<U24")
-        np.fill_diagonal(a, f"background-color: {color}")
-        df1 = pd.DataFrame(a, index=dfy.index, columns=dfy.columns)
-        return df1
-
-    return dfx.style.apply(highlight_diag, axis=None)
-
-def highlight_rcd(
+def style_rcd(
     dfx: DataFrame,
     row: SIN =None,
     col: SIN =None,
@@ -171,7 +186,7 @@ def highlight_rcd(
     c3: str ="khaki"
     )-> Styler:
     return (
-        dfx.style.apply(highlight_diag, axis=None, color=c3)
+        dfx.style.apply(_style_diag, axis=None, color=c3)
         .apply(highlight_row, axis=1, color=c1, row=row)
         .apply(highlight_col, axis=0, color=c2, col=col)
     )
@@ -361,7 +376,6 @@ def style_cellv(
     return df.style.apply(lambda x: [f"background: {c}"
                 if eval(cond) else "" for v in x], axis=1)
 
-
 def style_cellx(
     df:DataFrame,
     cond:str,
@@ -398,6 +412,14 @@ def style_cellx(
         return df1
     return df.style.apply(f,axis=None,cond=cond,c=c)
 
+def style_diag2(
+    dfx: DataFrame,
+    color: str ="khaki"
+    )-> Styler:
+    def _style_diag(dfy:DataFrame)->DataFrame:
+        a = np.full(dfy.shape, "", dtype="<U24")
+        np.fill_diagonal(a, f"background-color: {color}")
+        df1 = pd.DataFrame(a, index=dfy.index, columns=dfy.columns)
+        return df1
 
-
-
+    return dfx.style.apply(_style_diag, axis=None)

@@ -66,6 +66,11 @@ LTff = Union[Lff,Tff]
 LTss = Union[Lss,Tss]
 LTsi = Union[Lsi,Tsi]
 
+LTiiN = Union[Lii,Tii,None]
+LTffN = Union[Lff,Tff,None]
+LTssN = Union[Lss,Tss,None]
+LTsiN = Union[Lsi,Tsi,None]
+
 # limits
 LIMIT = Union[Tii,Lii]
 LIMITN = Union[Tii,Lii,None]

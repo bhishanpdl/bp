@@ -5,8 +5,8 @@ This module contains various functions for map plotting.
 
 - plotly_usa_map(df,col_state,col_value)
 - plotly_usa_map2(df,col_state,col_value)
-- plotly_agg_usa_plot(df,col_state,col_value)
-- plotly_usa_bubble_map(df,col_value,col_lat,col_lon)
+- plotly_usa_map_agg(df,col_state,col_value)
+- plotly_usa_map_bubble(df,col_value,col_lat,col_lon)
 - plotly_country_plot(df1,col_country,col_value)
 - plotly_agg_country_plot(df,col_country,col_value)
 - plotly_mapbox(df1, lat_col, lon_col)
@@ -25,10 +25,10 @@ Usage
 __all__ = [
     "plotly_usa_map",
     "plotly_usa_map2",
-    "plotly_agg_usa_plot",
-    "plotly_usa_bubble_map",
-    "plotly_country_plot",
-    "plotly_agg_country_plot",
+    "plotly_usa_map_agg",
+    "plotly_usa_map_bubble",
+    "plotly_country_map",
+    "plotly_country_map_agg",
     "plotly_mapbox"
     ]
 
@@ -87,63 +87,6 @@ New line in plotly:
 df['text'] = df['state'] + '<br>' + df['city']
 """
 
-def plotly_usa_map2(
-    df:DataFrame,
-    col_state:SI,
-    col_value:SI,
-    title:str='',
-    ofile:str='',
-    show:bool=True,
-    auto_open:bool=False
-    ):
-
-    """Plotly map plot for different states of USA.
-
-    Parameters
-    -----------
-    df: pandas.DataFrame
-        Input data.
-    col_state: str
-        Column name of states.
-    col_value: str
-        Column name of values.
-    title: str
-        title of the plot.
-    ofile: str
-        Name of the output file.
-    show: bool
-        Whether or not to show the rendered html in notebook.
-    auto_open: bool
-        Whether or not to automatically open the ouput html file.
-
-
-    Example 1
-    -----------
-    df = pd.DataFrame({'state': ['NY', 'OH','MI','CA','TX'],
-                    'value': [100,200,300,400,500]})
-    plotly_usa_map2(df,'state','value')
-
-    """
-
-    # make sure df <= 50
-    assert len(df) <= 50
-
-    fig = px.choropleth(df,
-                        locations=col_state,
-                        color=col_value,
-                        hover_name=col_state,
-                        locationmode = 'USA-states')
-
-    fig.update_layout(
-        title_text = title,
-        geo_scope='usa',
-    )
-    if ofile:
-        plot(fig, filename=ofile,auto_open=auto_open)
-
-    if show:
-        iplot(fig, validate=False)
-
 def plotly_usa_map(
     df:DataFrame,
     col_state:SI,
@@ -194,13 +137,13 @@ def plotly_usa_map(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
     Example 1
     -----------
     df = pd.DataFrame({'state': ['NY', 'OH','MI','CA','TX'],
                     'value': [100,200,300,400,500]})
-    plotly_usa_map(df,'state','value')
+    bp.plotly_usa_map(df,'state','value')
     """
     # make sure df <= 50
     assert len(df) <= 50
@@ -241,8 +184,64 @@ def plotly_usa_map(
     if show:
         iplot(fig, validate=False)
 
+def plotly_usa_map2(
+    df:DataFrame,
+    col_state:SI,
+    col_value:SI,
+    title:str='',
+    ofile:str='',
+    show:bool=True,
+    auto_open:bool=False
+    ):
+
+    """Plotly map plot for different states of USA.
+
+    Parameters
+    -----------
+    df: pandas.DataFrame
+        Input data.
+    col_state: str
+        Column name of states.
+    col_value: str
+        Column name of values.
+    title: str
+        title of the plot.
+    ofile: str
+        Name of the output file.
+    show: bool
+        Whether or not to show the rendered html in notebook.
+    auto_open: bool
+        Whether or not to automatically open the output html file.
+
+    Example 1
+    -----------
+    df = pd.DataFrame({'state': ['NY', 'OH','MI','CA','TX'],
+                    'value': [100,200,300,400,500]})
+    bp.plotly_usa_map2(df,'state','value')
+
+    """
+
+    # make sure df <= 50
+    assert len(df) <= 50
+
+    fig = px.choropleth(df,
+                        locations=col_state,
+                        color=col_value,
+                        hover_name=col_state,
+                        locationmode = 'USA-states')
+
+    fig.update_layout(
+        title_text = title,
+        geo_scope='usa',
+    )
+    if ofile:
+        plot(fig, filename=ofile,auto_open=auto_open)
+
+    if show:
+        iplot(fig, validate=False)
+
 # USA States Plot Aggregations
-def plotly_agg_usa_plot(
+def plotly_usa_map_agg(
     df:DataFrame,
     col_state:SI,
     col_value:SI,
@@ -298,21 +297,19 @@ def plotly_agg_usa_plot(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
-
+        Whether or not to automatically open the output html file.
 
     Example
     --------
-    df = pd.DataFrame({'state': ['NY', 'OH','MI','CA','TX'],
-                        'value': [100,200,300,400,500]})
+    df = pd.DataFrame({'state': ['NY', 'NY','CA','CA','CA'],
+                    'value': [1,2,100,200,300]})
 
-    plotly_agg_usa_plot(df,'state','value',width=600)
-
+    bp.plotly_usa_map_agg(df,'state','value',width=600)
+    df.bp.plotly_usa_map_agg('state','value',width=600)
     """
     # title
     if not title:
         title = col_value + ' per State'
-
 
     aggs = ["count","sum","avg","median","mode",
             "rms","stddev","min","max","first","last"]
@@ -332,6 +329,7 @@ def plotly_agg_usa_plot(
             locationmode = 'USA-states',
             locations = df[col_state],
             z = df[col_value],
+            hoverinfo = df[col_value],
             autocolorscale = False,
             colorscale = colorscale,
             reversescale = reversescale,
@@ -379,7 +377,7 @@ def plotly_agg_usa_plot(
     if show:
         iplot(fig, validate=False)
 
-def plotly_usa_bubble_map(
+def plotly_usa_map_bubble(
     df:DataFrame,
     col_value:SI,
     col_lat:SI,
@@ -426,7 +424,7 @@ def plotly_usa_bubble_map(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
     Example 1
     -----------
@@ -440,8 +438,7 @@ def plotly_usa_bubble_map(
     colors = ["royalblue","crimson","lightseagreen",
                 "orange","lightgrey"]
 
-
-    plotly_usa_bubble_map(df,'pop','lat','lon',
+    bp.plotly_usa_map_bubble(df,'pop','lat','lon',
             limits,colors,
             scale=5000,
             col_text='text')
@@ -495,7 +492,7 @@ def plotly_usa_bubble_map(
 
 #================================= Countries Plot ===================
 # Country Plot
-def plotly_country_plot(
+def plotly_country_map(
     df1:DataFrame,
     col_country:SI,
     col_value:SI,
@@ -551,8 +548,7 @@ def plotly_country_plot(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
-
+        Whether or not to automatically open the output html file.
 
     Example 1
     -----------
@@ -614,9 +610,9 @@ def plotly_country_plot(
     if show:
         iplot(fig, validate=False)
 
-#================================= map plot with agg ===========
+#================= map plot with agg ========
 # Country Plot Aggregations
-def plotly_agg_country_plot(
+def plotly_country_map_agg(
     df:DataFrame,
     col_country:SI,
     col_value:SI,
@@ -672,13 +668,13 @@ def plotly_agg_country_plot(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
-
+        Whether or not to automatically open the output html file.
 
     Example
     --------
     df = pd.read_csv("https://raw.githubusercontent.com/bcdunbar/datasets/master/worldhappiness.csv")
-    plotly_agg_country_plot(df,'Country','HappinessScore',width=600)
+
+    bp.plotly_country_map_agg(df,'Country','HappinessScore',width=600)
 
     """
     # title
@@ -793,9 +789,7 @@ def plotly_mapbox(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
-
-
+        Whether or not to automatically open the output html file.
     """
     mapbox_access_token = get_mapbox_access_token()
 

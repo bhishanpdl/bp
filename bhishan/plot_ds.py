@@ -56,6 +56,8 @@ from tqdm import tqdm_notebook as tqdm
 import matplotlib
 import matplotlib.pyplot as plt
 plt.style.use('ggplot') # better than sns styles.
+from matplotlib.ticker import PercentFormatter
+
 import json
 import os
 import time
@@ -78,12 +80,14 @@ except:
                         get_mpl_style, get_plotly_colorscale)
 
 def plot_stem(
-    x:ARR,
     y:ARR,
+    col:SIN=None,
+    x:ARRN=None,
     label:str='',
     markerfmt:str='x',
     figsize:LIMIT=(8,8),
-    color:str="#2ca02c"
+    color:str="#2ca02c",
+    kws:Dict={}
     ):
     """Plot Step plot of two variables.
 
@@ -99,6 +103,8 @@ def plot_stem(
         Figure size.
     color: str
         color of markerline and stemline
+    kws: dict
+        Keyword arguments to pass to `plt.stem`
 
     Returns
     -------
@@ -106,11 +112,20 @@ def plot_stem(
         The container may be treated like a tuple
         (*markerline*, *stemlines*, *baseline*)
     """
+    if col is not None:
+        if not is_numeric_dtype(y[col]):
+            raise AttributeError(f' Column "{col}" must be a numeric column')
+        y = y[col]
+        x = list(y.index)
+
+    if x is None:
+        x = np.arange(len(y))
     fig,ax = plt.subplots(figsize=figsize)
     m, s, _ = plt.stem(x, y,
                     markerfmt=markerfmt,
                     label=label,
-                    use_line_collection=True)
+                    use_line_collection=True,
+                    **kws)
     plt.setp([m, s], color=color)
 
     if label:
@@ -139,9 +154,9 @@ def plot_pareto(
     show:bool=False,
     dpi:int=300
     ):
-    """Pareto Chart.
+    """Plot pareto chart.
 
-    Each category must be unique.
+    Note that each category must be unique.
 
     Parameters
     -----------
@@ -152,7 +167,7 @@ def plot_pareto(
     value: str
         Value column for categorical column of
         already aggregated dataframe.
-        If we use grpby all the cat variables must be unique.
+        If we use groupby all the cat variables must be unique.
     thr: int
         Upper threshold for rare categories. e.g 98
     figsize: (int,int)
@@ -192,7 +207,7 @@ def plot_pareto(
         df.bp.plot_pareto(cat='fruit',value='price',thr=80)
 
     """
-    df_ = self._obj
+    from matplotlib.ticker import PercentFormatter
     plt.style.use(get_mpl_style(ms))
     ylabel = 'Count'
     title = f'Pareto Chart for {cat}'
@@ -201,13 +216,13 @@ def plot_pareto(
         # Here cat = fruit value = price
         ylabel = value
         title = f'Pareto Chart for {cat}' + f' vs {value}'
-        df = df_[[cat,value]].sort_values(value,ascending=False)
+        df = df[[cat,value]].sort_values(value,ascending=False)
         df.index = df[cat].astype(str)
         df["cumperc"] = df[value].cumsum()/df[value].sum()*100
 
     else:
         # Here, cat = small categorical number or cat
-        df = df_[cat].value_counts().to_frame()
+        df = df[cat].value_counts().to_frame()
         df.index = [str(i) for i in df.index]
         df["cumperc"] = df[cat].cumsum()/df[cat].sum()*100
 
@@ -393,11 +408,11 @@ def countplot(
 
 def regplot_binn(
     df:DataFrame,
-    cols1:ARR,
-    cols2:ARR,
+    colsx:SARR,
+    colsy:SARR,
     binn:SI,
-    m:int,
-    n:int,
+    m:int=1,
+    n:IN=None,
     figsize:LIMIT=(12,8),
     fontsize:int=18,
     debug:int=False,
@@ -416,10 +431,10 @@ def regplot_binn(
     -----------
     df: pandas.DataFrame
         Input data.
-    cols1: list
-        List of numerical columns.
-    cols2: list
-        List of numerical columns.
+    colsx: str or list
+        List of numerical columns for x-axis.
+    colsy: str or list
+        List of numerical columns for y-axis.
     binn: str
         Binary target feature.
     m: int
@@ -449,41 +464,59 @@ def regplot_binn(
     .. code-block:: python
 
         df = sns.load_dataset('titanic')
-        df.bp.regplot_binn(['age'], ['fare'],1,2)
+        df.bp.regplot_binn(['age'], ['fare'],'survived',1,2)
         sns.lmplot(x='age',y='fare',data=df,hue='survived')
 
     """
     plt.style.use(get_mpl_style(ms))
-    assert sorted(df[binn].unique().tolist()) == [0,1], 'Binary target must have values 0 and 1'
 
     msg = f"""\
-    sns.lmplot(x='{cols1[0]}',y='{cols2[0]}',data=df,hue='{binn}')
+    sns.lmplot(x='{colsx[0]}',y='{colsy[0]}',data=df,hue='{binn}')
     """
     if debug:
         print(msg)
 
+    # if colsx is string, convert to list
+    if isinstance(colsx,str):
+        colsx = [colsx]
+
+    # if colsy is string make it list
+    if isinstance(colsy,str):
+        colsy = [colsy]
+
+    # if length of y is smaller, repeat first element
+    if len(colsy) < len(colsx):
+        colsy = [colsy[0]]*len(colsx)
+
+    # if n is None, make it equal to length of colsx
+    if n is None:
+        n = len(colsx)//m
+
+    # find unique values in binn
+    b0,b1 = sorted(df[binn].unique())
+
     fig, axes = plt.subplots(m,n,figsize=figsize)
-    for i in range(len(cols1)):
+    for i in range(len(colsx)):
         ax = plt.subplot(m,n,i+1)
 
-        x0 = df.loc[df[binn]==0, cols1[i]]
-        y0 = df.loc[df[binn]==0, cols2[i]]
-        x1 = df.loc[df[binn]==1, cols1[i]]
-        y1 = df.loc[df[binn]==1, cols2[i]]
+        x0 = df.loc[df[binn]==b0, colsx[i]]
+        y0 = df.loc[df[binn]==b0, colsy[i]]
+        x1 = df.loc[df[binn]==b1, colsx[i]]
+        y1 = df.loc[df[binn]==b1, colsy[i]]
 
-        sns.regplot(x=x0, y=y0, ax=ax,label='0')
-        sns.regplot(x=x1, y=y1, ax=ax,label='1')
+        sns.regplot(x=x0, y=y0, ax=ax,label=b0)
+        sns.regplot(x=x1, y=y1, ax=ax,label=b1)
         ax.legend(prop={'size':fontsize-2})
 
-        plt.xlabel(cols1[i],fontsize=fontsize)
-        plt.ylabel(cols2[i],fontsize=fontsize)
+        plt.xlabel(colsx[i],fontsize=fontsize)
+        plt.ylabel(colsy[i],fontsize=fontsize)
         plt.tick_params(axis='both', which='major', labelsize=fontsize)
         plt.tight_layout()
 
     plt.suptitle("Regression plots of Numerical features against Binary target.",
                 fontsize=fontsize+4,y=1.05)
 
-    for i in range(m*n-len(cols1)):
+    for i in range(m*n-len(colsx)):
         axes.flat[-(i+1)].set_visible(False)
 
     if ofile:
@@ -504,7 +537,7 @@ def plot_two_clusters(
     target:SI,
     figsize:LIMIT=(24,12),
     fontsize:int=24,
-    labels:LTss=['Boring','Interesting']
+    labels:Union[LTss,None]=None
     ):
     """Plot two clusters using dimensionality reduction methods.
 
@@ -524,10 +557,19 @@ def plot_two_clusters(
         Name of the labels.
 
     """
+    # copy data
+    df = df.copy()
+
+    # make cols a list
+    cols = list(cols)
+
+    df = df[cols+[target]].dropna(how='any')
     X = df[cols].values
     y = df[target].values
 
     y0,y1 = sorted(df[target].unique())
+    if labels is None:
+        labels = [y0,y1]
 
     # scaling (we must do scaling for pca)
     scaler = StandardScaler()
@@ -542,13 +584,15 @@ def plot_two_clusters(
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=figsize)
     fig.suptitle('Two Clusters Visualization Using Dimensionality Reduction', fontsize=fontsize)
 
-
-    patch0 = mpatches.Patch(color='#0A0AFF', label=labels[0])
-    patch1  = mpatches.Patch(color='#AF0000', label=labels[1])
+    # patches for
+    patch0 = mpatches.Patch(color='#0A0AFF',label=labels[0])
+    patch1  = mpatches.Patch(color='#AF0000',label=labels[1])
     handles = [patch0, patch1]
 
-    kwargs1 = dict(c=(y == y0),cmap='coolwarm',label=labels[0], linewidths=2)
-    kwargs2 = dict(c=(y == y1),cmap='coolwarm',label=labels[1], linewidths=2)
+    # kwargs for binary target
+    cmap = 'coolwarm' # 'coolwarm'
+    kwargs1 = dict(c=(y == y0),cmap=cmap,label=labels[0], linewidths=2)
+    kwargs2 = dict(c=(y == y1),cmap=cmap,label=labels[1], linewidths=2)
 
     # t-SNE scatter plot
     ax1.scatter(X_reduced_tsne[:,0], X_reduced_tsne[:,1], **kwargs1)

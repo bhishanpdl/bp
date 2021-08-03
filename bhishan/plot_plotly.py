@@ -47,7 +47,6 @@ __all__ = [
     "plotly_scattergl_plot_colorcol",
     "plotly_scattergl_plot_subplots",
     "plotly_bubbleplot",
-    "plotly_mapbox"
     ]
 
 # type hints
@@ -100,7 +99,6 @@ COLORS30 = ['#696969', '#d3d3d3', '#8b4513',
                 '#f08080', '#adff2f', '#1e90ff',
                 '#f0e68c', '#ffff54', '#dda0dd',
                 '#90ee90', '#ff1493', '#7b68ee']
-
 
 # local functions
 try:
@@ -569,12 +567,12 @@ def plotly_countplot(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
     Example:
     ----------
-    tips = sns.load_dataset('tips')
-    tips.bp.plotly_countplot('day')
+    df = sns.load_dataset('tips')
+    df.bp.plotly_countplot('day')
     """
     if not color:
         color='rgb(158,202,225)'
@@ -645,6 +643,11 @@ def plotly_histogram(
     color : str
         Color of the plot. Valid matplotlib color name.
 
+    Examples
+    ---------
+    .. code-block:: python
+        df = sns.load_dataset('diamonds')
+        df.bp.plotly_corr('price',topN=4)
     """
     x = df[col].values
 
@@ -758,7 +761,7 @@ def plotly_radar_plot(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
     """
     # unique values in target
@@ -873,7 +876,7 @@ def plotly_boxplot(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
     Examples
     ---------
@@ -883,7 +886,7 @@ def plotly_boxplot(
 
     Note
     -----
-    To display large ouput in jupyter notebook without scrolling use this:
+    To display large output in jupyter notebook without scrolling use this:
     .. code-block:: python
         %%javascript
         IPython.OutputArea.auto_scroll_threshold = 9999
@@ -979,7 +982,7 @@ def plotly_boxplot_allpoints_with_outliers(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
     """
     if not color:
@@ -1034,7 +1037,7 @@ def plotly_boxplot_categorical_column(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
     """
     df[xcol] = df[xcol].astype(str)
@@ -1093,13 +1096,13 @@ def plotly_cat_binn_zero_one(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
     Examples
     ---------
     .. code-block:: python
 
-        module_path = "/Users/poudel/Dropbox/a00_Bhishan_Modules/bhishan/"
+        module_path = "/Users/poudel/Dropbox/a00_Bhishan_Modules/bp/bhishan/"
         sys.path.append(module_path)
 
         import seaborn as sns
@@ -1108,7 +1111,6 @@ def plotly_cat_binn_zero_one(
         df = sns.load_dataset('titanic')
         plotly_cat_binn_zero_one(df,'pclass','survived',0,1,
                                 name='Alive',is_one_good=False)
-
     """
     # params
     color0 = 'green' if is_one_good else 'tomato'
@@ -1206,7 +1208,7 @@ def plotly_pieplots(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
     """
     # params
     if colorway is None:
@@ -1388,7 +1390,7 @@ def plotly_scattergl_plot(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
     """
     colorcol = df[color] if color in df.columns.values else color
     showscale = True if color in df.columns else False
@@ -1479,7 +1481,7 @@ def plotly_scattergl_plot_colorcol(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
 
     """
@@ -1551,7 +1553,7 @@ def plotly_scattergl_plot_subplots(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
     """
     subplots = [i.title() for i in subplot_cols]
@@ -1632,16 +1634,15 @@ def plotly_bubbleplot(
     show: bool
         Whether or not to show the rendered html in notebook.
     auto_open: bool
-        Whether or not to automatically open the ouput html file.
+        Whether or not to automatically open the output html file.
 
     Examples
     ---------
     .. code-block:: python
 
-        df1 = df[df.yr_built == 2014]
-        plotly_bubbleplot(df1, 'grade', 'bedrooms', 'bathrooms', 'floors', size_factor=5)
+        df = sns.load_dataset('titanic')
+        bp.plotly_bubbleplot(df, 'age', 'fare','pclass', size_factor=5)
 
-    data source: https://www.kaggle.com/harlfoxem/housesalesprediction
     """
     xlabel = xcol.title()
     ylabel =  ycol1.title() + ' & ' +  ycol2.title() if ycol2 else ycol1.title()
@@ -1685,113 +1686,5 @@ def plotly_bubbleplot(
     if ofile:
         plot(fig, filename=ofile,auto_open=auto_open)
 
-    if show:
-        return iplot(fig)
-
-def get_mapbox_access_token():
-    import json
-    import os
-
-    with open(os.path.expanduser('~')+ '/.mapbox_tokens.json') as fi:
-        json_data = json.load(fi)
-
-    mapbox_access_token = json_data['token1']
-    return mapbox_access_token
-
-def plotly_mapbox(
-    df1:DataFrame,
-    lat_col:SI,
-    lon_col:SI,
-    color_col:SN=None,
-    text_col:SN=None,
-    title:str='My Map',
-    marker_size:NUM=4.5,
-    zoom:int=9,
-    width:int=800,
-    height:int=800,
-    ofile:SN=None,
-    show:bool=True,
-    auto_open:bool=False
-    ):
-    """Map plot using mapbox.
-
-    Parameters
-    -----------
-    df1: pandas.DataFrame
-        Input data.
-    lat_col: str
-        Name of latitude column.
-    lon_col: str
-        Name of longitude column.
-    color_col: str
-        Name of color column.
-    text_col: str
-        Name of text column.
-    title: str
-        Title of the plot.
-    marker_size: int
-        Size of the marker.
-    zoom: int
-        Zoom the map.
-    width: int
-        Width of the map.
-    height: int
-        Height of the map.
-    ofile: str
-        Name of the output file.
-    show: bool
-        Whether or not to show the rendered html in notebook.
-    auto_open: bool
-        Whether or not to automatically open the ouput html file.
-
-    """
-    mapbox_access_token = get_mapbox_access_token()
-
-    color = None
-    if color_col:
-        n = df1[color_col].nunique()
-        ncolors = get_distinct_colors(n)
-        unq = df1[color_col].unique().tolist()
-        mapping = {unq[i]: ncolors[i] for i in range(n)}
-        color = df1[color_col].map(mapping)
-
-    if text_col:
-        text = df1[text_col]
-    elif (color_col and 1):
-        text = '(' + df1[lat_col].astype(str) + ',' + df1[lon_col].astype(str) +\
-            ') ' + color_col.title() + ': ' + df1[color_col].astype(str)
-    else:
-        text = df1[lat_col].astype(str) + ',' + df1[lon_col].astype(str)
-
-
-    lat = df1[lat_col].values.tolist()
-    lon = df1[lon_col].values.tolist()
-
-    trace0 = go.Scattermapbox(lat=lat,lon=lon,
-                    mode="markers",
-                    marker=dict(size=marker_size, color= color) ,
-                                hoverinfo="text",
-                                text=text)
-
-    layout = dict(title=title,
-                width=width,height=height,
-                hovermode="closest",
-                showlegend=False,
-                mapbox=dict(bearing=0,pitch=0,zoom=zoom,
-                            center=dict(lat=df1[lat_col].mean(),
-                                        lon=df1[lon_col].mean()),
-                            accesstoken=mapbox_access_token
-                            )
-                )
-
-    data = [trace0]
-    fig = go.Figure(data=data,layout=layout)
-
-    markdown_html = ' '.join(["""<span style="background:{}"> {} {} </span>""".format(ncolors[i], color_col.title(), unq[i]) for i in range(n)])
-
-    print(markdown_html)
-    fig['layout']['title']['x'] = 0.5
-    if ofile:
-        plot(fig, filename=ofile,auto_open=auto_open)
     if show:
         return iplot(fig)

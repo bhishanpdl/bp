@@ -65,7 +65,6 @@ import statsmodels.formula.api as smf
 import statsmodels.robust as smrb # smrb.mad() etc
 from IPython.display import display, HTML
 
-
 def regression_residual_plots(
     model_fit:Any,
     dependent_var:str,

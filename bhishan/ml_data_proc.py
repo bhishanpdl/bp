@@ -23,6 +23,7 @@ Usage
 
 __all__ = [
     "get_outliers",
+    "get_outliers_iqr",
     "get_outliers_tukey",
     "get_outliers_kde",
     "remove_outliers",
@@ -64,7 +65,8 @@ from pandas.api.types import is_numeric_dtype
 from pandas.api.types import is_datetime64_any_dtype
 
 def get_outliers(
-    ser:Series,
+    ser:ARR,
+    col:SIN=None,
     k: NUM=1.5,
     plot_: bool=False,
     show: bool=False,
@@ -84,6 +86,8 @@ def get_outliers(
     -----------
     ser: pandas series
         Data whose outliers is to be found.
+    col: str
+        Name of the column.
     thr: float
         Thereshold.
     plot_: bool
@@ -102,13 +106,19 @@ def get_outliers(
     ---------
     .. code-block:: python
 
-        ser_outliers = outliers_tukey(df['age'])
+        ser_outliers = bp.outliers_tukey(df['age'])
+        ser_outliers = df.bp.outliers_tukey('age')
 
     References
     -----------
     https://en.wikipedia.org/wiki/Outlier
 
     """
+    if col is not None:
+        if not is_numeric_dtype(ser[col]):
+            raise AttributeError(f' Column "{col}" must be a numeric column')
+        ser = ser[col]
+    ser = pd.Series(ser)
     ser = ser.dropna()
     q1 = np.percentile(ser, 25)
     q3 = np.percentile(ser, 75)
@@ -122,9 +132,7 @@ def get_outliers(
     n_removed = len(ser_outliers)
     n_pct = n_removed / len(ser) * 100
     if info:
-        print("Here we get outliers index and values.")
-        print("We may need to removed these outliers later.")
-        print(f"number of rows removed = {n_removed} ({n_pct}%)")
+        print(f"number of rows removed = {n_removed} ({n_pct:.2f}%)")
 
     if plot_:
         sns.boxplot(x=ser)
@@ -137,7 +145,7 @@ def get_outliers(
 get_outliers_iqr = get_outliers
 get_outliers_tukey = get_outliers
 
-def get_outliers_kde(x:ARR):
+def get_outliers_kde(x:ARR,col:SIN=None):
     """Find outliers using KDEUnivariate method.
 
     Parameters
@@ -164,14 +172,22 @@ def get_outliers_kde(x:ARR):
     ---------
     .. code-block:: python
 
-        kde_indices, kde_values = bp.outliers_kde(df['age'].dropna())
-        print(np.sort(kde_values))
-
+        ser_outliers = bp.outliers_kde(df['age'])
+        ser_outliers = df.bp.outliers_kde('age')
     """
     from sklearn.preprocessing import scale
     from statsmodels.nonparametric.kde import KDEUnivariate
 
-    assert np.isnan(x).sum() == 0, 'Missing values are not allowed'
+    if col is not None:
+        if not is_numeric_dtype(x[col]):
+            raise AttributeError(f'Column "{col}" must be a numeric column')
+
+        x = x[col]
+
+    x = np.array(x)
+    x = x[~np.isnan(x)] # remove nans
+
+    # assert np.isnan(x).sum() == 0, 'Missing values are not allowed'
 
     x_scaled = scale(list(map(float, x)))
     kde = KDEUnivariate(x_scaled)
@@ -182,11 +198,13 @@ def get_outliers_kde(x:ARR):
     idx_outliers = np.asarray(pred).argsort()[:n]
     val_outliers = np.asarray(x)[idx_outliers]
 
-    return idx_outliers, val_outliers
+    ser_outliers = pd.Series(val_outliers, index=idx_outliers)
+
+    return ser_outliers
 
 def remove_outliers(
-    df:DataFrame,
-    col:SI,
+    x:ARR,
+    col:SIN=None,
     k: NUM=1.5,
     info: bool=True
     ):
@@ -202,8 +220,8 @@ def remove_outliers(
 
     Parameters
     -----------
-    df: pandas.DataFrame
-        Input pandas dataframe.
+    x: list or array or series or pandas.DataFrame
+        Input data
     col: str
         Name of column
     info: bool
@@ -222,22 +240,25 @@ def remove_outliers(
             df_no_age_outliers = bp.remove_outliers_iqr(df,'age')
 
     """
-    if not is_numeric_dtype(df[col]):
-        raise AttributeError(f'{col} must be a numeric column')
+    if col is not None:
+        if not is_numeric_dtype(x[col]):
+            raise AttributeError(f' Column "{col}" must be a numeric column')
+        x = x[col]
 
-    q1 = df[col].quantile(0.25)
-    q3 = df[col].quantile(0.75)
+    ser = pd.Series(x)
+    q1 = ser.quantile(0.25)
+    q3 = ser.quantile(0.75)
 
     iqr = q3-q1 #Interquartile range
     low  = q1 - k*iqr
     high = q3 + k*iqr
-    df_out = df.loc[(df[col] > low) & (df[col] < high)]
-    n_removed = df.shape[0] - df_out.shape[0]
-    n_pct = n_removed / df.shape[0] * 100
+    ser_out = ser.loc[(df[col] > low) & (ser < high)]
+    n_removed = ser.shape[0] - ser_out.shape[0]
+    n_pct = n_removed / ser.shape[0] * 100
 
     if info:
         print(f"For {col}, number of rows removed = {n_removed} ({n_pct}%)")
-    return df_out
+    return ser_out
 
 # alias
 remove_outliers_iqr = get_outliers

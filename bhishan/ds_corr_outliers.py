@@ -23,7 +23,7 @@ Usage
 """
 
 __all__ = [
-    'corr',
+    'corrwith',
     'corr_high',
     'corr_high_lst',
     'partial_corr',
@@ -57,7 +57,7 @@ import numpy as np
 import pandas as pd
 import sklearn
 import os
-from functools import reduce
+from functools import reduce,wraps
 from pandas.api.types import is_numeric_dtype
 from pandas.api.types import is_datetime64_any_dtype
 import scipy
@@ -79,11 +79,10 @@ except:
     from util_plots import (add_text_barplot, magnify,
                         get_mpl_style, get_plotly_colorscale)
 
-
-def corr(
+def corrwith(
     df:DataFrame,
-    cols:ARR,
     target:SI,
+    cols:ARR=None,
     method:str='spearman'
     )->DataFrame:
     """Correlation between multiple columns with target column.
@@ -91,6 +90,8 @@ def corr(
     Available methods:
     method : {'pearson', 'kendall', 'spearman'}
     """
+    if cols is None:
+        cols = [i for i in df.columns if i != target]
     df_corr = (df[cols].corrwith(df[target],method=method)
                     .rename(method+'r')
                     .rename_axis('column')
@@ -98,10 +99,10 @@ def corr(
     return df_corr
 
 def corr_high(
-    df,
-    thr,
-    print_=False,
-    disp=True
+    df:DataFrame,
+    thr:NUM,
+    print_:bool=False,
+    disp:bool=True
     ):
     """Get the most correlated features above given threshold.
 
@@ -252,11 +253,9 @@ def partial_corr(
 
         df = sns.load_dataset('titanic')
         df.bp.partial_corr()
-
     """
     import scipy
 
-    # df = self._obj
     if not cols:
         cols = df.select_dtypes('number').columns
 

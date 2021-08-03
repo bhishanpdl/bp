@@ -436,10 +436,326 @@ class BPAccessor:
 
 
 #============================= My extension ================================
-# description
-try:
-    from .util_pd import describe
-except:
-    from util_pd import describe
+from functools import wraps
+def make_method(f):
+    @wraps(f)
+    def _(self, *args, **kwargs):
+        return f(self._obj, *args, **kwargs)
+    return _
 
-BPAccessor.describe = describe
+# ds_corr_outliers
+try:
+    from .ds_corr_outliers import (
+    corrwith,
+    corr_high,
+    corr_high_lst,
+    partial_corr,
+    point_biserial_correlation,
+    outliers_tukey,
+    outliers_kde
+    )
+except:
+    from ds_corr_outliers import (
+    corrwith,
+    corr_high,
+    corr_high_lst,
+    partial_corr,
+    point_biserial_correlation,
+    outliers_tukey,
+    outliers_kde
+    )
+
+BPAccessor.corrwith = make_method(corrwith)
+BPAccessor.corr_high = make_method(corr_high)
+BPAccessor.corr_high_lst = make_method(corr_high_lst)
+BPAccessor.partial_corr = make_method(partial_corr)
+BPAccessor.point_biserial_correlation = make_method(point_biserial_correlation)
+BPAccessor.outliers_tukey = make_method(outliers_tukey)
+BPAccessor.outliers_kde = make_method(outliers_kde)
+
+# ds_ds
+try:
+    from .ds_ds import (
+    freq_count,
+    get_column_descriptions,
+    report_cat_binn,
+    compare_kde_binn,
+    compare_kde2
+    )
+except:
+    from ds_ds import (
+    freq_count,
+    get_column_descriptions,
+    report_cat_binn,
+    compare_kde_binn,
+    compare_kde2
+    )
+
+BPAccessor.freq_count = make_method(freq_count)
+BPAccessor.get_column_descriptions = make_method(get_column_descriptions)
+BPAccessor.report_cat_binn = make_method(report_cat_binn)
+BPAccessor.compare_kde_binn = make_method(compare_kde_binn)
+BPAccessor.compare_kde2 = make_method(compare_kde2)
+
+# ds_json
+try:
+    from .ds_json import parse_json_col
+except:
+    from ds_json import parse_json_col
+
+BPAccessor.parse_json_col = make_method(parse_json_col)
+
+# ds_speed
+try:
+    from .ds_speed import optimize_memory
+except:
+    from ds_speed import optimize_memory
+
+BPAccessor.optimize_memory = make_method(optimize_memory)
+
+# ml_data_proc
+try:
+    from .ml_data_proc import (
+        get_outliers ,
+        get_outliers_iqr,
+        get_outliers_tukey ,
+        get_outliers_kde ,
+        remove_outliers ,
+        remove_outliers_iqr ,
+        remove_outliers_tukey ,
+        add_interactions ,
+    )
+except:
+    from ml_data_proc import (
+        get_outliers ,
+        get_outliers_iqr,
+        get_outliers_tukey ,
+        get_outliers_kde ,
+        remove_outliers ,
+        remove_outliers_iqr ,
+        remove_outliers_tukey ,
+        add_interactions ,
+    )
+
+BPAccessor.get_outliers = make_method(get_outliers)
+BPAccessor.get_outliers_iqr = make_method(get_outliers_iqr)
+BPAccessor.get_outliers_tukey = make_method(get_outliers_tukey)
+BPAccessor.get_outliers_kde = make_method(get_outliers_kde)
+BPAccessor.remove_outliers = make_method(remove_outliers)
+BPAccessor.remove_outliers_iqr = make_method(remove_outliers_iqr)
+BPAccessor.remove_outliers_tukey = make_method(remove_outliers_tukey)
+BPAccessor.add_interactions = make_method(add_interactions)
+
+# ml_modelling (just use functions)
+# ml_statsmodels (just use functions)
+# plot_calendar (just use functions)
+
+# plot_corr
+try:
+    from .plot_corr import (
+        plot_corr ,
+        plot_corr_style ,
+        plot_corr_sns ,
+        plot_corrplot_with_pearsonr ,
+        plot_multiple_jointplots_with_pearsonr
+    )
+except:
+    from plot_corr import (
+        plot_corr ,
+        plot_corr_style ,
+        plot_corr_sns ,
+        plot_corrplot_with_pearsonr,
+        plot_multiple_jointplots_with_pearsonr
+    )
+
+BPAccessor.plot_corr = make_method(plot_corr)
+BPAccessor.plot_corr_style = make_method(plot_corr_style)
+BPAccessor.plot_corr_sns = make_method(plot_corr_sns)
+BPAccessor.plot_corrplot_with_pearsonr = make_method(plot_corrplot_with_pearsonr)
+BPAccessor.plot_multiple_jointplots_with_pearsonr = make_method(plot_multiple_jointplots_with_pearsonr)
+
+# plot_ds
+try:
+    from .plot_ds import (
+        plot_stem,
+        plot_pareto,
+        countplot,
+        regplot_binn,
+        plot_two_clusters,
+    )
+except:
+    from plot_ds import (
+        plot_stem,
+        plot_pareto,
+        countplot,
+        regplot_binn,
+        plot_two_clusters,
+    )
+
+BPAccessor.plot_stem = make_method(plot_stem)
+BPAccessor.plot_pareto = make_method(plot_pareto)
+BPAccessor.countplot = make_method(countplot)
+BPAccessor.regplot_binn = make_method(regplot_binn)
+BPAccessor.plot_two_clusters = make_method(plot_two_clusters)
+
+# plot_map
+try:
+    from .plot_map import (
+    plotly_usa_map,
+    plotly_usa_map2,
+    plotly_usa_map_agg,
+    plotly_usa_map_bubble,
+    plotly_country_map,
+    plotly_country_map_agg,
+    plotly_mapbox
+    )
+except:
+    from plot_map import (
+    plotly_usa_map,
+    plotly_usa_map2,
+    plotly_usa_map_agg,
+    plotly_usa_map_bubble,
+    plotly_country_map,
+    plotly_country_map_agg,
+    plotly_mapbox
+    )
+BPAccessor.plotly_usa_map = make_method(plotly_usa_map)
+BPAccessor.plotly_usa_map2 = make_method(plotly_usa_map2)
+BPAccessor.plotly_usa_map_agg = make_method(plotly_usa_map_agg)
+BPAccessor.plotly_usa_map_bubble = make_method(plotly_usa_map_bubble)
+BPAccessor.plotly_country_map = make_method(plotly_country_map)
+BPAccessor.plotly_country_map_agg = make_method(plotly_country_map_agg)
+BPAccessor.plotly_mapbox = make_method(plotly_mapbox)
+
+# plot_modelling (just use functions)
+# plot_num_cat
+try:
+    from .plot_num_cat import (
+    plot_num,
+    plot_cat,
+    plot_num_num,
+    plot_num_cat,
+    plot_cat_num,
+    plot_cat_cat,
+    plot_cat_stacked,
+    plot_boxplot_cats_num,
+    plot_count_cat,
+    plot_cat_cat2,
+    plot_num_cat2,
+    plot_cat_binn,
+    plot_cat_cat_pct,
+    plot_donut_binn,
+    )
+except:
+    from plot_num_cat import (
+    plot_num,
+    plot_cat,
+    plot_num_num,
+    plot_num_cat,
+    plot_cat_num,
+    plot_cat_cat,
+    plot_cat_stacked,
+    plot_boxplot_cats_num,
+    plot_count_cat,
+    plot_cat_cat2,
+    plot_num_cat2,
+    plot_cat_binn,
+    plot_cat_cat_pct,
+    plot_donut_binn,
+    )
+BPAccessor.plot_num = make_method(plot_num)
+BPAccessor.plot_cat = make_method(plot_cat)
+BPAccessor.plot_num_num = make_method(plot_num_num)
+BPAccessor.plot_num_cat = make_method(plot_num_cat)
+BPAccessor.plot_cat_num = make_method(plot_cat_num)
+BPAccessor.plot_cat_cat = make_method(plot_cat_cat)
+BPAccessor.plot_cat_stacked = make_method(plot_cat_stacked)
+BPAccessor.plot_boxplot_cats_num = make_method(plot_boxplot_cats_num)
+BPAccessor.plot_count_cat = make_method(plot_count_cat)
+BPAccessor.plot_cat_cat2 = make_method(plot_cat_cat2)
+BPAccessor.plot_num_cat2 = make_method(plot_num_cat2)
+BPAccessor.plot_cat_binn = make_method(plot_cat_binn)
+BPAccessor.plot_cat_cat_pct = make_method(plot_cat_cat_pct)
+BPAccessor.plot_donut_binn = make_method(plot_donut_binn)
+
+# plot_plotly
+try:
+    from .plot_plotly import (
+    plotly_corr,
+    plotly_corr_heatmap,
+    plotly_countplot,
+    plotly_histogram,
+    plotly_distplot,
+    plotly_radar_plot,
+    plotly_boxplot,
+    plotly_boxplot_allpoints_with_outliers,
+    plotly_boxplot_categorical_column,
+    plotly_scattergl_plot,
+    plotly_scattergl_plot_colorcol,
+    plotly_scattergl_plot_subplots,
+    plotly_bubbleplot
+    )
+except:
+    from plot_plotly import (
+    plotly_corr,
+    plotly_corr_heatmap,
+    plotly_countplot,
+    plotly_histogram,
+    plotly_distplot,
+    plotly_radar_plot,
+    plotly_boxplot,
+    plotly_boxplot_allpoints_with_outliers,
+    plotly_boxplot_categorical_column,
+    plotly_scattergl_plot,
+    plotly_scattergl_plot_colorcol,
+    plotly_scattergl_plot_subplots,
+    plotly_bubbleplot
+    )
+BPAccessor.plotly_corr = make_method(plotly_corr)
+BPAccessor.plotly_corr_heatmap = make_method(plotly_corr_heatmap)
+BPAccessor.plotly_countplot = make_method(plotly_countplot)
+BPAccessor.plotly_histogram = make_method(plotly_histogram)
+BPAccessor.plotly_distplot = make_method(plotly_distplot)
+BPAccessor.plotly_radar_plot = make_method(plotly_radar_plot)
+BPAccessor.plotly_boxplot = make_method(plotly_boxplot)
+BPAccessor.plotly_boxplot_allpoints_with_outliers = make_method(plotly_boxplot_allpoints_with_outliers)
+BPAccessor.plotly_boxplot_categorical_column = make_method(plotly_boxplot_categorical_column)
+BPAccessor.plotly_scattergl_plot = make_method(plotly_scattergl_plot)
+BPAccessor.plotly_scattergl_plot_colorcol = make_method(plotly_scattergl_plot_colorcol)
+BPAccessor.plotly_scattergl_plot_subplots = make_method(plotly_scattergl_plot_subplots)
+BPAccessor.plotly_bubbleplot = make_method(plotly_bubbleplot)
+
+# plot_stats
+try:
+    from .plot_stats import(
+    plot_statistics,
+    plot_ecdf,
+    plot_gini,
+    plot_ks,
+    get_yprobs_sorted_proportions,
+    )
+except:
+    from plot_stats import(
+    plot_statistics,
+    plot_ecdf,
+    plot_gini,
+    plot_ks,
+    get_yprobs_sorted_proportions,
+    )
+BPAccessor.plot_statistics = make_method(plot_statistics)
+BPAccessor.plot_ecdf = make_method(plot_ecdf)
+BPAccessor.plot_gini = make_method(plot_gini)
+BPAccessor.plot_ks = make_method(plot_ks)
+BPAccessor.get_yprobs_sorted_proportions = make_method(get_yprobs_sorted_proportions)
+
+# plot_tsa
+try:
+    from .plot_tsa import plot_date_cat,plot_daily_cat
+except:
+    from plot_tsa import plot_date_cat,plot_daily_cat
+BPAccessor.plot_date_cat = make_method(plot_date_cat)
+BPAccessor.plot_daily_cat = make_method(plot_daily_cat)
+
+# util_colors (just use functions)
+
+# util_pd_styles

@@ -59,13 +59,11 @@ from IPython.display import display
 sns.set(color_codes=True)
 plt.style.use('ggplot') # better than sns styles.
 
-# local fuctions
+# local functions
 try:
     from .util_plots import magnify, add_text_barplot
 except:
     from util_plots import magnify, add_text_barplot
-
-
 
 def plot_statistics(
     df:DataFrame,

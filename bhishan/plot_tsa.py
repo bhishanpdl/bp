@@ -18,7 +18,6 @@ Usage
 
     from bhishan import bp
     bp.plot_ds?
-
 """
 __all__ = [
     "plot_date_cat",
