@@ -759,3 +759,61 @@ BPAccessor.plot_daily_cat = make_method(plot_daily_cat)
 # util_colors (just use functions)
 
 # util_pd_styles
+try:
+    from .util_pd_styles import (
+    style_rows,
+    style_cols,
+    style_row_mi,
+    style_diags,
+    style_rowscols,
+    style_rc,
+    style_rowscolsdiags,
+    style_rcd,
+    style_cellv,
+    style_cellx,
+    )
+except:
+    from util_pd_styles import (
+    style_rows,
+    style_cols,
+    style_row_mi,
+    style_diags,
+    style_rowscols,
+    style_rc,
+    style_rowscolsdiags,
+    style_rcd,
+    style_cellv,
+    style_cellx,
+    )
+BPAccessor.style_rows = make_method(style_rows)
+BPAccessor.style_cols = make_method(style_cols)
+BPAccessor.style_row_mi = make_method(style_row_mi)
+BPAccessor.style_diags = make_method(style_diags)
+BPAccessor.style_rowscols = make_method(style_rowscols)
+BPAccessor.style_rc = make_method(style_rc)
+BPAccessor.style_rowscolsdiags = make_method(style_rowscolsdiags)
+BPAccessor.style_rcd = make_method(style_rcd)
+BPAccessor.style_cellv = make_method(style_cellv)
+BPAccessor.style_cellx = make_method(style_cellx)
+
+# util pd
+try:
+    from .util_pd import (
+        describe,
+        add_datepart,
+        df_shrink
+    )
+except:
+    from util_pd import (
+        describe,
+        add_datepart,
+        df_shrink
+    )
+BPAccessor.describe = make_method(describe)
+BPAccessor.add_datepart = make_method(add_datepart)
+BPAccessor.df_shrink = make_method(df_shrink)
+
+
+
+
+

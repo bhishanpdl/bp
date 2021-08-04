@@ -8,12 +8,16 @@ __note__ = """
 __author__ = "Bhishan Poudel"
 
 __all__ = [
-    "style_row",
-    "style_col",
-    "style_rowcol",
-    "style_diag",
+    "style_rows",
+    "style_cols",
+    "style_row_mi",
+    "style_diags",
+    "style_rowscols",
+    "style_rc",
+    "style_rowscolsdiags",
     "style_rcd",
-    "style_rowcoldiag",
+    "style_cellv",
+    "style_cellx",
 ]
 
 # type hints
@@ -75,6 +79,46 @@ def _style_row(
     bkg = f"background-color: {color}"
     return [bkg if ser.name == row else "" for _ in ser]
 
+def _style_rows(
+    df:DataFrame,
+    rows: Union[str,int,List,Tuple]=None,
+    colors: Union[str,List,Tuple]='lightblue'
+    )->DataFrame:
+    # if df is Styler, make it dataframe
+    if isinstance(df,pd.io.formats.style.Styler):
+        df = df.data
+
+    # if rows is None, make it first index
+    if rows is None:
+        rows = [df.index[0]]
+
+    # if cols is integer or str, make it list
+    if type(rows) in [int,str]:
+        rows = [rows]
+
+    # if index name is not integer, use integer to get nth index
+    if not isinstance(df.index[0],int):
+        if isinstance(rows[0], int):
+            rows = list(df.index[rows])
+
+    # create colors
+    if colors is None:
+        colors = ['salmon'] * len(rows)
+
+    # if color is string, make list
+    if isinstance(colors,str):
+        colors = [colors]*len(rows)
+
+    df_str = pd.DataFrame("", index=df.index, columns=df.columns)
+
+    for row,color in zip(rows,colors):
+        attr = f"background-color: {color}"
+        if row not in df.index:
+            print(f"ERROR: '{row}' is not in Index.")
+        if row in df.index:
+            df_str.loc[row,:] = attr
+    return df_str
+
 def _style_col(
     ser: Series,
     color: str ="salmon",
@@ -85,21 +129,47 @@ def _style_col(
     bkg = f"background-color: {color}"
     return [bkg if ser.name == col else "" for _ in ser]
 
-def _style_col1(
-    df:DSt,
-    col:SI=0,
-    color:str='salmon'
-    ):
-    # if df is styler, make it pandas dataframe
-    if isinstance(df,Styler):
+def _style_cols(
+    df:DataFrame,
+    cols: Union[str,int,List,Tuple]=None,
+    colors: Union[str,List,Tuple]='salmon'
+    )-> DataFrame:
+    # if df is Styler, make it dataframe
+    if isinstance(df,pd.io.formats.style.Styler):
         df = df.data
 
-    attr = f"background-color: {color}"
+    # if cols is None, make it first column
+    if cols is None:
+        cols = [df.columns[0]]
+
+    # if cols is integer or str, make it list
+    if type(cols) in [int,str]:
+        cols = [cols]
+
+    # if column name is not integer, use integer to get nth column
+    if not isinstance(df.columns[0],int):
+        if isinstance(cols[0], int):
+            cols = list(df.columns[cols])
+
+    # create colors
+    if colors is None:
+        colors = ['salmon'] * len(cols)
+
+    # if color is string, make list
+    if isinstance(colors,str):
+        colors = [colors]*len(cols)
+
     df_str = pd.DataFrame("", index=df.index, columns=df.columns)
-    df_str.loc[:, col] = attr
+
+    for col,color in zip(cols,colors):
+        attr = f"background-color: {color}"
+        if col not in df.columns:
+            print(f"ERROR: '{col}' is not in Columns.")
+        if col in df.columns:
+            df_str.loc[:, col] = attr
     return df_str
 
-def _style_diag1(
+def _style_diags0(
     df: DataFrame,
     color: str ="khaki"
     ) -> DataFrame:
@@ -108,13 +178,12 @@ def _style_diag1(
     df1 = pd.DataFrame(a, index=df.index, columns=df.columns)
     return df1
 
-def _style_diag(
+def _style_diags(
     df:DataFrame,
     diag:SI='both',
     c1:str='lightgreen',
-    c2='salmon'
+    c2:str='salmon'
     ):
-
     # colors
     attr1 = f'background-color: {c1}'
     attr2 = f'background-color: {c2}'
@@ -141,20 +210,20 @@ def _style_diag(
     return df_str
 
 #===== Style pandas dataframe =====
-def style_row(
-    dfx: DataFrame,
-    rows: Union[str,int,List,Tuple] =[-1],
-    color: str ="lightblue",
+def style_rows(
+    df: DataFrame,
+    rows: Union[int,str,List,Tuple] =[-1],
+    colors: Union[str,List,Tuple]="lightblue",
     )-> Styler:
     """Highlight rows in a dataframe.
 
     Parameters
     -----------
-    dfx : DataFrame
+    df : DataFrame
         Pandas dataframe.
     rows : str or list of str
         Rows to highlight.
-    color : str
+    colors : str or list or tuple
         Color of highlighted row.
 
     Examples
@@ -164,84 +233,20 @@ def style_row(
         df = pd.DataFrame({'A':[10,20,30],
                     'B':['USA','Canada','Mexico'],
                     'C': [100,200,300]})
-        bp.style_row(df,1)
-
+        bp.style_rows(df,1)
     """
-    # if df is Styler, make it dataframe
-    if isinstance(df,pd.io.formats.style.Styler):
-        df = df.data
-
-    # if rows is integer, make it a list
-    if isinstance(rows, int):
-        rows = [rows]
-
-    df_style = dfx.copy()
-    df_style = df_style.style.apply(_style_row, axis=1, row=rows[0])
-
-    # if multiple rows are given, then style each row
-    if len(rows) > 1:
-        for row in rows[1:]:
-            df_style = df_style.apply(_style_row, axis=1, row=row)
+    df_style = df.style.apply(_style_rows, axis=None,rows=rows,colors=colors)
 
     return df_style
 
-def style_col(
-    df: DSt,
-    cols: Union[str,int,List,Tuple] =[-1],
-    color: str ="salmon",
-    )-> Styler:
-    """Highlight columns in a dataframe.
-
-    Parameters
-    -----------
-    df : DataFrame or Styler
-        Pandas dataframe.
-    cols : str or list of str
-        Columns to highlight.
-    color : str
-        Color of highlighted column.
-
-    Examples
-    ---------
-    .. code-block:: python
-
-        df = pd.DataFrame({'A':[10,20,30],
-                    'B':['USA','Canada','Mexico'],
-                    'C': [100,200,300]})
-        bp.style_col(df,1)
-
-    """
-    # if df is Styler, make it dataframe
-    if isinstance(df,pd.io.formats.style.Styler):
-        df = df.data
-
-    # if cols is integer or str, make it list
-    if type(cols) in [int,str]:
-        cols = [cols]
-
-    # if column name is not integer, use integer to get nth column
-    if not isinstance(df.columns[0],int):
-        if isinstance(cols[0], int):
-            cols = list(df.columns[cols])
-
-    def _style_col(df):
-        attr = f"background-color: {color}"
-        df_str = pd.DataFrame("", index=df.index, columns=df.columns)
-        for col in cols:
-            df_str.loc[:, col] = attr
-        return df_str
-
-    df_style = df.style.apply(_style_col, axis=None)
-    return df_style
-
-def style_rowcol(
+def style_row_mi(
     df:DataFrame,
     name:Any=0,
     axis:Union[str,int]=1,
     color:SN=None,
     c:SN=None,
     )-> Styler:
-    """Style rows and columns of pandas dataframe.
+    """Style rows of pandas dataframe.
 
     Parameters
     -----------
@@ -321,7 +326,52 @@ def style_rowcol(
                 else ''
                 for _ in ser],axis=axis)
 
-def style_diag(
+def style_cols(
+    df: DSt,
+    cols: Union[str,int,List,Tuple] =[-1],
+    colors: Union[str,List,Tuple] ="salmon",
+    )-> Styler:
+    """Highlight columns in a dataframe.
+
+    Parameters
+    -----------
+    df : DataFrame or Styler
+        Pandas dataframe.
+    cols : str or list of str
+        Columns to highlight.
+    colors : str or list or tuple
+        Color of highlighted column.
+
+    Examples
+    ---------
+    .. code-block:: python
+
+        df = pd.DataFrame({'A':[10,20,30],
+                    'B':['USA','Canada','Mexico'],
+                    'C': [100,200,300]})
+        bp.style_cols(df,1)
+    """
+    df_style = df.style.apply(_style_cols, axis=None,cols=cols,colors=colors)
+    return df_style
+# alias
+style_col = style_cols
+
+def style_rowscols(
+    df: DataFrame,
+    rows: SIN =0,
+    cols: SIN =0,
+    c1: str ="lightblue",
+    c2: str ="salmon",
+    )-> Styler:
+    return (
+        df.style
+        .apply(_style_rows, axis=None, colors=c1, rows=rows)
+        .apply(_style_cols, axis=None, colors=c2, cols=cols)
+    )
+# aliases
+style_rc = style_rowscols
+
+def style_diags(
     df:DataFrame,
     diag:SI='both',
     c1:str='lightgreen',
@@ -344,15 +394,13 @@ def style_diag(
         df = pd.DataFrame(data={'p0': [10,   4],'pred1': [0,   0],
                 'total': [10,  4]},index=['true0','true1'] )
         df.bp.style_diag(diag=0)
-
     """
+    return df.style.apply(_style_diags,axis=None,diag=diag,c1=c1,c2=c2)
 
-    return df.style.apply(_style_diag,diag=diag,c1=c1,c2=c2,axis=None)
-
-def style_rcd(
+def style_rowscolsdiags(
     df: DataFrame,
-    row: SIN =0,
-    col: SIN =0,
+    rows: Union[str,int,List,Tuple] =[-1],
+    cols: Union[str,int,List,Tuple] =[-1],
     diag:SI = 'both',
     c1: str ="lightblue",
     c2: str ="salmon",
@@ -360,12 +408,12 @@ def style_rcd(
     )-> Styler:
     return (
         df.style
-        .apply(_style_diag, axis=None, c1=c3,c2=c3,diag=diag)
-        .apply(_style_row, axis=1, color=c1, row=row)
-        .apply(_style_col, axis=None, color=c2, col=col)
+        .apply(_style_rows, axis=None, colors=c1, rows=rows)
+        .apply(_style_cols, axis=None, colors=c2, cols=cols)
+        .apply(_style_diags, axis=None, c1=c3,c2=c3,diag=diag)
     )
 # aliases
-style_rowcoldiag = style_rcd
+style_rcd = style_rowscolsdiags
 
 def style_cellv(
     df:DataFrame,
@@ -374,7 +422,7 @@ def style_cellv(
     idx:SIN=None,
     col:SIN=None
     )-> Styler:
-    """Style rows and columns of pandas dataframe.
+    """Style a cell element of a pandas dataframe using cell value.
 
     Parameters
     -----------
@@ -427,9 +475,9 @@ def style_cellv(
 def style_cellx(
     df:DataFrame,
     cond:str,
-    c:str='lightgreen'
+    color:str='lightgreen'
     )-> Styler:
-    """Style rows and columns of pandas dataframe.
+    """Style cell using dataframe a x and using condition.
 
     Parameters
     -----------
@@ -437,7 +485,7 @@ def style_cellx(
         Input data.
     cond: str
         Mask. eg. "x[x.index==2]==0"
-    c: str
+    color: str
         Color of style.
 
     Examples
@@ -452,22 +500,18 @@ def style_cellx(
         df1.bp.style_cellx("x['survived']==x['pclass']")
 
     """
-    def f(x,cond,c='lightgreen'):
-        attr = f'background-color: {c}'
-        df1 = x.astype(str).replace(x, '')
-        df1 = df1.astype(str).replace('nan','')
-        df1[eval(cond)] = attr
-        return df1
-    return df.style.apply(f,axis=None,cond=cond,c=c)
+    def f(x:DSt,
+        cond:str,
+        color:str='lightgreen'
+        )-> DataFrame:
+        # if x is Styler, make it dataframe
+        if isinstance(x,pd.io.formats.style.Styler):
+            x = x.data
 
-def style_diag2(
-    dfx: DataFrame,
-    color: str ="khaki"
-    )-> Styler:
-    def _style_diag(dfy:DataFrame)->DataFrame:
-        a = np.full(dfy.shape, "", dtype="<U24")
-        np.fill_diagonal(a, f"background-color: {color}")
-        df1 = pd.DataFrame(a, index=dfy.index, columns=dfy.columns)
-        return df1
+        attr = f'background-color: {color}'
+        arr = np.full(x.shape, "", dtype="<U24")
+        df_str = pd.DataFrame(arr, index=x.index,columns=x.columns)
 
-    return dfx.style.apply(_style_diag, axis=None)
+        df_str[eval(cond)] = attr
+        return df_str
+    return df.style.apply(f,axis=None,cond=cond,color=color)

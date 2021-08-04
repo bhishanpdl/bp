@@ -179,14 +179,16 @@ all_util_colors = [
     ]
 
 all_pd_styles = [
-    "highlight_row",
-    "highlight_col",
-    "highlight_diag",
-    "highlight_rowf",
-    "highlight_rowsf",
-    "highlight_colf",
-    "highlight_diagf",
-    "highlight_rcd"
+    "style_rows",
+    "style_cols",
+    "style_row_mi",
+    "style_diags",
+    "style_rowscols",
+    "style_rc",
+    "style_rowscolsdiags",
+    "style_rcd",
+    "style_cellv",
+    "style_cellx",
 ]
 
 all_util_pd = [

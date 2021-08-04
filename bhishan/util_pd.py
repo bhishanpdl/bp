@@ -83,7 +83,6 @@ def describe(
     ------
     .. code-block:: python
 
-        from bhishan.util_ds import get_column_descriptions
         df.bp.describe(style=True)
 
     """
