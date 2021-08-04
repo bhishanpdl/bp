@@ -10,7 +10,10 @@ __author__ = "Bhishan Poudel"
 __all__ = [
     "style_row",
     "style_col",
+    "style_rowcol",
     "style_diag",
+    "style_rcd",
+    "style_rowcoldiag",
 ]
 
 # type hints
@@ -82,21 +85,67 @@ def _style_col(
     bkg = f"background-color: {color}"
     return [bkg if ser.name == col else "" for _ in ser]
 
-def _style_diag(
-    dfx: DataFrame,
+def _style_col1(
+    df:DSt,
+    col:SI=0,
+    color:str='salmon'
+    ):
+    # if df is styler, make it pandas dataframe
+    if isinstance(df,Styler):
+        df = df.data
+
+    attr = f"background-color: {color}"
+    df_str = pd.DataFrame("", index=df.index, columns=df.columns)
+    df_str.loc[:, col] = attr
+    return df_str
+
+def _style_diag1(
+    df: DataFrame,
     color: str ="khaki"
     ) -> DataFrame:
-    a = np.full(dfx.shape, "", dtype="<U24")
+    a = np.full(df.shape, "", dtype="<U24")
     np.fill_diagonal(a, f"background-color: {color}")
-    df1 = pd.DataFrame(a, index=dfx.index, columns=dfx.columns)
+    df1 = pd.DataFrame(a, index=df.index, columns=df.columns)
     return df1
+
+def _style_diag(
+    df:DataFrame,
+    diag:SI='both',
+    c1:str='lightgreen',
+    c2='salmon'
+    ):
+
+    # colors
+    attr1 = f'background-color: {c1}'
+    attr2 = f'background-color: {c2}'
+
+    # empty array
+    arr_str = np.full(df.shape, '', dtype='<U32')
+
+    # main diagonal
+    if diag==0 or str(diag).startswith('f'):
+        np.fill_diagonal(arr_str, attr1)
+
+    # second diagonal
+    if diag==1 or str(diag).startswith('s'):
+        np.fill_diagonal(np.flipud(arr_str), attr2)
+
+    # both
+    if diag==2 or diag=='both':
+        np.fill_diagonal(np.flipud(arr_str), attr2)
+        np.fill_diagonal(arr_str, attr1)
+
+    # df style
+    df_str = pd.DataFrame(arr_str, index=df.index, columns=df.columns)
+
+    return df_str
 
 #===== Style pandas dataframe =====
 def style_row(
     dfx: DataFrame,
     rows: Union[str,int,List,Tuple] =[-1],
     color: str ="lightblue",
-    ):
+    )-> Styler:
     """Highlight rows in a dataframe.
 
     Parameters
@@ -118,6 +167,10 @@ def style_row(
         bp.style_row(df,1)
 
     """
+    # if df is Styler, make it dataframe
+    if isinstance(df,pd.io.formats.style.Styler):
+        df = df.data
+
     # if rows is integer, make it a list
     if isinstance(rows, int):
         rows = [rows]
@@ -130,18 +183,18 @@ def style_row(
         for row in rows[1:]:
             df_style = df_style.apply(_style_row, axis=1, row=row)
 
-    display(df_style)
+    return df_style
 
 def style_col(
-    df: DataFrame,
+    df: DSt,
     cols: Union[str,int,List,Tuple] =[-1],
     color: str ="salmon",
-    ):
+    )-> Styler:
     """Highlight columns in a dataframe.
 
     Parameters
     -----------
-    df : DataFrame
+    df : DataFrame or Styler
         Pandas dataframe.
     cols : str or list of str
         Columns to highlight.
@@ -158,6 +211,10 @@ def style_col(
         bp.style_col(df,1)
 
     """
+    # if df is Styler, make it dataframe
+    if isinstance(df,pd.io.formats.style.Styler):
+        df = df.data
+
     # if cols is integer or str, make it list
     if type(cols) in [int,str]:
         cols = [cols]
@@ -168,28 +225,14 @@ def style_col(
             cols = list(df.columns[cols])
 
     def _style_col(df):
-        bkg = f"background-color: {color}"
-        df1 = pd.DataFrame("", index=df.index, columns=df.columns)
+        attr = f"background-color: {color}"
+        df_str = pd.DataFrame("", index=df.index, columns=df.columns)
         for col in cols:
-            df1.loc[:, col] = bkg
-        return df1
+            df_str.loc[:, col] = attr
+        return df_str
 
     df_style = df.style.apply(_style_col, axis=None)
-    display(df_style)
-
-def style_rcd(
-    dfx: DataFrame,
-    row: SIN =None,
-    col: SIN =None,
-    c1: str ="lightblue",
-    c2: str ="salmon",
-    c3: str ="khaki"
-    )-> Styler:
-    return (
-        dfx.style.apply(_style_diag, axis=None, color=c3)
-        .apply(highlight_row, axis=1, color=c1, row=row)
-        .apply(highlight_col, axis=0, color=c2, col=col)
-    )
+    return df_style
 
 def style_rowcol(
     df:DataFrame,
@@ -263,7 +306,7 @@ def style_rowcol(
                         for _ in ser],axis=axis)
         if names[0][1] == '*':
             return df.style.apply(lambda ser: [f'background: {row_color}'
-                        if ser.name[0] == namees[0][0]
+                        if ser.name[0] == names[0][0]
                         else ''
                         for _ in ser],axis=axis)
         else:
@@ -280,7 +323,7 @@ def style_rowcol(
 
 def style_diag(
     df:DataFrame,
-    diag:str='both',
+    diag:SI='both',
     c1:str='lightgreen',
     c2:str='salmon'
     )-> Styler:
@@ -303,21 +346,26 @@ def style_diag(
         df.bp.style_diag(diag=0)
 
     """
-    def highlight_diags(dfx,c1='lightgreen',c2='salmon',diag='both'):
-        attr1 = f'background-color: {c1}'
-        attr2 = f'background-color: {c2}'
 
-        df_style = dfx.replace(dfx, '')
-        if diag==0 or diag == 'first':
-            np.fill_diagonal(df_style.values, attr1)
-        if diag==1 or diag == 'second':
-            np.fill_diagonal(np.flipud(df_style), attr2)
-        if diag==2 or diag=='both':
-            np.fill_diagonal(df_style.values, attr1)
-            np.fill_diagonal(np.flipud(df_style), attr2)
-        return df_style
+    return df.style.apply(_style_diag,diag=diag,c1=c1,c2=c2,axis=None)
 
-    return df.style.apply(highlight_diags,diag=diag,c1=c1,c2=c2,axis=None)
+def style_rcd(
+    df: DataFrame,
+    row: SIN =0,
+    col: SIN =0,
+    diag:SI = 'both',
+    c1: str ="lightblue",
+    c2: str ="salmon",
+    c3: str ="khaki"
+    )-> Styler:
+    return (
+        df.style
+        .apply(_style_diag, axis=None, c1=c3,c2=c3,diag=diag)
+        .apply(_style_row, axis=1, color=c1, row=row)
+        .apply(_style_col, axis=None, color=c2, col=col)
+    )
+# aliases
+style_rowcoldiag = style_rcd
 
 def style_cellv(
     df:DataFrame,
