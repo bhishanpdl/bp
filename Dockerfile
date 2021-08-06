@@ -17,9 +17,9 @@ RUN apt-get install dvipng -y
 RUN pip install --upgrade jupyter
 RUN pip install nbconvert
 
-# Finally get set up to build the docs
-RUN pip install sphinx
-RUN pip install sphinx_rtd_theme
+# Install modules for development (not required in production)
+#RUN pip install sphinx
+#RUN pip install sphinx_rtd_theme
 
 # Install the dependencies and the package:
 WORKDIR /home
@@ -29,5 +29,5 @@ RUN pip install -r requirements.txt
 RUN python setup.py install
 
 # cd to the work directory and launch a jupyter notebook on run
-WORKDIR /home/bp/docs/notebooks
-CMD jupyter notebook --no-browser --allow-root --port=8888 --ip=0.0.0.0
+#WORKDIR /home/bp/docs/notebooks
+#CMD jupyter notebook --no-browser --allow-root --port=8888 --ip=0.0.0.0
