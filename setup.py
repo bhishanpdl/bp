@@ -7,7 +7,7 @@ setup(
     author_email="bhishanpdl@gmail.com",
     url = "https://github.com/bhishanpdl/bp",
     packages=["bp"],
-    description="Personal library for daily uses.",
+    description="Personal library for data science.",
     long_description=open("README.md").read(),
     package_data={"": ["README.md", "LICENSE"]},
     include_package_data=True,
@@ -19,5 +19,5 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         ],
-    install_requires=["matplotlib", "numpy", "pandas==0.25"]
+    install_requires=["matplotlib", "numpy", "pandas>=0.25"]
 )
