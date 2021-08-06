@@ -3,6 +3,9 @@ FROM python:3.7
 # Update the OS as needed
 RUN apt-get update
 
+# install vim so that you can use vim on docker terminal
+RUN apt-get install -y nmap vim
+
 # Get TEX fonts for jupyter notebook
 RUN apt-get install texlive-latex-recommended -y
 RUN apt-get install texlive-latex-extra -y
